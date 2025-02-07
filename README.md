@@ -15,3 +15,7 @@ he goal of this project is to develop a **digital system** that will streamline 
 ✔ **Provide real-time insights and reports** for better decision-making.
 
 
+
+
+## 📊 Use Case Diagram
+![Use Case Diagram](use_case_diagram.png)
