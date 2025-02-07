@@ -24,8 +24,8 @@ he goal of this project is to develop a **digital system** that will streamline 
 
 
 ## 👨‍💻 Our Developers Team
-- [ 🚀   Dana Salh]
-- [🚀   Tehila Raviv]
-- [🚀    Noa Uzan ]
-- [🚀   Saar Niran]
+- 🚀   Dana Salh
+- 🚀   Tehila Raviv
+- 🚀    Noa Uzan 
+- 🚀   Saar Niran
 
