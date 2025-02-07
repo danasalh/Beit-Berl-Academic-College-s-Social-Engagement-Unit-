@@ -23,7 +23,7 @@ he goal of this project is to develop a **digital system** that will streamline 
 
 
 
-##  M-(‍ M-; Our Developers Team
+## 👨‍💻 Our Developers Team
 - [ 🚀   Dana Salh]
 - [🚀   Tehila Raviv]
 - [🚀    Noa Uzan ]
