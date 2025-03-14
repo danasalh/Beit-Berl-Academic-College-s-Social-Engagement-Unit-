@@ -30,7 +30,7 @@ he goal of this project is to develop a **digital system** that will streamline 
 
 ## 📊 Use Case Diagram
 ![Use Case Diagram](use_case_diagram.png)
-
+![Use Case Diagram - BEIT BERL](https://github.com/user-attachments/assets/4e2fdfcc-8dfc-4c56-9832-3bb8129217c9)
 
 
 
