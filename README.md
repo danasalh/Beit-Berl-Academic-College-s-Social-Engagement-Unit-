@@ -1,4 +1,15 @@
+
 # 🎓 Beit-Berl-Academic-College-s-Social-Engagement-Unit-
+
+
+## 👨‍💻 Our Developers Team
+- 🚀 Dana Salh
+- 🚀 Tehila Raviv
+- 🚀 Noa Uzan 
+- 🚀 Saar Niran
+
+
+
 
 The Social Engagement Unit allows students to receive academic recognition
  in exchange for at least 60 hours of volunteer work with various social
@@ -18,14 +29,5 @@ he goal of this project is to develop a **digital system** that will streamline 
 
 
 ## 📊 Use Case Diagram
-![Use Case Diagram](use_case_diagram.png)
-
-
-
-
-## 👨‍💻 Our Developers Team
-- 🚀   Dana Salh
-- 🚀   Tehila Raviv
-- 🚀    Noa Uzan 
-- 🚀   Saar Niran
+![Use Case Diagram - BEIT BERL](https://github.com/user-attachments/assets/4e2fdfcc-8dfc-4c56-9832-3bb8129217c9)
 
