@@ -2,9 +2,11 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import TestFirebase from './components/TestFirebase'
 
 function App() {
   const [count, setCount] = useState(0)
+  const [showFirebaseTest, setShowFirebaseTest] = useState(false)
 
   return (
     <>
@@ -21,10 +23,20 @@ function App() {
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>
+        <button onClick={() => setShowFirebaseTest(!showFirebaseTest)}>
+          {showFirebaseTest ? 'Hide' : 'Show'} Firebase Test
+        </button>
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
       </div>
+      
+      {showFirebaseTest && (
+        <div className="firebase-test-container">
+          <TestFirebase />
+        </div>
+      )}
+      
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
@@ -32,4 +44,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
