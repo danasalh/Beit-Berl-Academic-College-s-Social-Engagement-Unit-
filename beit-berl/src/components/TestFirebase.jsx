@@ -1,28 +1,34 @@
 // src/components/TestFirebase.jsx
 import React, { useState, useEffect } from 'react';
 import { addItem, getAllItems, updateItem, deleteItem } from '../firebase/firestore';
+import AuthComponent from './Auth/AuthComponent';
 
 const TestFirebase = () => {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState({ name: '', description: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
 
-  // Fetch all items on component mount
+  // Only fetch items when we have a user
   useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const data = await getAllItems();
-        setItems(data);
-        setLoading(false);
-      } catch (err) {
-        setError('Error fetching items: ' + err.message);
-        setLoading(false);
-      }
-    };
+    if (user) {
+      fetchItems();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
-    fetchItems();
-  }, []);
+  const fetchItems = async () => {
+    try {
+      const data = await getAllItems();
+      setItems(data);
+      setLoading(false);
+    } catch (err) {
+      setError('Error fetching items: ' + err.message);
+      setLoading(false);
+    }
+  };
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -74,12 +80,17 @@ const TestFirebase = () => {
     }
   };
 
+  if (!user) {
+    return <AuthComponent onLoginSuccess={(user) => setUser(user)} />;
+  }
+
   if (loading && items.length === 0) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div>
       <h2>Firebase Testing</h2>
+      <p>Logged in as: {user.email}</p>
       
       {/* Add new item form */}
       <form onSubmit={handleAddItem}>
