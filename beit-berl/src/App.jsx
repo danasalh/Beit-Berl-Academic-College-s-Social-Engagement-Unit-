@@ -5,11 +5,13 @@ import './App.css';
 import SuccessfulRegistration from "./components/PopUps/SuccessfulRegistration/SuccessfulRegistration";
 import Settings from "./components/PopUps/Settings/Settings";
 import AreYouSure from "./components/PopUps/AreYouSure/AreYouSure";
+import TermsDoc from "./components/PopUps/TermsDoc/TermsDoc";
 
 const App = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAreYouSure, setShowAreYouSure] = useState(false);
+  const [showTermsDoc, setShowTermsDoc] = useState(false);
 
   const handleShowPopup = () => {
     setShowPopup(true);
@@ -40,6 +42,14 @@ const App = () => {
     setShowAreYouSure(false);
   };
 
+  const handleShowTermsDoc = () => {
+    setShowTermsDoc(true);
+  };
+
+  const handleCloseTermsDoc = () => {
+    setShowTermsDoc(false);
+  };
+
   return (
     <>
       <div>
@@ -62,6 +72,9 @@ const App = () => {
         {showAreYouSure && (
           <AreYouSure onConfirm={handleConfirm} onCancel={handleCancel} />
         )}
+        
+        <button onClick={handleShowTermsDoc}>Show Terms Document</button>
+        {showTermsDoc && <TermsDoc onClose={handleCloseTermsDoc} />}
         
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
