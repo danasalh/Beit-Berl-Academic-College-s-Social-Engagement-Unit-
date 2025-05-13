@@ -3,17 +3,26 @@ import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
 import SuccessfulRegistration from "./components/PopUps/SuccessfulRegistration/SuccessfulRegistration";
+import Settings from "./components/PopUps/Settings/Settings";
 
 const App = () => {
-  const [count, setCount] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
-  const handleButtonClick = () => {
+  const handleShowPopup = () => {
     setShowPopup(true);
   };
 
   const handleClosePopup = () => {
     setShowPopup(false);
+  };
+
+  const handleShowSettings = () => {
+    setShowSettings(true);
+  };
+
+  const handleCloseSettings = () => {
+    setShowSettings(false);
   };
 
   return (
@@ -28,11 +37,12 @@ const App = () => {
       </div>
       <h1>Welcome to the App</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <button onClick={handleButtonClick}>Show Successful Registration</button>
+        <button onClick={handleShowPopup}>Show Successful Registration</button>
         {showPopup && <SuccessfulRegistration onClose={handleClosePopup} />}
+        
+        <button onClick={handleShowSettings}>Show Settings</button>
+        {showSettings && <Settings onClose={handleCloseSettings} />}
+        
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
