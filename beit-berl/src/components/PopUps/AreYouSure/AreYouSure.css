@@ -10,6 +10,7 @@
     justify-content: center;
     z-index: 999;
     direction: rtl;
+    animation: fadeIn 0.3s ease-in-out;
   }
   
   .areyousure-box {
@@ -21,13 +22,15 @@
     max-width: 320px;
     width: 90%;
     font-family: sans-serif;
+    transform: scale(0.95);
+    animation: popupEnter 0.3s ease forwards;
   }
   
   .areyousure-message {
     font-size: 18px;
     margin-bottom: 25px;
     font-weight: bold;
-    color: #000; /* 💡 וידוא שהטקסט ייראה גם בדארק מוד */
+    color: #000;
   }
   
   .areyousure-buttons {
@@ -36,35 +39,54 @@
     gap: 10px;
   }
   
-  .cancel-button {
-    background-color: #d32f2f;
-    color: white;
+  .cancel-button,
+  .confirm-button {
     border: none;
     padding: 10px 16px;
     border-radius: 6px;
     font-size: 14px;
-    cursor: pointer;
+    color: white;
     flex: 1;
-    transition: background-color 0.2s ease;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  /* 🎨 עיצוב צבעים */
+  .cancel-button {
+    background-color: #d32f2f;
   }
   
   .cancel-button:hover {
     background-color: #b71c1c;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(211, 47, 47, 0.3);
   }
   
   .confirm-button {
     background-color: #388e3c;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    flex: 1;
-    transition: background-color 0.2s ease;
   }
   
   .confirm-button:hover {
     background-color: #2e7d32;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(56, 142, 60, 0.3);
+  }
+  
+  /* ✨ אנימציית כניסה */
+  @keyframes popupEnter {
+    0% {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  /* ✨ רקע כהה מתעמעם */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   
