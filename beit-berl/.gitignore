@@ -2,7 +2,10 @@
 node_modules/
 dist/
 dist-ssr/
+<<<<<<< HEAD
 .yarn/cache
+=======
+>>>>>>> main
 
 # Environment files
 .env
@@ -19,7 +22,10 @@ lerna-debug.log*
 
 # System files
 .DS_Store
+<<<<<<< HEAD
 Thumbs.db
+=======
+>>>>>>> main
 
 # Editor directories and files
 .vscode/
@@ -33,6 +39,7 @@ Thumbs.db
 
 # Local config
 *.local
+<<<<<<< HEAD
 
 # Coverage directory used by testing tools
 coverage/
@@ -41,3 +48,5 @@ coverage/
 .firebase/
 .firebaserc
 firebase-debug.log
+=======
+>>>>>>> main
