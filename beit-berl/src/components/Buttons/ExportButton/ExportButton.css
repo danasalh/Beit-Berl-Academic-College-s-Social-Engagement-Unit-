@@ -1,0 +1,15 @@
+.export-icon-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 26px;
+    color: #007bff;
+    transition: color 0.3s ease, transform 0.2s ease;
+    padding: 8px;
+  }
+  
+  .export-icon-button:hover {
+    color: #0056b3;
+    transform: translateY(1px);
+  }
+  
