@@ -1,0 +1,70 @@
+.areyousure-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    direction: rtl;
+  }
+  
+  .areyousure-box {
+    background: white;
+    padding: 30px 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px #333;
+    text-align: center;
+    max-width: 320px;
+    width: 90%;
+    font-family: sans-serif;
+  }
+  
+  .areyousure-message {
+    font-size: 18px;
+    margin-bottom: 25px;
+    font-weight: bold;
+    color: #000; /* 💡 וידוא שהטקסט ייראה גם בדארק מוד */
+  }
+  
+  .areyousure-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  
+  .cancel-button {
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+    transition: background-color 0.2s ease;
+  }
+  
+  .cancel-button:hover {
+    background-color: #b71c1c;
+  }
+  
+  .confirm-button {
+    background-color: #388e3c;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+    transition: background-color 0.2s ease;
+  }
+  
+  .confirm-button:hover {
+    background-color: #2e7d32;
+  }
+  

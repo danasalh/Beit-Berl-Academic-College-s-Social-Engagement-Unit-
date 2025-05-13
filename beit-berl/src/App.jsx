@@ -4,10 +4,12 @@ import viteLogo from '/vite.svg';
 import './App.css';
 import SuccessfulRegistration from "./components/PopUps/SuccessfulRegistration/SuccessfulRegistration";
 import Settings from "./components/PopUps/Settings/Settings";
+import AreYouSure from "./components/PopUps/AreYouSure/AreYouSure";
 
 const App = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAreYouSure, setShowAreYouSure] = useState(false);
 
   const handleShowPopup = () => {
     setShowPopup(true);
@@ -23,6 +25,19 @@ const App = () => {
 
   const handleCloseSettings = () => {
     setShowSettings(false);
+  };
+
+  const handleShowAreYouSure = () => {
+    setShowAreYouSure(true);
+  };
+
+  const handleConfirm = () => {
+    setShowAreYouSure(false);
+    alert("Confirmed!");
+  };
+
+  const handleCancel = () => {
+    setShowAreYouSure(false);
   };
 
   return (
@@ -42,6 +57,11 @@ const App = () => {
         
         <button onClick={handleShowSettings}>Show Settings</button>
         {showSettings && <Settings onClose={handleCloseSettings} />}
+        
+        <button onClick={handleShowAreYouSure}>Show Are You Sure</button>
+        {showAreYouSure && (
+          <AreYouSure onConfirm={handleConfirm} onCancel={handleCancel} />
+        )}
         
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
