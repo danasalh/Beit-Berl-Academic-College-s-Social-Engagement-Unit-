@@ -1,0 +1,61 @@
+.read-unread-dropdown {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    width: 180px;
+    z-index: 1000;
+    font-family: sans-serif;
+    animation: fadeIn 0.2s ease;
+  }
+  
+  .option {
+    transition: 
+      transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+      background 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    background: #e3f2fd; /* Light blue by default */
+  }
+  
+  .option:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    background: #bbdefb; /* Stronger blue on hover */
+  }
+  
+  .option.selected {
+    background-color: #e0f7fa;
+  }
+  
+  .icon {
+    font-size: 20px;
+    color: #333;
+    transition: transform 0.2s ease;
+  }
+  
+  .option.selected .icon {
+    animation: bounce 0.3s ease;
+  }
+  
+  .text {
+    font-size: 14px;
+    color: #222;
+  }
+  
+  @keyframes bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }

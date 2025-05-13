@@ -6,12 +6,15 @@ import SuccessfulRegistration from "./components/PopUps/SuccessfulRegistration/S
 import Settings from "./components/PopUps/Settings/Settings";
 import AreYouSure from "./components/PopUps/AreYouSure/AreYouSure";
 import TermsDoc from "./components/PopUps/TermsDoc/TermsDoc";
+import Read_Unread from "./components/PopUps/Read_Unread/Read_Unread";
 
 const App = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAreYouSure, setShowAreYouSure] = useState(false);
   const [showTermsDoc, setShowTermsDoc] = useState(false);
+  const [showReadUnread, setShowReadUnread] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   const handleShowPopup = () => {
     setShowPopup(true);
@@ -50,6 +53,19 @@ const App = () => {
     setShowTermsDoc(false);
   };
 
+  const handleShowReadUnread = (event) => {
+    const rect = event.target.getBoundingClientRect();
+    setDropdownPosition({
+      top: rect.bottom + window.scrollY, // Position below the button
+      left: rect.left + window.scrollX, // Align with the button
+    });
+    setShowReadUnread(true);
+  };
+
+  const handleCloseReadUnread = () => {
+    setShowReadUnread(false);
+  };
+
   return (
     <>
       <div>
@@ -75,6 +91,11 @@ const App = () => {
         
         <button onClick={handleShowTermsDoc}>Show Terms Document</button>
         {showTermsDoc && <TermsDoc onClose={handleCloseTermsDoc} />}
+        
+        <button onClick={handleShowReadUnread}>Show Read/Unread</button>
+        {showReadUnread && (
+          <Read_Unread position={dropdownPosition} onClose={handleCloseReadUnread} />
+        )}
         
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
