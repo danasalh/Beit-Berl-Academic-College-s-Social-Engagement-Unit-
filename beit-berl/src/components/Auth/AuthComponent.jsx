@@ -6,7 +6,7 @@ import {
   authStateObserver
 } from '../../firebase/auth';
 import { addItem, updateItem, deleteItem, getAllItems } from '../../firebase/firestore'; // Assuming these functions exist
-import RegisterComponent from './RegisterComponent';
+import RegisterComponent from '../pages/auth/Register/Register';
 
 const AuthComponent = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
