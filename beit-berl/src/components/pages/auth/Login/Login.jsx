@@ -1,46 +1,107 @@
-// Login Component Modified to Include "Forgot Password" Link
-import { useState } from 'react';
-import { 
+import { useState, useEffect } from 'react';
+import {
   getAuth,
-  signInWithEmailAndPassword, 
+  signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider
 } from 'firebase/auth';
+import { 
+  getFirestore, 
+  doc, 
+  getDoc 
+} from 'firebase/firestore';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import './Login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const auth = getAuth();
+  const db = getFirestore();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Registration success message from registration page
   const registrationSuccess = location.state?.registrationSuccess || false;
   const registrationMessage = location.state?.message || '';
 
+  // Handle window resize for responsive design
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Check user approval status
+  const checkUserApprovalStatus = async (uid) => {
+    try {
+      // Get user document from Firestore
+      const userRef = doc(db, 'users', uid);
+      const userDoc = await getDoc(userRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        
+        // Check if status is approved
+        if (userData.status === 'approved') {
+          return true;
+        } else {
+          // User exists but not approved
+          alert('הבקשה שלך לא אושרה עדיין. יש לפנות למנהל.')
+          setError(`Your account is currently ${userData.status || 'waiting for approval'}. Please wait for administrator approval.`);
+          return false;
+        }
+      } else {
+        // User document doesn't exist in Firestore
+        setError('User profile not found. Please contact support.');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error checking approval status:', error);
+      setError('Error verifying your account status: ' + error.message);
+      return false;
+    }
+  };
+
   // Handle login
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
     }
-    
+
     try {
       setLoading(true);
       setError('');
-      
+
       // Authenticate with Firebase
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
       
-      // Authentication successful, redirect will happen via App component
+      // Check if user is approved
+      const isApproved = await checkUserApprovalStatus(user.uid);
+      
+      if (isApproved) {
+        // User is approved, allow navigation
+        // Auth state will be handled by App component
+      } else {
+        // User is not approved, sign out
+        await auth.signOut();
+      }
     } catch (error) {
       console.error('Login error:', error);
-      
+
       if (error.code === 'auth/invalid-credential') {
         setError('Invalid email or password');
       } else if (error.code === 'auth/user-not-found') {
@@ -58,27 +119,35 @@ const Login = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      
+
       const user = result.user;
-      const credential = GoogleAuthProvider.credentialFromResult(result);
       
       // Check if the user is new (ie. not registered in our db)
       if (result._tokenResponse?.isNewUser) {
         // Redirect to registration to complete profile
-        navigate('/register', { 
-          state: { 
+        navigate('/register', {
+          state: {
             isGoogleAuth: true,
             email: user.email,
             displayName: user.displayName,
             uid: user.uid
           }
         });
+        return;
       }
       
-      // If existing user, redirect will happen via App component
+      // Check if existing user is approved
+      const isApproved = await checkUserApprovalStatus(user.uid);
+      
+      if (!isApproved) {
+        // User is not approved, sign out
+        await auth.signOut();
+      }
+      // If user is approved, App component will handle redirect
+      
     } catch (error) {
       console.error('Google Sign In error:', error);
       setError('Error signing in with Google: ' + error.message);
@@ -88,112 +157,95 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to your account
-        </h2>
-        {registrationSuccess && (
-          <div className="mt-2 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">{registrationMessage}</span>
-          </div>
-        )}
+    <div className="login-container">
+      <div className="login-header">
+        <h1 className="login-title">התחברות לחשבון</h1>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-              <span className="block sm:inline">{error}</span>
-            </div>
-          )}
-
-          <form className="space-y-6" onSubmit={handleLogin}>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-                  Forgot your password?
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
-              >
-                {loading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </div>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <button
-                onClick={handleGoogleSignIn}
-                disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300"
-              >
-                Sign in with Google
-              </button>
-            </div>
-          </div>
-
-          <div className="text-center mt-6">
-            <p className="text-gray-600">
-              Don't have an account?{' '}
-              <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                Sign up
-              </Link>
-            </p>
-          </div>
+      {registrationSuccess && (
+        <div className="success-alert" role="alert">
+          <span>{registrationMessage}</span>
         </div>
+      )}
+
+      <div className="login-form-container">
+        {error && (
+          <div className="error-alert" role="alert">
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form className="login-form" onSubmit={handleLogin}>
+          <div className="form-group">
+            <label htmlFor="email">כתובת דוא"ל</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">סיסמה</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <div className="forgot-password">
+            <Link to="/forgot-password">שכחתי סיסמה?</Link>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="login-button"
+          >
+            {loading ? 'מתחבר...' : 'התחברות'}
+          </button>
+        </form>
+
+        <div className="divider">
+          <span>או</span>
+        </div>
+
+        <button
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          className="google-button"
+        >
+          <svg viewBox="0 0 48 48" className="google-icon">
+            <g>
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+              <path fill="none" d="M0 0h48v48H0z"></path>
+            </g>
+          </svg>
+          להמשיך עם Google
+        </button>
+
+        <div className="signup-link">
+          <p>
+            אין לך חשבון?{' '}
+            <Link to="/register">יצירת חשבון חדש</Link>
+          </p>
+        </div>
+      </div>
+
+      <div className="login-footer">
+        <p>© 2025 Your Company. All rights reserved.</p>
       </div>
     </div>
   );
