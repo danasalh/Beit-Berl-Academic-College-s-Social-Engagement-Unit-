@@ -1,13 +1,29 @@
 // components/pages/auth/ForgotPassword/ForgotPassword.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
+import './ForgotPassword.css';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  // Handle responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const isMobile = windowWidth <= 768;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,7 +50,7 @@ const ForgotPassword = () => {
       // Show success message and mark as submitted
       setSubmitted(true);
       setMessage({ 
-        text: 'Password reset email sent! Please check your inbox (and spam folder) for instructions.', 
+        text: 'המייל נשלח בהצלחה! בדוק את הדוא"ל שלך לקבלת הוראות איפוס הסיסמה.', 
         type: 'success' 
       });
     } catch (error) {
@@ -60,63 +76,68 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">איפוס סיסמה</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            יש להכניס את כתובת הדוא"ל שלך ואנחנו נשלח לך קישור לאיפוס הסיסמה
+    <div className="forgot-password-container" dir="rtl">
+      <div className="forgot-password-form-container">
+        <div className="forgot-password-header">
+          <h2 className="forgot-password-title">איפוס סיסמה</h2>
+          <p className="forgot-password-subtitle">
+            יש להכניס את כתובת הדוא"ל שלך  <br/> ואנחנו נשלח לך קישור לאיפוס הסיסמה
           </p>
         </div>
         
         {message.text && (
           <div
-            className={`${
-              message.type === 'error' ? 'bg-red-100 border-red-400 text-red-700' : 'bg-green-100 border-green-400 text-green-700'
-            } px-4 py-3 rounded relative border`}
+            className={`alert-message ${message.type === 'error' ? 'error' : 'success'}`}
             role="alert"
           >
-            <span className="block sm:inline">{message.text}</span>
+            <span>{message.text}</span>
           </div>
         )}
         
         {!submitted ? (
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="email" className="sr-only">כתובת דוא"ל</label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="כתובת דוא&quot;ל"
-                />
-              </div>
+          <form className="forgot-password-form" onSubmit={handleSubmit}>
+            <div className="form-input-container">
+              <label htmlFor="email" className="sr-only">כתובת דוא"ל</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="email-input"
+              />
             </div>
             
             <div>
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
+                className="submit-button"
               >
                 {loading ? 'שולח...' : 'שלח קישור לאיפוס סיסמה'}
               </button>
             </div>
           </form>
         ) : (
-          <div className="mt-4 text-center">
-            <Link to="/login" className="inline-block mt-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <div className="back-to-login-container">
+            <p className="success-message">
+              תודה! בדוק את הדוא״ל שלך לקבלת הוראות איפוס הסיסמה.
+            </p>
+            <Link to="/login" className="back-to-login-button">
               בחזרה להתחברות
             </Link>
           </div>
         )}
         
+        {!isMobile && (
+          <div className="desktop-footer">
+            <p className="copyright-text">
+              © {new Date().getFullYear()} MyApp. כל הזכויות שמורות.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
