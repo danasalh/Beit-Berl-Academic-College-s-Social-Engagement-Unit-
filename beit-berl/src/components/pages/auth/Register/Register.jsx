@@ -1,4 +1,4 @@
-// components/pages/auth/Register.jsx - Fixed Password Handling
+// components/pages/auth/Register.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
@@ -10,13 +10,9 @@ import {
 import { 
   getFirestore, 
   doc, 
-  setDoc, 
-  collection,
-  getDocs,
-  query,
-  orderBy,
-  limit
+  setDoc
 } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid'; // Import UUID generator
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -31,7 +27,6 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [nextId, setNextId] = useState(1); // For auto-incrementing ID
   const [passwordStrength, setPasswordStrength] = useState({
     score: 0,
     message: '',
@@ -59,26 +54,7 @@ const Register = () => {
         lastName
       }));
     }
-    
-    // Get next available ID from Firestore
-    const getNextAvailableId = async () => {
-      const db = getFirestore();
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, orderBy('id', 'desc'), limit(1));
-      
-      try {
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          const highestId = snapshot.docs[0].data().id;
-          setNextId(highestId + 1);
-        }
-      } catch (error) {
-        console.error('Error getting next ID:', error);
-      }
-    };
-    
-    getNextAvailableId();
-  }, [location.state]);
+  }, []);
   
   // Check password strength when it changes
   useEffect(() => {
@@ -249,10 +225,13 @@ const Register = () => {
         }
       }
       
+      // Generate unique ID using UUID
+      const uniqueId = uuidv4();
+      
       // Store user data in Firestore
       try {
         await setDoc(doc(db, 'users', userId), {
-          id: nextId,
+          id: uniqueId, // Use UUID instead of sequential ID
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim(),
           email: normalizedEmail, // Ensure email is lowercase in Firestore
