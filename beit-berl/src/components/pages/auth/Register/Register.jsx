@@ -14,7 +14,8 @@ import {
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid'; // Import UUID generator
 import TermsDoc from '../../../PopUps/TermsDoc/TermsDoc'; // Import TermsDoc component
-
+import SuccessfulRegistration from '../../../PopUps/SuccessfulRegistration/SuccessfulRegistration'; // Import SuccessfulRegistration component
+import './register.css'; // Import the CSS file
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -34,9 +35,12 @@ const Register = () => {
     message: '',
     color: 'gray'
   });
+  const [phoneError, setPhoneError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const [showTerms, setShowTerms] = useState(true);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+
 
   // Check if user came from Google auth
   useEffect(() => {
@@ -84,24 +88,58 @@ const Register = () => {
 
     // Set message based on score
     if (score < 3) {
-      message = 'Weak password';
+      message = 'סיסמה חלשה';
       color = 'red';
     } else if (score < 5) {
-      message = 'Moderate password';
+      message = 'סיסמה בינונית';
       color = 'orange';
     } else {
-      message = 'Strong password';
+      message = 'סיסמה חזקה';
       color = 'green';
     }
 
     setPasswordStrength({ score, message, color });
   };
 
+  // Validate phone number format
+  const validatePhoneNumber = (phoneNumber) => {
+    // Remove any non-digit characters for validation
+    const digitsOnly = phoneNumber.replace(/\D/g, '');
+
+    // Basic check: must contain only digits and have a reasonable length (7-15 digits)
+    const isValid = /^\d+$/.test(digitsOnly) && digitsOnly.length >= 7 && digitsOnly.length <= 15;
+
+    if (!isValid) {
+      setPhoneError('בבקשה להכניס מספר טלפון תקין (ספרות בלבד)');
+      return false;
+    } else {
+      setPhoneError('');
+      return true;
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    // For phone number, validate as user types
+    if (name === 'phoneNumber') {
+      // Allow only digits and some formatting characters as they type
+      const formattedValue = value.replace(/[^\d\s\-+()]/g, '');
+
+      setFormData(prev => ({
+        ...prev,
+        [name]: formattedValue
+      }));
+
+      // Validate phone only if there's a value
+      if (formattedValue) {
+        validatePhoneNumber(formattedValue);
+      } else {
+        setPhoneError('');
+      }
+    }
     // Trim whitespace for all fields except password fields
-    if (name !== 'password' && name !== 'confirmPassword') {
+    else if (name !== 'password' && name !== 'confirmPassword') {
       setFormData(prev => ({
         ...prev,
         [name]: value.trim()
@@ -124,25 +162,31 @@ const Register = () => {
       email: normalizedEmail
     }));
 
-    if (!formData.firstName.trim()) return 'First name is required';
-    if (!formData.lastName.trim()) return 'Last name is required';
-    if (!normalizedEmail) return 'Email is required';
+    if (!formData.firstName.trim()) return 'יש להכניס שם פרטי';
+    if (!formData.lastName.trim()) return 'יש להכניס שם משפחה';
+    if (!normalizedEmail) return 'כתובת דוא"ל נדרשת';
 
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(normalizedEmail)) return 'Please enter a valid email address';
+    if (!emailRegex.test(normalizedEmail)) return 'יש להכניס כתובת דוא"ל תקינה';
 
     if (!location.state?.isGoogleAuth) {
       const trimmedPassword = formData.password;
-      if (!trimmedPassword) return 'Password is required';
-      if (trimmedPassword.length < 6) return 'Password must be at least 6 characters';
-
       // Enhanced password validation
-      if (passwordStrength.score < 3) return 'Please use a stronger password with uppercase, lowercase, numbers, or special characters';
-
-      if (trimmedPassword !== formData.confirmPassword) return 'Passwords do not match';
+      if (!trimmedPassword) return 'סיסמה נדרשת';
+      if (trimmedPassword.length < 6) return 'הסיסמה חייבת להיות באורך של לפחות 6 תווים';
+      if (passwordStrength.score < 3) return 'הסיסמה חלשה מדי. יש להשתמש בסיסמה חזקה יותר';
+      if (passwordStrength.score < 5) return 'הסיסמה בינונית. יש להשתמש בסיסמה חזקה יותר';
+      if (passwordStrength.color !== 'green') return 'הסיסמה חלשה מדי. יש להשתמש בסיסמה חזקה יותר';
+      if (trimmedPassword.length > 20) return 'הסיסמה חייבת להיות באורך של עד 20 תווים';
+      if (trimmedPassword !== formData.confirmPassword) return 'הסיסמאות אינן תואמות';
     }
-    if (!formData.phoneNumber.trim()) return 'Phone number is required';
+
+    if (!formData.phoneNumber.trim()) return 'מספר טלפון נדרש';
+
+    // Validate phone number before submission
+    if (!validatePhoneNumber(formData.phoneNumber)) return 'יש להכניס מספר טלפון תקין (ספרות בלבד)';
+
     if (!formData.role) return 'Role is required';
 
     return null;
@@ -231,6 +275,9 @@ const Register = () => {
       // Generate unique ID using UUID
       const uniqueId = uuidv4();
 
+      // Clean phone number to store only digits
+      const cleanedPhoneNumber = formData.phoneNumber.replace(/\D/g, '');
+
       // Store user data in Firestore
       try {
         await setDoc(doc(db, 'users', userId), {
@@ -238,7 +285,7 @@ const Register = () => {
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim(),
           email: normalizedEmail, // Ensure email is lowercase in Firestore
-          phoneNumber: formData.phoneNumber.trim(),
+          phoneNumber: cleanedPhoneNumber, // Store clean phone number
           role: formData.role,
           orgId: formData.orgId.trim() || null,
           status: 'waiting for approval',
@@ -263,12 +310,13 @@ const Register = () => {
       }
 
       // Redirect to login with success message
-      navigate('/login', {
-        state: {
-          registrationSuccess: true,
-          message: 'Registration successful! Please wait for admin approval before logging in.'
-        }
-      });
+      setShowSuccessPopup(true);  // Show your popup
+
+      // Wait 3 seconds then navigate to login
+      setTimeout(() => {
+        navigate('/login');
+      }, 8000);
+
 
     } catch (error) {
       console.error("Overall registration error:", error);
@@ -278,28 +326,28 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="register-container">
+      <div className="register-form-container register-form-spacing">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Register a new account</h2>
+          <h2 className="register-title">יצירת פרופיל חדש</h2>
           {location.state?.isGoogleAuth && (
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Complete your registration with Google
+            <p className="register-subtitle">
+              להמשיך עם גוגל
             </p>
           )}
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">{error}</span>
+          <div className="error-alert" role="alert">
+            <span>{error}</span>
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="grid grid-cols-2 gap-3">
+        <form className="register-form-spacing" onSubmit={handleSubmit}>
+          <div>
+            <div className="form-grid">
               <div>
-                <label htmlFor="firstName" className="sr-only">First Name</label>
+                <label htmlFor="firstName" className="sr-only">שם פרטי</label>
                 <input
                   id="firstName"
                   name="firstName"
@@ -307,12 +355,12 @@ const Register = () => {
                   required
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="First Name"
+                  className="input-field rounded-top"
+                  placeholder="שם פרטי"
                 />
               </div>
               <div>
-                <label htmlFor="lastName" className="sr-only">Last Name</label>
+                <label htmlFor="lastName" className="sr-only">שם משפחה</label>
                 <input
                   id="lastName"
                   name="lastName"
@@ -320,14 +368,14 @@ const Register = () => {
                   required
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Last Name"
+                  className="input-field rounded-top"
+                  placeholder="שם משפחה"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="sr-only">Email</label>
+              <label htmlFor="email" className="sr-only">כתובת דוא"ל</label>
               <input
                 id="email"
                 name="email"
@@ -337,8 +385,8 @@ const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 disabled={location.state?.isGoogleAuth}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
+                className="input-field"
+                placeholder="כתובת דוא&quot;ל"
               />
             </div>
 
@@ -346,7 +394,7 @@ const Register = () => {
             {!location.state?.isGoogleAuth && (
               <>
                 <div>
-                  <label htmlFor="password" className="sr-only">Password</label>
+                  <label htmlFor="password" className="sr-only">סיסמה</label>
                   <input
                     id="password"
                     name="password"
@@ -355,17 +403,17 @@ const Register = () => {
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                    placeholder="Password"
+                    className="input-field"
+                    placeholder="סיסמה"
                   />
                   {formData.password && (
-                    <div className="mt-1">
-                      <div className="text-xs" style={{ color: passwordStrength.color }}>
+                    <div className="password-strength">
+                      <div style={{ color: passwordStrength.color }}>
                         {passwordStrength.message}
                       </div>
-                      <div className="h-1 mt-1 w-full bg-gray-200 rounded-full">
+                      <div className="strength-meter">
                         <div
-                          className="h-1 rounded-full"
+                          className="strength-meter-fill"
                           style={{
                             width: `${Math.min(100, passwordStrength.score * 20)}%`,
                             backgroundColor: passwordStrength.color
@@ -376,7 +424,7 @@ const Register = () => {
                   )}
                 </div>
                 <div>
-                  <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
+                  <label htmlFor="confirmPassword" className="sr-only">אימות סיסמה</label>
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -385,13 +433,13 @@ const Register = () => {
                     required
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                    placeholder="Confirm Password"
+                    className="input-field"
+                    placeholder="אימות סיסמה"
                   />
                   {formData.password && formData.confirmPassword && (
-                    <div className="mt-1">
-                      <div className={`text-xs ${formData.password === formData.confirmPassword ? 'text-green-600' : 'text-red-600'}`}>
-                        {formData.password === formData.confirmPassword ? 'Passwords match' : 'Passwords do not match'}
+                    <div className="password-strength">
+                      <div style={{ color: formData.password === formData.confirmPassword ? 'green' : 'red' }}>
+                        {formData.password === formData.confirmPassword ? 'סיסמאות תואמות' : 'הסיסמאות אינן תואמות'}
                       </div>
                     </div>
                   )}
@@ -400,7 +448,7 @@ const Register = () => {
             )}
 
             <div>
-              <label htmlFor="phoneNumber" className="sr-only">Phone Number</label>
+              <label htmlFor="phoneNumber" className="sr-only">מספר טלפון</label>
               <input
                 id="phoneNumber"
                 name="phoneNumber"
@@ -408,24 +456,29 @@ const Register = () => {
                 required
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Phone Number"
+                className={`input-field ${phoneError ? 'input-error' : ''}`}
+                placeholder="מספר טלפון (ספרות בלבד)"
               />
+              {phoneError && (
+                <div className="error-message">
+                  {phoneError}
+                </div>
+              )}
             </div>
 
             <div>
-              <label htmlFor="role" className="sr-only">Role</label>
+              <label htmlFor="role" className="sr-only">התפקיד שלי הוא </label>
               <select
                 id="role"
                 name="role"
                 required
                 value={formData.role}
                 onChange={handleChange}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="input-field"
               >
-                <option value="">Select Role</option>
-                <option value="admin">Admin</option>
-                <option value="orgRep">Organization Representative</option>
+                <option value="">אפשרויות בחירה</option>
+                <option value="admin">admin</option>
+                <option value="orgRep">orgRep</option>
                 <option value="vc">VC</option>
                 <option value="volunteer">Volunteer</option>
               </select>
@@ -434,21 +487,38 @@ const Register = () => {
                 <TermsDoc onClose={() => setShowTerms(false)} />
               )}
             </div>
+
+            {/* Optional Organization ID field when role is orgRep */}
+            {formData.role === 'orgRep' && (
+              <div>
+                <label htmlFor="orgId" className="sr-only"> (אופציונאלי)מספר מזהה של הארגון שלי</label>
+                <input
+                  id="orgId"
+                  name="orgId"
+                  type="text"
+                  value={formData.orgId}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="מספר מזהה של הארגון שלי (אופציונאלי)"
+                />
+              </div>
+            )}
           </div>
 
           <div>
             <button
               type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300"
-            >
-              {loading ? 'Registering...' : 'Register'}
+
+              className="submit-button"
+              disabled={loading || (formData.phoneNumber && phoneError)}>
+              {loading ? 'מעדכן את הפרטים...' : 'הרשמה'}
             </button>
           </div>
+          {showSuccessPopup && <SuccessfulRegistration />}
 
-          <div className="text-center mt-4">
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
-              Already have an account? Sign in
+          <div className="sign-in-link">
+            <Link to="/login" className="link">
+              יש לך כבר חשבון? התחברות
             </Link>
           </div>
         </form>
