@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./TermsDoc.css";
 import CloseButton from "../../Buttons/CloseButton/CloseButton";
 
-const TermsDoc = ({ onClose }) => {
+const TermsDoc = ({ onClose, onApprove }) => {
   const [answers, setAnswers] = useState([false, false, false, false, false]);
 
   const handleToggle = (index) => {
@@ -27,6 +27,12 @@ const TermsDoc = ({ onClose }) => {
 
   const allChecked = answers.every(Boolean);
   const mainChecked = answers[0] && answers[1] && answers[2];
+
+  const handleApproveClick = () => {
+    if (allChecked && onApprove) {
+      onApprove();
+    }
+  };
 
   return (
     <div className="termsdoc-overlay">
@@ -68,7 +74,11 @@ const TermsDoc = ({ onClose }) => {
           })}
         </div>
 
-        <button className="approve-button" disabled={!allChecked}>
+        <button 
+          className="approve-button" 
+          disabled={!allChecked}
+          onClick={handleApproveClick}
+        >
           אישור
         </button>
       </div>
