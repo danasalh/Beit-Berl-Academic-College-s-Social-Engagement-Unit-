@@ -364,7 +364,7 @@ const Register = () => {
     <div className="register-container">
       <div className="register-form-container register-form-spacing">
         <div>
-          <h2 className="register-title">יצירת פרופיל חדש</h2>
+          <h2 className="register-title">יצירת חשבון חדש</h2>
           {location.state?.isGoogleAuth && (
             <p className="register-subtitle">
               להמשיך עם גוגל
