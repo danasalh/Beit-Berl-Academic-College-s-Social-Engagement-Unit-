@@ -5,10 +5,10 @@ import {
   signInWithPopup,
   GoogleAuthProvider
 } from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  getDoc 
+import {
+  getFirestore,
+  doc,
+  getDoc
 } from 'firebase/firestore';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import './Login.css';
@@ -35,7 +35,7 @@ const Login = () => {
     };
 
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -47,10 +47,10 @@ const Login = () => {
       // Get user document from Firestore
       const userRef = doc(db, 'users', uid);
       const userDoc = await getDoc(userRef);
-      
+
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        
+
         // Check if status is approved
         if (userData.status === 'approved') {
           return true;
@@ -88,10 +88,10 @@ const Login = () => {
       // Authenticate with Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      
+
       // Check if user is approved
       const isApproved = await checkUserApprovalStatus(user.uid);
-      
+
       if (isApproved) {
         // User is approved, allow navigation
         // Auth state will be handled by App component
@@ -124,7 +124,7 @@ const Login = () => {
       const result = await signInWithPopup(auth, provider);
 
       const user = result.user;
-      
+
       // Check if the user is new (ie. not registered in our db)
       if (result._tokenResponse?.isNewUser) {
         // Redirect to registration to complete profile
@@ -138,16 +138,16 @@ const Login = () => {
         });
         return;
       }
-      
+
       // Check if existing user is approved
       const isApproved = await checkUserApprovalStatus(user.uid);
-      
+
       if (!isApproved) {
         // User is not approved, sign out
         await auth.signOut();
       }
       // If user is approved, App component will handle redirect
-      
+
     } catch (error) {
       console.error('Google Sign In error:', error);
       setError('Error signing in with Google: ' + error.message);
@@ -158,9 +158,6 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <div className="login-header">
-        <h1 className="login-title">התחברות לחשבון</h1>
-      </div>
 
       {registrationSuccess && (
         <div className="success-alert" role="alert">
@@ -169,6 +166,9 @@ const Login = () => {
       )}
 
       <div className="login-form-container">
+        <div className="login-header">
+          <h1 className="login-title">התחברות לחשבון</h1>
+        </div>
         {error && (
           <div className="error-alert" role="alert">
             <span>{error}</span>
