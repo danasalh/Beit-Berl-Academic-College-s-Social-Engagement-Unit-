@@ -1,12 +1,13 @@
-// App.jsx with Added Password Reset Routes
+// App.jsx with Added Password Reset Routes and NotificationsBadge
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase/config';
 
-// Import Sidebar component
+// Import components
 import Sidebar from "./components/Sidebar/Sidebar";
+import NotificationsBadge from './components/Notifications/NotificationsBadge/NotificationsBadge';
 
 // Import your components for each route
 // Admin pages
@@ -92,6 +93,10 @@ function App() {
         <Sidebar userRole={userRole} userName={userName} />
         
         <main className="flex-1 p-4 md:p-8 overflow-y-auto transition-all ml-0 md:ml-16">
+          {/* Add NotificationsBadge component at the top of every page */}
+          <div className="mb-4">
+            <NotificationsBadge userId={user.uid} userRole={userRole} />
+          </div>
           {children}
         </main>
       </div>
