@@ -38,7 +38,8 @@ const Register = () => {
   const [phoneError, setPhoneError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-  const [showTerms, setShowTerms] = useState(true);
+  const [showTerms, setShowTerms] = useState(false);
+  const [termsApproved, setTermsApproved] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
 
@@ -62,6 +63,19 @@ const Register = () => {
       }));
     }
   }, []);
+
+  // Show TermsDoc when role is set to volunteer
+  useEffect(() => {
+    if (formData.role === 'volunteer') {
+      setShowTerms(true);
+      // Reset terms approval when changing to volunteer role
+      setTermsApproved(false);
+    } else {
+      setShowTerms(false);
+      // No terms needed for other roles
+      setTermsApproved(true);
+    }
+  }, [formData.role]);
 
   // Check password strength when it changes
   useEffect(() => {
@@ -188,6 +202,11 @@ const Register = () => {
     if (!validatePhoneNumber(formData.phoneNumber)) return 'יש להכניס מספר טלפון תקין (ספרות בלבד)';
 
     if (!formData.role) return 'Role is required';
+
+    // Check if terms are approved for volunteers
+    if (formData.role === 'volunteer' && !termsApproved) {
+      return 'יש לאשר את כל התנאים לפני ההרשמה';
+    }
 
     return null;
   };
@@ -324,6 +343,22 @@ const Register = () => {
       setLoading(false);
     }
   };
+
+  // Handler for when TermsDoc is approved
+  const handleTermsApproved = () => {
+    setTermsApproved(true);
+    setShowTerms(false); // Hide the terms popup after approval
+  };
+
+  // Handler for when TermsDoc is closed without approval
+  const handleTermsClose = () => {
+    setShowTerms(false);
+  };
+
+  // Determine if registration button should be disabled
+  const isRegistrationDisabled = loading || 
+                               (formData.phoneNumber && phoneError) || 
+                               (formData.role === 'volunteer' && !termsApproved);
 
   return (
     <div className="register-container">
@@ -483,8 +518,33 @@ const Register = () => {
                 <option value="volunteer">Volunteer</option>
               </select>
 
-              {formData.role === 'volunteer' && showTerms && (
-                <TermsDoc onClose={() => setShowTerms(false)} />
+              {/* Show Terms Document for volunteer role */}
+              {formData.role === 'volunteer' && !termsApproved && (
+                <div className="terms-status">
+                  <a 
+                    type="button"
+                    className="view-terms-button"
+                    onClick={() => setShowTerms(true)}
+                  >
+                    צפייה בתנאי השימוש 	&nbsp;
+                  </a>
+                  <span className="terms-note">יש לאשר את תנאי השימוש כדי להירשם</span>
+                </div>
+              )}
+              
+              {/* Show Terms Approved message */}
+              {formData.role === 'volunteer' && termsApproved && (
+                <div className="terms-approved">
+                  ✓ תנאי השימוש אושרו
+                </div>
+              )}
+              
+              {/* Show Terms popup if needed */}
+              {showTerms && (
+                <TermsDoc 
+                  onClose={handleTermsClose} 
+                  onApprove={handleTermsApproved}
+                />
               )}
             </div>
 
@@ -508,11 +568,20 @@ const Register = () => {
           <div>
             <button
               type="submit"
-
-              className="submit-button"
-              disabled={loading || (formData.phoneNumber && phoneError)}>
+              className={`submit-button ${isRegistrationDisabled ? 'disabled' : ''}`}
+              disabled={isRegistrationDisabled}
+            >
               {loading ? 'מעדכן את הפרטים...' : 'הרשמה'}
             </button>
+            
+            {/* Show message when button is disabled due to terms */}
+            {(formData.role === 'volunteer') && !termsApproved && (
+              <div className="registration-note">
+                {formData.role === 'volunteer' 
+                  ? 'יש לאשר את תנאי השימוש כדי להשלים את ההרשמה' 
+                  : 'יש למלא את שאלון ההתאמה כדי להשלים את ההרשמה'}
+              </div>
+            )}
           </div>
           {showSuccessPopup && <SuccessfulRegistration />}
 

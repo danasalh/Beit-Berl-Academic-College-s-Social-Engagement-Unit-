@@ -19,83 +19,82 @@ body {
   align-items: center;
   min-height: 100vh;
   background-color: #f3f2ef;
-  padding: 12px;
+  padding: 8px;
   direction: rtl;
   transition: all 0.3s ease;
   justify-content: center; /* Center content vertically */
   max-height: 100vh;
-  overflow: hidden;
 }
 
-/* Header styling */
+/* Header styling - more compact */
 .register-header {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   text-align: center;
   width: 100%;
   transition: all 0.3s ease;
 }
 
 .linkedin-logo {
-  width: 40px;
-  height: 40px;
-  margin-bottom: 8px;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 4px;
   transition: all 0.3s ease;
 }
 
 .register-title {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.9);
-  margin-bottom: 4px;
-  margin-top: 0.5rem;
-  transition: all 0.3s ease;
-}
-
-.register-subtitle {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.6);
-  margin-bottom: 8px;
+  margin-bottom: 2px;
   margin-top: 0.25rem;
   transition: all 0.3s ease;
 }
 
-/* Form container */
+.register-subtitle {
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 4px;
+  margin-top: 0.15rem;
+  transition: all 0.3s ease;
+}
+
+/* Form container - more compact */
 .register-form-container {
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 12px;
   width: 100%;
-  max-width: 700px; /* Wider container */
-  margin-bottom: 12px;
+  max-width: 650px; /* Slightly narrower container */
+  margin-bottom: 8px;
   transition: all 0.3s ease;
 }
 
 .register-form-spacing {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* Reduced from 1.5rem */
+  gap: 0.5rem; /* Further reduced spacing */
 }
 
 /* Form grids */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem; /* Reduced from 0.75rem */
+  gap: 0.4rem; /* Reduced spacing */
 }
 
-/* Form elements */
+/* Form elements - more compact */
 .input-field {
   appearance: none;
   position: relative;
   display: block;
   width: 100%;
-  padding: 8px 10px; /* Reduced from 0.5rem 0.75rem */
+  padding: 5px 7px; /* Smaller padding */
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
   color: #111827;
-  font-size: 14px;
+  font-size: 12px; /* Slightly smaller text */
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
@@ -115,53 +114,61 @@ body {
   border-top-right-radius: 4px;
 }
 
-/* Password strength indicator */
+/* Password strength indicator - more compact */
 .password-strength {
-  margin-top: 0.25rem;
-  font-size: 0.7rem; /* Reduced from 0.75rem */
+  margin-top: 0.15rem;
+  font-size: 0.65rem;
 }
 
 .strength-meter {
-  height: 0.25rem;
-  margin-top: 0.25rem;
+  height: 0.2rem;
+  margin-top: 0.15rem;
   width: 100%;
   background-color: #e5e7eb;
   border-radius: 9999px;
 }
 
 .strength-meter-fill {
-  height: 0.25rem;
+  height: 0.2rem;
   border-radius: 9999px;
 }
 
-/* Error message */
+/* Error message - more compact */
 .error-alert {
   background-color: #fdf2f2;
   border: 1px solid #ef5350;
   color: #d32f2f;
-  padding: 8px 10px; /* Reduced from 0.75rem 1rem */
+  padding: 5px 7px;
   border-radius: 4px;
   position: relative;
-  font-size: 12px;
-  margin-bottom: 10px;
+  font-size: 10px;
+  margin-bottom: 5px;
 }
 
-/* Submit button */
+/* Notes under fields - standardized size */
+.field-note {
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+/* Submit button - more compact */
 .submit-button {
   position: relative;
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: 10px;
+  padding: 6px;
   border: none;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
-  border-radius: 24px;
+  border-radius: 20px;
   color: white;
   background-color: #0a66c2; /* LinkedIn blue */
   cursor: pointer;
   transition: background-color 0.3s;
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .submit-button:hover {
@@ -178,11 +185,11 @@ body {
   cursor: not-allowed;
 }
 
-/* Links */
+/* Links - more compact */
 .sign-in-link {
   text-align: center;
-  margin-top: 12px; /* Reduced from 1rem */
-  font-size: 12px;
+  margin-top: 6px;
+  font-size: 10px;
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -196,12 +203,28 @@ body {
   text-decoration: underline;
 }
 
-/* Divider */
+/* Terms of Service link */
+.terms-link {
+  font-weight: 600;
+  color: #0a66c2; /* LinkedIn blue */
+  text-decoration: none;
+  font-size: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.terms-link:hover {
+  text-decoration: underline;
+}
+
+/* Divider - more compact */
 .divider {
   display: flex;
   align-items: center;
   text-align: center;
-  margin: 12px 0;
+  margin: 8px 0;
 }
 
 .divider::before,
@@ -212,23 +235,23 @@ body {
 }
 
 .divider span {
-  padding: 0 10px;
-  font-size: 12px;
+  padding: 0 8px;
+  font-size: 11px;
   color: rgba(0, 0, 0, 0.6);
 }
 
-/* Google button (if needed) */
+/* Google button (if needed) - more compact */
 .google-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 24px;
-  padding: 10px;
-  font-size: 14px;
+  padding: 8px;
+  font-size: 13px;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.75);
   cursor: pointer;
@@ -241,105 +264,143 @@ body {
 }
 
 .google-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
-/* Footer */
+/* Footer - more compact */
 .register-footer {
-  margin-top: 12px;
+  margin-top: 8px;
   text-align: center;
-  font-size: 10px;
+  font-size: 9px;
   color: rgba(0, 0, 0, 0.6);
 }
 
-/* Media queries */
+/* Media queries - optimized for better fit */
 /* Small devices (phones) */
 @media (max-width: 480px) {
   .register-container {
-    padding: 12px;
-    justify-content: center;
+    padding: 5px;
+    justify-content: flex-start;
+    padding-top: 8px;
   }
   
   .register-header {
-    margin-top: 12px;
+    margin-top: 5px;
+    margin-bottom: 5px;
   }
   
   .register-form-container {
-    padding: 12px;
+    padding: 8px;
     box-shadow: none;
     border: 1px solid rgba(0, 0, 0, 0.08);
-    max-width: 90%;
-  }
-  
-  .submit-button {
-    padding: 8px;
-    font-size: 12px;
-  }
-  
-  .register-footer {
-    margin-top: 10px;
-    font-size: 9px;
+    max-width: 95%;
   }
   
   .form-grid {
     grid-template-columns: 1fr; /* Stack on small screens */
+    gap: 0.3rem; /* Even tighter spacing on mobile */
+  }
+  
+  .register-form-spacing {
+    gap: 0.3rem;
+  }
+  
+  .input-field {
+    padding: 5px;
+    font-size: 11px;
+  }
+  
+  .submit-button {
+    padding: 5px;
+    font-size: 11px;
+    margin-top: 3px;
+  }
+  
+  .register-footer {
+    margin-top: 5px;
+    font-size: 8px;
+  }
+  
+  .linkedin-logo {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .register-title {
+    font-size: 14px;
+    margin-bottom: 1px;
+  }
+  
+  .register-subtitle {
+    font-size: 9px;
   }
 }
 
 /* Medium devices (tablets) */
-@media (min-width: 481px) {
+@media (min-width: 481px) and (max-width: 768px) {
   .register-container {
-    padding: 15px;
-    justify-content: center;
+    padding: 8px;
   }
   
   .register-header,
   .register-form-container {
-    max-width: 650px;
+    max-width: 90%;
   }
   
   .linkedin-logo {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 10px;
+    width: 30px;
+    height: 30px;
+    margin-bottom: 5px;
   }
   
   .register-title {
-    font-size: 22px;
+    font-size: 16px;
   }
   
   .register-form-container {
-    padding: 18px;
+    padding: 12px;
   }
   
   .input-field {
-    padding: 10px 12px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  
+  .submit-button {
+    padding: 6px;
+    font-size: 11px;
   }
 }
 
 /* Large devices (laptops/desktops) */
-@media (min-width: 769px) {
+@media (min-width: 769px) and (max-width: 1024px) {
   .register-header,
   .register-form-container {
-    max-width: 700px;
+    max-width: 580px;
   }
   
   .linkedin-logo {
-    width: 56px;
-    height: 56px;
+    width: 32px;
+    height: 32px;
   }
   
   .register-title {
-    font-size: 24px;
+    font-size: 18px;
   }
   
   .register-form-container {
-    padding: 20px;
+    padding: 14px;
   }
   
   .input-field {
-    padding: 12px 14px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  
+  .submit-button {
+    padding: 6px;
+    font-size: 12px;
   }
 }
 
@@ -347,46 +408,119 @@ body {
 @media (min-width: 1025px) {
   .register-header,
   .register-form-container {
-    max-width: 800px;
+    max-width: 600px;
   }
   
   .register-container {
-    padding: 20px;
-    justify-content: center;
+    padding: 12px;
   }
   
   .linkedin-logo {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 12px;
-  }
-  
-  .register-title {
-    font-size: 26px;
+    width: 36px;
+    height: 36px;
     margin-bottom: 6px;
   }
   
+  .register-title {
+    font-size: 18px;
+    margin-bottom: 3px;
+  }
+  
   .register-subtitle {
-    margin-bottom: 12px;
+    margin-bottom: 6px;
+    font-size: 10px;
   }
   
   .register-form-container {
-    padding: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 14px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
   }
   
   .input-field {
-    padding: 10px;
-    font-size: 14px;
+    padding: 6px 8px;
+    font-size: 12px;
   }
   
   .submit-button {
-    padding: 8px;
-    font-size: 14px;
+    padding: 6px;
+    font-size: 12px;
+    margin-top: 5px;
   }
   
   .register-footer {
-    margin-top: 12px;
+    margin-top: 6px;
+    font-size: 9px;
+  }
+}
+
+/* Password and phone validation messages - standardized styling */
+.password-strength,
+.error-message,
+.terms-status,
+.terms-approved,
+.registration-note {
+  font-size: 10px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  direction: rtl;
+}
+
+.error-message {
+  color: red;
+}
+
+.password-strength div,
+.terms-approved {
+  font-size: 10px;
+}
+
+/* Terms link styling consistent with other links */
+.view-terms-button {
+  font-weight: 600;
+  color: #0a66c2; /* LinkedIn blue */
+  text-decoration: none;
+  font-size: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.view-terms-button:hover {
+  text-decoration: underline;
+}
+
+.terms-note {
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Styles for input field with error */
+.input-error {
+  border-color: #ef5350;
+}
+
+/* Success message styling */
+.success-message {
+  color: green;
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+/* Media query adjustments for responsive design */
+@media (max-width: 480px) {
+  .password-strength,
+  .error-message,
+  .terms-status,
+  .terms-approved,
+  .registration-note,
+  .success-message,
+  .terms-note {
+    font-size: 9px;
+  }
+  
+  .view-terms-button {
+    font-size: 9px;
   }
 }
