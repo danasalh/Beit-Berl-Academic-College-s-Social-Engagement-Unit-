@@ -7,6 +7,7 @@ import Settings from "./components/PopUps/Settings/Settings";
 import AreYouSure from "./components/PopUps/AreYouSure/AreYouSure";
 import TermsDoc from "./components/PopUps/TermsDoc/TermsDoc";
 import Read_Unread from "./components/PopUps/Read_Unread/Read_Unread";
+import FinishVol from "./components/Buttons/FinishVol/FinishVol";
 
 const App = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -96,6 +97,8 @@ const App = () => {
         {showReadUnread && (
           <Read_Unread position={dropdownPosition} onClose={handleCloseReadUnread} />
         )}
+        
+        <FinishVol onClick={() => alert("סיימת התנדבות!")} />
         
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
