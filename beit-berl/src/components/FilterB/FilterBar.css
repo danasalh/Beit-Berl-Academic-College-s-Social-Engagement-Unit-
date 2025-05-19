@@ -1,0 +1,27 @@
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background-color: #f5f6fa;
+  border-radius: 12px;
+  margin: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-bar input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 130px;
+}
+
+.search-btn {
+  background-color: #020913;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
