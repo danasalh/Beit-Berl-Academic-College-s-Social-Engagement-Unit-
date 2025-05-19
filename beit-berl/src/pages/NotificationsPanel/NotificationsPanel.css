@@ -1,0 +1,146 @@
+.notifications-panel-container {
+  display: flex;
+  flex-direction: row-reverse;
+  width: 900px;
+  height: 500px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0001;
+  background: #fff;
+  overflow: hidden;
+  direction: rtl;
+}
+
+.notifications-main {
+  flex: 1;
+  padding: 32px;
+  text-align: right;
+}
+
+.notifications-time {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.notifications-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.notifications-message {
+  white-space: pre-line;
+  color: #333;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.notifications-sidebar {
+  width: 280px;
+  border-left: 1px solid #eee;
+  background: #f8f9fa;
+  padding: 20px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notifications-filters {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.notifications-filters button {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.notifications-filters button:hover {
+  background: #e9ecef;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notifications-item {
+  background: #f1f3f4;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+}
+.notifications-item.selected {
+  background: #fff;
+  border: 1.5px solid #007bff;
+}
+.notifications-item-time {
+  font-size: 11px;
+  color: #888;
+}
+.notifications-item-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+.notifications-item-menu {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  font-size: 16px;
+  color: #bbb;
+}
+
+.menu-dropdown {
+  position: absolute;
+  left: 30px;
+  top: 30px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  width: 120px;
+  z-index: 10;
+  text-align: right;
+  direction: rtl;
+}
+
+.menu-item {
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #333;
+}
+
+.menu-item:hover {
+  background-color: #f2f2f2;
+}
+
+.read-icon {
+  margin-left: 6px;
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+.read-icon.read {
+  color: green;
+}
+
+.read-icon.unread {
+  color: #007bff;
+}
