@@ -8,6 +8,7 @@ import AreYouSure from "./components/PopUps/AreYouSure/AreYouSure";
 import TermsDoc from "./components/PopUps/TermsDoc/TermsDoc";
 import Read_Unread from "./components/PopUps/Read_Unread/Read_Unread";
 import FinishVol from "./components/Buttons/FinishVol/FinishVol";
+import ProgressBar from "./components/Volunteer/ProgressBar/ProgressBar";
 
 const App = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -99,7 +100,14 @@ const App = () => {
         )}
         
         <FinishVol onClick={() => alert("סיימת התנדבות!")} />
-        
+
+        <div style={{ margin: "20px 0" }}>
+          <ProgressBar progress={60} />
+          <div style={{ textAlign: "center", marginTop: "8px", color: "#333", fontWeight: "bold" }}>
+            15 שעות
+          </div>
+        </div>
+
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
