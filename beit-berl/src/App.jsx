@@ -10,6 +10,7 @@ import Read_Unread from "./components/PopUps/Read_Unread/Read_Unread";
 import FinishVol from "./components/Buttons/FinishVol/FinishVol";
 import ProgressBar from "./components/Volunteer/ProgressBar/ProgressBar";
 import SubmitHoursBar from "./components/Volunteer/SubmitHoursBar/SubmitHoursBar";
+import ThreeButtonDush from "./components/Buttons/ThreeButtonDush/ThreeButtonDush";
 
 const App = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -110,6 +111,8 @@ const App = () => {
         </div>
 
         <SubmitHoursBar />
+
+        <ThreeButtonDush />
 
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR

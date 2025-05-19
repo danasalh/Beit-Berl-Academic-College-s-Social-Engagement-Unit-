@@ -1,0 +1,31 @@
+.three-button-dush {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.dush-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 24px;
+  font-size: 1.1em;
+  border-radius: 12px;
+  border: 2px solid #2196f3;
+  background: #fff;
+  color: #2196f3;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+  min-width: 120px;
+}
+
+.dush-button:hover {
+  background: #e3f2fd;
+  box-shadow: 0 4px 16px rgba(33,150,243,0.10);
+  transform: scale(1.05);
+}
+
+.dush-icon {
+  font-size: 2.2em;
+  margin-bottom: 8px;
+}
