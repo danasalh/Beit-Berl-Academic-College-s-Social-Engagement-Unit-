@@ -1,11 +1,12 @@
-import './App.css';
-import FilterBar from './components/FilterB/FilterBar';
+import React from 'react';
+import OrganizationsPage from './components/Organizations/OrganizationsPage';
 
 
 function App() {
+ 
   return (
     <div className="app-wrapper">
-      <FilterBar />
+      <OrganizationsPage />
     </div>
   );
 }
