@@ -1,0 +1,83 @@
+.approval-row {
+  background-color: #d7d7d7;
+  border-radius: 16px;
+  padding: 8px 20px 20px 20px;
+  height: 90px;
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  direction: rtl;
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Center buttons and text vertically */
+}
+
+.box-text {
+  display: flex;
+  flex-direction: column;
+  /* height: 60px;  הסר שורה זו */
+  justify-content: flex-start; /* הצמדה למעלה */
+  align-items: flex-end;
+  color: #000;
+  font-family: sans-serif;
+  gap: 2px; /* רווח קטן בין השורות */
+}
+
+.box-line {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.5;
+  margin: 0; /* אין מרווח מיותר */
+}
+
+.button-group {
+  display: flex;
+  flex-direction: row; /* עמודה - אישור למעלה, ביטול למטה */
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0
+}
+
+.approve-button,
+.reject-button {
+  padding: 20px 50px;      /* Bigger padding for larger buttons */
+  margin: 0;
+  border-radius: 12px;     /* Slightly more rounded */
+  font-weight: bold;
+  font-size: 18px;         /* Larger text */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 55px;            /* Taller button */
+}
+
+.approve-button {
+  background-color: #e0f7fa;
+  color: #00796b;
+  border-color: #00796b;
+}
+
+.approve-button:hover {
+  background-color: #b2ebf2;
+  box-shadow: 0 0 8px rgba(0, 150, 136, 0.3);
+  transform: scale(1.05);
+}
+
+.reject-button {
+  background-color: #ffebee;
+  color: #c62828;
+  border-color: #c62828;
+  /* אין margin-top */
+}
+
+.reject-button:hover {
+  background-color: #ffcdd2;
+  box-shadow: 0 0 8px rgba(198, 40, 40, 0.3);
+  transform: scale(1.05);
+}
