@@ -1,5 +1,5 @@
-// src/contexts/UsersContext.jsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
+// src/contexts/UsersContext.jsx - Optimized Version
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import {
   collection,
   doc,
@@ -27,6 +27,7 @@ export const useUsers = () => {
 
 export const UsersProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -36,6 +37,15 @@ export const UsersProvider = ({ children }) => {
   // Helper function to find document by user ID
   const findDocumentByUserId = async (userId) => {
     try {
+      // First try to get the document directly using userId as document ID
+      const docRef = doc(db, 'users', userId);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        return { docId: docSnap.id, data: docSnap.data() };
+      }
+      
+      // If not found, try to find by 'id' field (fallback)
       const q = query(usersCollection, where('id', '==', userId));
       const querySnapshot = await getDocs(q);
       
@@ -43,11 +53,73 @@ export const UsersProvider = ({ children }) => {
         const doc = querySnapshot.docs[0];
         return { docId: doc.id, data: doc.data() };
       }
+      
       return null;
     } catch (err) {
       console.error('Error finding document by user ID:', err);
       throw err;
     }
+  };
+
+  // Set current user by ID - IMPROVED VERSION with useCallback
+  const setCurrentUserById = useCallback(async (userId) => {
+    if (!userId) {
+      console.warn('⚠️ No user ID provided to setCurrentUserById');
+      setCurrentUser(null);
+      return;
+    }
+
+    console.log('👤 Setting current user by ID:', userId);
+    
+    try {
+      // Try to get user document directly using userId as document ID
+      const docRef = doc(db, 'users', userId);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        const userData = {
+          docId: docSnap.id,
+          id: userId, // Ensure ID is set
+          ...docSnap.data()
+        };
+        
+        setCurrentUser(userData);
+        console.log('✅ Current user set (direct):', userData);
+        return userData;
+      } else {
+        // Fallback: try to find by 'id' field
+        const userData = await getUserById(userId);
+        if (userData) {
+          setCurrentUser(userData);
+          console.log('✅ Current user set (query):', userData);
+          return userData;
+        } else {
+          console.warn('⚠️ User not found, clearing current user');
+          setCurrentUser(null);
+          return null;
+        }
+      }
+    } catch (err) {
+      console.error('❌ Error setting current user:', err);
+      setCurrentUser(null);
+      return null;
+    }
+  }, []); // Empty dependency array since this function doesn't depend on any state or props
+
+  // Clear current user (for logout) - with useCallback
+  const clearCurrentUser = useCallback(() => {
+    console.log('🚪 Clearing current user');
+    setCurrentUser(null);
+  }, []);
+
+  // Get current user info (helper function)
+  const getCurrentUser = () => {
+    return currentUser;
+  };
+
+  // Check if current user has specific role
+  const currentUserHasRole = (role) => {
+    return currentUser && currentUser.role === role;
   };
 
   // Get all users
@@ -60,8 +132,9 @@ export const UsersProvider = ({ children }) => {
       const q = query(usersCollection, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
       const usersData = querySnapshot.docs.map(doc => ({
-        docId: doc.id,  // Firestore document ID
-        ...doc.data()   // This includes the user's id field
+        docId: doc.id,
+        id: doc.id, // Use document ID as user ID if no id field exists
+        ...doc.data()
       }));
 
       setUsers(usersData);
@@ -93,6 +166,7 @@ export const UsersProvider = ({ children }) => {
       if (result) {
         const userData = {
           docId: result.docId,
+          id: userId, // Ensure ID is set
           ...result.data
         };
         console.log('✅ User found:', userData);
@@ -130,6 +204,7 @@ export const UsersProvider = ({ children }) => {
       const querySnapshot = await getDocs(q);
       const usersData = querySnapshot.docs.map(doc => ({
         docId: doc.id,
+        id: doc.id, // Use document ID as user ID if no id field exists
         ...doc.data()
       }));
 
@@ -164,6 +239,7 @@ export const UsersProvider = ({ children }) => {
       const querySnapshot = await getDocs(q);
       const usersData = querySnapshot.docs.map(doc => ({
         docId: doc.id,
+        id: doc.id, // Use document ID as user ID if no id field exists
         ...doc.data()
       }));
 
@@ -178,14 +254,13 @@ export const UsersProvider = ({ children }) => {
     }
   };
 
-  // Create new user (for completeness, though you mentioned using different method for registration)
+  // Create new user
   const createUser = async (userData) => {
     console.log('➕ Creating new user:', userData);
     setLoading(true);
     setError(null);
 
     try {
-      // Add timestamps and ensure user has an ID
       const userDataWithTimestamps = {
         ...userData,
         createdAt: serverTimestamp(),
@@ -196,8 +271,9 @@ export const UsersProvider = ({ children }) => {
 
       const newUser = { 
         docId: docRef.id,
+        id: docRef.id, // Use document ID as user ID
         ...userDataWithTimestamps,
-        createdAt: new Date(), // For immediate local display
+        createdAt: new Date(),
         updatedAt: new Date()
       };
       setUsers(prev => [newUser, ...prev]);
@@ -213,7 +289,7 @@ export const UsersProvider = ({ children }) => {
     }
   };
 
-  // Update user by their ID (not document ID)
+  // Update user by their ID
   const updateUser = async (userId, userData) => {
     if (!userId) {
       throw new Error('User ID is required');
@@ -224,32 +300,47 @@ export const UsersProvider = ({ children }) => {
     setError(null);
 
     try {
-      // First find the document by user ID
-      const result = await findDocumentByUserId(userId);
+      // Try direct document reference first
+      const docRef = doc(db, 'users', userId);
+      const docSnap = await getDoc(docRef);
       
-      if (!result) {
-        throw new Error(`User with ID ${userId} not found`);
+      let targetDocId = userId;
+      
+      if (!docSnap.exists()) {
+        // Fallback: find by ID field
+        const result = await findDocumentByUserId(userId);
+        if (!result) {
+          throw new Error(`User with ID ${userId} not found`);
+        }
+        targetDocId = result.docId;
       }
 
-      // Update the document
-      const docRef = doc(db, 'users', result.docId);
       const updateData = {
         ...userData,
         updatedAt: serverTimestamp()
       };
 
-      await updateDoc(docRef, updateData);
+      await updateDoc(doc(db, 'users', targetDocId), updateData);
 
       // Update local state
       setUsers(prev => prev.map(user =>
-        user.id === userId
+        (user.id === userId || user.docId === targetDocId)
           ? { 
               ...user, 
               ...userData, 
-              updatedAt: new Date() // For immediate local display
+              updatedAt: new Date()
             }
           : user
       ));
+
+      // Update current user if it's the same user
+      if (currentUser && (currentUser.id === userId || currentUser.docId === targetDocId)) {
+        setCurrentUser(prev => ({
+          ...prev,
+          ...userData,
+          updatedAt: new Date()
+        }));
+      }
 
       console.log('✅ User updated successfully');
       return true;
@@ -262,7 +353,16 @@ export const UsersProvider = ({ children }) => {
     }
   };
 
-  // Delete user by their ID (not document ID)
+  // Update current user (shorthand method)
+  const updateCurrentUser = async (userData) => {
+    if (!currentUser || !currentUser.id) {
+      throw new Error('No current user to update');
+    }
+    
+    return await updateUser(currentUser.id, userData);
+  };
+
+  // Delete user by their ID
   const deleteUser = async (userId) => {
     if (!userId) {
       throw new Error('User ID is required');
@@ -273,17 +373,32 @@ export const UsersProvider = ({ children }) => {
     setError(null);
 
     try {
-      // First find the document by user ID
-      const result = await findDocumentByUserId(userId);
+      // Try direct document reference first
+      const docRef = doc(db, 'users', userId);
+      const docSnap = await getDoc(docRef);
       
-      if (!result) {
-        throw new Error(`User with ID ${userId} not found`);
+      let targetDocId = userId;
+      
+      if (!docSnap.exists()) {
+        // Fallback: find by ID field
+        const result = await findDocumentByUserId(userId);
+        if (!result) {
+          throw new Error(`User with ID ${userId} not found`);
+        }
+        targetDocId = result.docId;
       }
 
-      await deleteDoc(doc(db, 'users', result.docId));
+      await deleteDoc(doc(db, 'users', targetDocId));
 
       // Update local state
-      setUsers(prev => prev.filter(user => user.id !== userId));
+      setUsers(prev => prev.filter(user => 
+        user.id !== userId && user.docId !== targetDocId
+      ));
+
+      // Clear current user if it's the deleted user
+      if (currentUser && (currentUser.id === userId || currentUser.docId === targetDocId)) {
+        setCurrentUser(null);
+      }
 
       console.log('✅ User deleted successfully');
       return true;
@@ -337,13 +452,12 @@ export const UsersProvider = ({ children }) => {
 
     console.log('🔍 Searching users:', searchTerm);
     
-    // Client-side search
     const filteredUsers = users.filter(user => {
       const searchableFields = [
         user.name,
         user.email,
         user.role,
-        String(user.id) // Convert ID to string for search
+        String(user.id)
       ].filter(Boolean);
 
       return searchableFields.some(field =>
@@ -368,14 +482,13 @@ export const UsersProvider = ({ children }) => {
     }
   };
 
-  // Initialize - fetch users on mount
-  useEffect(() => {
-    getUsers();
-  }, []);
+  // REMOVED: useEffect that automatically fetches all users on mount
+  // This was causing performance issues and infinite loops
 
   const value = {
     // State
     users,
+    currentUser,
     loading,
     error,
     
@@ -385,6 +498,13 @@ export const UsersProvider = ({ children }) => {
     createUser,
     updateUser,
     deleteUser,
+    
+    // Current user management
+    setCurrentUserById,
+    clearCurrentUser,
+    getCurrentUser,
+    currentUserHasRole,
+    updateCurrentUser,
     
     // Filtered queries
     getUsersByRole,

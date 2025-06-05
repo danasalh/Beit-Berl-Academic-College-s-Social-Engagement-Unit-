@@ -1,5 +1,5 @@
 // src/contexts/NotificationsContext.jsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { 
   collection, 
   doc, 
@@ -34,17 +34,17 @@ export const NotificationsProvider = ({ children }) => {
   const notificationsCollection = collection(db, 'notifications');
 
   // Helper function to convert Firestore document to notification object
-  const convertDocToNotification = (doc) => ({
+  const convertDocToNotification = useCallback((doc) => ({
     id: doc.id,
     ...doc.data(),
     // Convert Firestore timestamp to JavaScript Date
     date: doc.data().date?.toDate ? doc.data().date.toDate() : doc.data().date,
     // Ensure title is included (with fallback if not present in older documents)
     title: doc.data().title || 'Notification'
-  });
+  }), []);
 
   // Get all notifications
-  const getNotifications = async () => {
+  const getNotifications = useCallback(async () => {
     console.log('🔔 Fetching all notifications...');
     setLoading(true);
     setError(null);
@@ -64,10 +64,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [convertDocToNotification]);
 
   // Get notifications for a specific receiver
-  const getNotificationsByReceiver = async (receiverId) => {
+  const getNotificationsByReceiver = useCallback(async (receiverId) => {
     console.log('👤 Fetching notifications for receiver:', receiverId);
     setLoading(true);
     setError(null);
@@ -90,10 +90,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [convertDocToNotification]);
 
   // Get unread notifications for a receiver
-  const getUnreadNotificationsByReceiver = async (receiverId) => {
+  const getUnreadNotificationsByReceiver = useCallback(async (receiverId) => {
     console.log('📩 Fetching unread notifications for receiver:', receiverId);
     setLoading(true);
     setError(null);
@@ -117,10 +117,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [convertDocToNotification]);
 
   // Get notifications by type (reminder, approval-needed)
-  const getNotificationsByType = async (type, receiverId = null) => {
+  const getNotificationsByType = useCallback(async (type, receiverId = null) => {
     console.log('🏷️ Fetching notifications by type:', type, 'for receiver:', receiverId);
     setLoading(true);
     setError(null);
@@ -154,10 +154,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [convertDocToNotification]);
 
   // Get notification by ID
-  const getNotificationById = async (notificationId) => {
+  const getNotificationById = useCallback(async (notificationId) => {
     console.log('🔍 Fetching notification by ID:', notificationId);
     setLoading(true);
     setError(null);
@@ -180,10 +180,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [convertDocToNotification]);
 
   // Create new notification
-  const createNotification = async (notificationData) => {
+  const createNotification = useCallback(async (notificationData) => {
     console.log('➕ Creating new notification:', notificationData);
     setLoading(true);
     setError(null);
@@ -236,10 +236,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Mark notification as read
-  const markNotificationAsRead = async (notificationId) => {
+  const markNotificationAsRead = useCallback(async (notificationId) => {
     console.log('👀 Marking notification as read:', notificationId);
     setLoading(true);
     setError(null);
@@ -267,10 +267,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Mark notification as unread
-  const markNotificationAsUnread = async (notificationId) => {
+  const markNotificationAsUnread = useCallback(async (notificationId) => {
     console.log('📧 Marking notification as unread:', notificationId);
     setLoading(true);
     setError(null);
@@ -298,10 +298,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Mark all notifications as read for a receiver
-  const markAllNotificationsAsRead = async (receiverId) => {
+  const markAllNotificationsAsRead = useCallback(async (receiverId) => {
     console.log('👀📚 Marking all notifications as read for receiver:', receiverId);
     setLoading(true);
     setError(null);
@@ -334,10 +334,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getUnreadNotificationsByReceiver]);
 
   // Update notification
-  const updateNotification = async (notificationId, notificationData) => {
+  const updateNotification = useCallback(async (notificationId, notificationData) => {
     console.log('📝 Updating notification:', notificationId, notificationData);
     setLoading(true);
     setError(null);
@@ -374,10 +374,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Delete notification
-  const deleteNotification = async (notificationId) => {
+  const deleteNotification = useCallback(async (notificationId) => {
     console.log('🗑️ Deleting notification:', notificationId);
     setLoading(true);
     setError(null);
@@ -397,10 +397,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Delete all read notifications for a receiver
-  const deleteAllReadNotifications = async (receiverId) => {
+  const deleteAllReadNotifications = useCallback(async (receiverId) => {
     console.log('🗑️📚 Deleting all read notifications for receiver:', receiverId);
     setLoading(true);
     setError(null);
@@ -429,10 +429,10 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getNotificationsByReceiver]);
 
   // Get notification count by receiver
-  const getNotificationCount = async (receiverId, unreadOnly = false) => {
+  const getNotificationCount = useCallback(async (receiverId, unreadOnly = false) => {
     console.log('🔢 Getting notification count for receiver:', receiverId, 'unread only:', unreadOnly);
     
     try {
@@ -450,10 +450,10 @@ export const NotificationsProvider = ({ children }) => {
       console.error('❌ Error getting notification count:', err);
       throw err;
     }
-  };
+  }, [getUnreadNotificationsByReceiver, getNotificationsByReceiver]);
 
   // Search notifications by title or content
-  const searchNotifications = async (searchTerm, receiverId = null) => {
+  const searchNotifications = useCallback(async (searchTerm, receiverId = null) => {
     console.log('🔍 Searching notifications with term:', searchTerm, 'for receiver:', receiverId);
     setLoading(true);
     setError(null);
@@ -481,7 +481,7 @@ export const NotificationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getNotificationsByReceiver, getNotifications]);
 
   const value = {
     notifications,
