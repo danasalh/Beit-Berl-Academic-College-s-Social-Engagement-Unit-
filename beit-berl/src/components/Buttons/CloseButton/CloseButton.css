@@ -1,0 +1,19 @@
+/* components/common/CloseBtn.css */
+
+.close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  padding: 4px;
+  transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.close-btn:hover {
+  color: #e63946;
+  transform: scale(1.1);
+}
+
+.close-btn:focus {
+  outline: none;
+}

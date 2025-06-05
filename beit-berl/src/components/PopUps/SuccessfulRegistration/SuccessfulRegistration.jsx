@@ -1,4 +1,3 @@
-import React from "react";
 import "./SuccessfulRegistration.css";
 
 const SuccessfulRegistration = ({ onClose }) => {
@@ -9,10 +8,9 @@ const SuccessfulRegistration = ({ onClose }) => {
           <div className="checkmark">✔</div>
         </div>
         <p className="success-message">
-          הטופס נשלח בהצלחה. <br />
+          הטופס נשלח בהצלחה. הבקשה שלך נמצאת בבדיקה. <br />
           נשלח לך הודעה ברגע שיתקבל אישור.
         </p>
-        <button onClick={onClose} className="close-button">סגור</button>
       </div>
     </div>
   );

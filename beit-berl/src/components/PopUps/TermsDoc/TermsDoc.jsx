@@ -1,11 +1,21 @@
 import React, { useState } from "react";
 import "./TermsDoc.css";
+<<<<<<< HEAD
 
 const TermsDoc = () => {
   const [answers, setAnswers] = useState([false, false, false, false, false]);
 
   const handleToggle = (index) => {
     // שאלה נעולה אם לא סומנו הקודמות
+=======
+import CloseButton from "../../Buttons/CloseButton/CloseButton";
+
+const TermsDoc = ({ onClose, onApprove }) => {
+  const [answers, setAnswers] = useState([false, false, false, false, false]);
+
+  const handleToggle = (index) => {
+    // Question is locked if previous ones are not checked
+>>>>>>> main
     if (index === 0 || answers[index - 1]) {
       const updated = [...answers];
       updated[index] = !updated[index];
@@ -27,9 +37,22 @@ const TermsDoc = () => {
   const allChecked = answers.every(Boolean);
   const mainChecked = answers[0] && answers[1] && answers[2];
 
+<<<<<<< HEAD
   return (
     <div className="termsdoc-overlay">
       <div className="termsdoc-box">
+=======
+  const handleApproveClick = () => {
+    if (allChecked && onApprove) {
+      onApprove();
+    }
+  };
+
+  return (
+    <div className="termsdoc-overlay">
+      <div className="termsdoc-box">
+        <CloseButton onClick={onClose} />
+>>>>>>> main
         <h2 className="termsdoc-title">טופס הסכמה לתנאים/בקשת אישור</h2>
 
         <div className="termsdoc-questions">
@@ -66,7 +89,15 @@ const TermsDoc = () => {
           })}
         </div>
 
+<<<<<<< HEAD
         <button className="approve-button" disabled={!allChecked}>
+=======
+        <button 
+          className="approve-button" 
+          disabled={!allChecked}
+          onClick={handleApproveClick}
+        >
+>>>>>>> main
           אישור
         </button>
       </div>
@@ -74,4 +105,8 @@ const TermsDoc = () => {
   );
 };
 
+<<<<<<< HEAD
 export default TermsDoc;
+=======
+export default TermsDoc;
+>>>>>>> main

@@ -1,0 +1,91 @@
+/* NotificationsBadge.css */
+
+.notification-badge-container {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000; /* Ensure it stays above other content */
+}
+
+.notification-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border-radius: 50%;
+  padding: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.notification-icon {
+  width: 24px;
+  height: 24px;
+  color: #000000;
+}
+
+.notification-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 10px;
+  background-color: #0a66c2; /* LinkedIn blue */
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .notification-badge-container {
+    top: 12px;
+    left: 12px;
+  }
+  
+  .notification-badge {
+    padding: 6px;
+  }
+  
+  .notification-icon {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .notification-count {
+    min-width: 14px;
+    height: 14px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-badge-container {
+    top: 8px;
+    left: 8px;
+  }
+  
+  .notification-badge {
+    padding: 5px;
+  }
+  
+  .notification-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .notification-count {
+    min-width: 12px;
+    height: 12px;
+    font-size: 8px;
+  }
+}

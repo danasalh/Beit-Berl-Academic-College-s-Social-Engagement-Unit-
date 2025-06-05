@@ -3,6 +3,7 @@ node_modules/
 dist/
 dist-ssr/
 .yarn/cache
+
 # Environment files
 .env
 .env.*  # optional: ignore .env.development, .env.production, etc.

@@ -8,11 +8,19 @@ const AreYouSure = ({ onCancel, onConfirm }) => {
         <p className="areyousure-message">האם את/ה בטוח/ה?</p>
         <div className="areyousure-buttons">
           <button className="cancel-button" onClick={onCancel}>ביטול</button>
+<<<<<<< HEAD
           <button className="confirm-button" onClick={onConfirm}>שמור</button>
+=======
+          <button className="confirm-button" onClick={onConfirm}>כן</button>
+>>>>>>> main
         </div>
       </div>
     </div>
   );
 };
 
+<<<<<<< HEAD
 export default AreYouSure;
+=======
+export default AreYouSure;
+>>>>>>> main

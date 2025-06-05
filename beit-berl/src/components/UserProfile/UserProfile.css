@@ -1,0 +1,69 @@
+/* src/components/UserProfile/UserProfile.css */
+.profile-modal {
+  max-width: 500px;
+  width: 90%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #3498db;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.profile-details {
+  width: 100%;
+}
+
+.detail-group {
+  display: flex;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.detail-group label {
+  font-weight: 600;
+  width: 130px;
+  color: #555;
+}
+
+.detail-group span {
+  flex: 1;
+  min-width: 180px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .profile-modal {
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .detail-group {
+    flex-direction: column;
+    margin-bottom: 16px;
+  }
+  
+  .detail-group label {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+}
