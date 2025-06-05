@@ -1,5 +1,5 @@
 // src/components/UsersData/UsersData.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useUsers } from '../../contexts/UsersContext';
 import UserProfile from '../UserProfile/UserProfile';
 import FilterBar from '../FilterBar/FilterBar';
@@ -25,14 +25,31 @@ const UsersData = () => {
   const [filterRole, setFilterRole] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [statusUpdating, setStatusUpdating] = useState(null);
+  const [componentLoading, setComponentLoading] = useState(false);
 
   // Fetch users on component mount
   useEffect(() => {
-    getUsers();
-  }, []);
+    const fetchUsersData = async () => {
+      try {
+        setComponentLoading(true);
+        console.log('🚀 Fetching users on component mount...');
+        await getUsers();
+        console.log('✅ Users fetched successfully');
+      } catch (error) {
+        console.error('❌ Error fetching users:', error);
+      } finally {
+        setComponentLoading(false);
+      }
+    };
+
+    // Only fetch if we don't have users already
+    if (users.length === 0 && !loading) {
+      fetchUsersData();
+    }
+  }, []); // Empty dependency array - only run once on mount
 
   // Status management configuration
-  const getStatusAction = (status) => {
+  const getStatusAction = useCallback((status) => {
     switch (status) {
       case 'pending':
       case 'waiting for approval':
@@ -42,10 +59,10 @@ const UsersData = () => {
       default:
         return null;
     }
-  };
+  }, []);
 
   // Handle status update
-  const handleStatusUpdate = async (user) => {
+  const handleStatusUpdate = useCallback(async (user) => {
     const statusAction = getStatusAction(user.status);
     if (!statusAction) return;
 
@@ -56,9 +73,6 @@ const UsersData = () => {
       
       await updateUser(user.id, { status: statusAction.newStatus });
       
-      // Refresh users list
-      await getUsers();
-      
       console.log(`Successfully updated user ${user.id} status to ${statusAction.newStatus}`);
     } catch (err) {
       console.error('Error updating user status:', err);
@@ -66,10 +80,10 @@ const UsersData = () => {
     } finally {
       setStatusUpdating(null);
     }
-  };
+  }, [updateUser, getStatusAction]);
 
   // Status update in modal
-  const handleStatusUpdateInModal = async (newStatus) => {
+  const handleStatusUpdateInModal = useCallback(async (newStatus) => {
     if (!selectedUser) return;
     
     try {
@@ -78,27 +92,27 @@ const UsersData = () => {
       await updateUser(selectedUser.id, { status: newStatus });
       
       // Update the selected user object locally to reflect the change
-      setSelectedUser({
-        ...selectedUser,
+      setSelectedUser(prev => ({
+        ...prev,
         status: newStatus
-      });
+      }));
       
       console.log(`Successfully updated user ${selectedUser.id} status to ${newStatus}`);
     } catch (err) {
       console.error('Error updating user status:', err);
       alert(`Failed to update user status: ${err.message}`);
     }
-  };
+  }, [selectedUser, updateUser]);
 
   // Handle watch user profile
-  const handleWatch = (user) => {
+  const handleWatch = useCallback((user) => {
     console.log('Viewing user profile for user ID:', user.id);
     setSelectedUser(user);
     setShowProfile(true);
-  };
+  }, []);
 
   // Handle edit user
-  const handleEdit = (user) => {
+  const handleEdit = useCallback((user) => {
     console.log('Editing user with ID:', user.id, 'Document ID:', user.docId);
     
     setSelectedUser(user);
@@ -111,19 +125,19 @@ const UsersData = () => {
       orgId: user.orgId || ''
     });
     setShowEditModal(true);
-  };
+  }, []);
 
   // Handle form input change
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setEditFormData(prev => ({
       ...prev,
       [name]: value
     }));
-  };
+  }, []);
 
   // Handle save edit
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = useCallback(async () => {
     if (!selectedUser || !selectedUser.id) {
       console.error('No selected user or user ID');
       return;
@@ -132,35 +146,33 @@ const UsersData = () => {
     try {
       console.log('Updating user with ID:', selectedUser.id, 'Data:', editFormData);
       
-      // Use the user's ID (not docId) for the update
       await updateUser(selectedUser.id, editFormData);
       
       setShowEditModal(false);
       setSelectedUser(null);
       setEditFormData({});
       
-      // Refresh users list
-      await getUsers();
+      console.log('User updated successfully');
     } catch (err) {
       console.error('Error updating user:', err);
       alert(`Failed to update user: ${err.message}`);
     }
-  };
+  }, [selectedUser, editFormData, updateUser]);
 
   // Close modals
-  const closeProfile = () => {
+  const closeProfile = useCallback(() => {
     setShowProfile(false);
     setSelectedUser(null);
-  };
+  }, []);
 
-  const closeEditModal = () => {
+  const closeEditModal = useCallback(() => {
     setShowEditModal(false);
     setSelectedUser(null);
     setEditFormData({});
-  };
+  }, []);
 
   // Format date
-  const formatDate = (timestamp) => {
+  const formatDate = useCallback((timestamp) => {
     if (!timestamp) return 'N/A';
     
     try {
@@ -178,44 +190,66 @@ const UsersData = () => {
       console.warn('Invalid date format:', timestamp);
       return 'Invalid Date';
     }
-  };
+  }, []);
 
   // Clear all filters
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchTerm('');
     setFilterFirstName('');
     setFilterLastName('');
     setFilterRole('');
     setFilterStatus('');
-  };
+  }, []);
+
+  // Retry function
+  const handleRetry = useCallback(async () => {
+    try {
+      setComponentLoading(true);
+      console.log('🔄 Retrying to fetch users...');
+      await getUsers();
+      console.log('✅ Retry successful');
+    } catch (error) {
+      console.error('❌ Retry failed:', error);
+    } finally {
+      setComponentLoading(false);
+    }
+  }, [getUsers]);
 
   // Filter users based on search and filters
-  const filteredUsers = users.filter(user => {
-    const searchLower = searchTerm.toLowerCase();
-    
-    // Search by email or phone
-    const matchesSearch = !searchTerm || 
-      (user.email && user.email.toLowerCase().includes(searchLower)) ||
-      (user.phoneNumber && user.phoneNumber.toLowerCase().includes(searchLower));
-    
-    // Separate first name and last name filters
-    const matchesFirstName = !filterFirstName || 
-      (user.firstName && user.firstName.toLowerCase().includes(filterFirstName.toLowerCase()));
-    
-    const matchesLastName = !filterLastName || 
-      (user.lastName && user.lastName.toLowerCase().includes(filterLastName.toLowerCase()));
+  const filteredUsers = React.useMemo(() => {
+    return users.filter(user => {
+      const searchLower = searchTerm.toLowerCase();
       
-    const matchesRole = !filterRole || user.role === filterRole;
-    const matchesStatus = !filterStatus || user.status === filterStatus;
-    
-    return matchesSearch && matchesFirstName && matchesLastName && matchesRole && matchesStatus;
-  });
+      // Search by email or phone
+      const matchesSearch = !searchTerm || 
+        (user.email && user.email.toLowerCase().includes(searchLower)) ||
+        (user.phoneNumber && user.phoneNumber.toLowerCase().includes(searchLower));
+      
+      // Separate first name and last name filters
+      const matchesFirstName = !filterFirstName || 
+        (user.firstName && user.firstName.toLowerCase().includes(filterFirstName.toLowerCase()));
+      
+      const matchesLastName = !filterLastName || 
+        (user.lastName && user.lastName.toLowerCase().includes(filterLastName.toLowerCase()));
+        
+      const matchesRole = !filterRole || user.role === filterRole;
+      const matchesStatus = !filterStatus || user.status === filterStatus;
+      
+      return matchesSearch && matchesFirstName && matchesLastName && matchesRole && matchesStatus;
+    });
+  }, [users, searchTerm, filterFirstName, filterLastName, filterRole, filterStatus]);
 
   // Get unique roles, statuses for filter options
-  const uniqueRoles = [...new Set(users.map(user => user.role).filter(Boolean))];
-  const uniqueStatuses = [...new Set(users.map(user => user.status).filter(Boolean))];
+  const { uniqueRoles, uniqueStatuses } = React.useMemo(() => {
+    const roles = [...new Set(users.map(user => user.role).filter(Boolean))];
+    const statuses = [...new Set(users.map(user => user.status).filter(Boolean))];
+    return { uniqueRoles: roles, uniqueStatuses: statuses };
+  }, [users]);
 
-  if (loading) {
+  // Show loading state (either context loading or component loading)
+  const isLoading = loading || componentLoading;
+
+  if (isLoading) {
     return (
       <div className="users-data-container">
         <div className="loading-spinner">
@@ -232,7 +266,7 @@ const UsersData = () => {
         <div className="error-message">
           <h3>אירעה תקלה בעת טעינת המידע</h3>
           <p>{error}</p>
-          <button onClick={getUsers} className="retry-btn">
+          <button onClick={handleRetry} className="retry-btn">
             לנסות שוב
           </button>
         </div>
