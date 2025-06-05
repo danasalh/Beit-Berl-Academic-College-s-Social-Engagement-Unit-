@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNotifications } from "../../../contexts/NotificationsContext";
 import { useUsers } from "../../../contexts/UsersContext";
 import "./NotificationsPanel.css";
@@ -22,53 +22,10 @@ export default function NotificationsPanel() {
   // Local state for notifications
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-  // Fetch notifications when component mounts or currentUser changes
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      if (!currentUser?.id) {
-        console.log('No current user found');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        console.log('Fetching notifications for user:', currentUser.id);
-        
-        const userNotifications = await getNotificationsByReceiver(currentUser.id);
-        
-        // Transform notifications to match the expected format
-        const transformedNotifications = userNotifications.map(notif => ({
-          id: notif.id,
-          title: notif.title,
-          message: notif.content, // Map 'content' to 'message' for compatibility
-          time: formatTime(notif.date),
-          date: formatDate(notif.date),
-          read: notif.read,
-          type: notif.type,
-          originalDate: notif.date // Keep original date for sorting
-        }));
-
-        setNotifications(transformedNotifications);
-        
-        // Set the first notification as selected if none is selected
-        if (transformedNotifications.length > 0 && !selectedNotification) {
-          setSelectedNotification(transformedNotifications[0]);
-        }
-        
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNotifications();
-  }, [currentUser?.id, getNotificationsByReceiver]);
-
-  // Helper functions to format date and time
-  const formatTime = (date) => {
+  // Helper functions to format date and time - memoized to prevent recreating on every render
+  const formatTime = useCallback((date) => {
     if (!date) return '';
     const dateObj = date instanceof Date ? date : new Date(date);
     return dateObj.toLocaleTimeString('he-IL', { 
@@ -76,9 +33,9 @@ export default function NotificationsPanel() {
       minute: '2-digit',
       hour12: false 
     });
-  };
+  }, []);
 
-  const formatDate = (date) => {
+  const formatDate = useCallback((date) => {
     if (!date) return '';
     const dateObj = date instanceof Date ? date : new Date(date);
     return dateObj.toLocaleDateString('he-IL', {
@@ -86,17 +43,77 @@ export default function NotificationsPanel() {
       month: '2-digit',
       year: '2-digit'
     });
-  };
+  }, []);
 
-  // Filter notifications based on selected filter
-  const filteredNotifications = notifications.filter((n) => {
-    if (filter === "read") return n.read;
-    if (filter === "unread") return !n.read;
-    return true;
-  });
+  // Memoized fetch function to prevent recreating on every render
+  const fetchNotifications = useCallback(async () => {
+    if (!currentUser?.id) {
+      console.log('No current user found');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Only show loading on initial load, not on subsequent updates
+      if (!hasInitialized) {
+        setLoading(true);
+      }
+      
+      console.log('Fetching notifications for user:', currentUser.id);
+      
+      const userNotifications = await getNotificationsByReceiver(currentUser.id);
+      
+      // Transform notifications to match the expected format
+      const transformedNotifications = userNotifications.map(notif => ({
+        id: notif.id,
+        title: notif.title,
+        message: notif.content,
+        time: formatTime(notif.date),
+        date: formatDate(notif.date),
+        read: notif.read,
+        type: notif.type,
+        originalDate: notif.date
+      }));
+
+      setNotifications(transformedNotifications);
+      
+      // Set the first notification as selected if none is selected and we have notifications
+      if (transformedNotifications.length > 0 && !selectedNotification) {
+        setSelectedNotification(transformedNotifications[0]);
+      }
+      
+      setHasInitialized(true);
+      
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser?.id, getNotificationsByReceiver, formatTime, formatDate, hasInitialized, selectedNotification]);
+
+  // Fetch notifications when component mounts or when currentUser.id changes
+  useEffect(() => {
+    fetchNotifications();
+  }, [currentUser?.id]); // Only depend on currentUser.id, not the entire fetchNotifications function
+
+  // Filter notifications based on selected filter - memoized for performance
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((n) => {
+      if (filter === "read") return n.read;
+      if (filter === "unread") return !n.read;
+      return true;
+    });
+  }, [notifications, filter]);
+
+  // Memoized count calculations
+  const notificationCounts = useMemo(() => ({
+    all: notifications.length,
+    read: notifications.filter(n => n.read).length,
+    unread: notifications.filter(n => !n.read).length
+  }), [notifications]);
 
   // Handle read/unread status toggle
-  const toggleReadStatus = async (id, readStatus) => {
+  const toggleReadStatus = useCallback(async (id, readStatus) => {
     try {
       if (readStatus) {
         await markNotificationAsRead(id);
@@ -120,10 +137,10 @@ export default function NotificationsPanel() {
     } catch (error) {
       console.error('Error updating notification status:', error);
     }
-  };
+  }, [markNotificationAsRead, markNotificationAsUnread, selectedNotification]);
 
   // Handle notification selection and mark as read
-  const handleNotificationSelect = async (notif) => {
+  const handleNotificationSelect = useCallback(async (notif) => {
     setSelectedNotification(notif);
     
     // Mark as read if it's unread
@@ -144,10 +161,10 @@ export default function NotificationsPanel() {
         console.error('Error marking notification as read:', error);
       }
     }
-  };
+  }, [markNotificationAsRead]);
 
-  // Loading state
-  if (loading || notificationsLoading) {
+  // Loading state - only show on initial load
+  if (loading && !hasInitialized) {
     return (
       <div className="notifications-panel-container">
         <div className="notifications-loading">
@@ -180,7 +197,7 @@ export default function NotificationsPanel() {
   }
 
   // No notifications state
-  if (notifications.length === 0) {
+  if (notifications.length === 0 && hasInitialized) {
     return (
       <div className="notifications-panel-container">
         <div className="notifications-empty">
@@ -192,7 +209,7 @@ export default function NotificationsPanel() {
   }
 
   // No filtered notifications
-  if (filteredNotifications.length === 0) {
+  if (filteredNotifications.length === 0 && hasInitialized) {
     return (
       <div className="notifications-panel-container">
         <div className="notifications-sidebar">
@@ -201,19 +218,19 @@ export default function NotificationsPanel() {
               className={filter === "all" ? "active" : ""}
               onClick={() => setFilter("all")}
             >
-              הכל ({notifications.length})
+              הכל ({notificationCounts.all})
             </button>
             <button 
               className={filter === "read" ? "active" : ""}
               onClick={() => setFilter("read")}
             >
-              נקראו ({notifications.filter(n => n.read).length})
+              נקראו ({notificationCounts.read})
             </button>
             <button 
               className={filter === "unread" ? "active" : ""}
               onClick={() => setFilter("unread")}
             >
-              לא נקראו ({notifications.filter(n => !n.read).length})
+              לא נקראו ({notificationCounts.unread})
             </button>
           </div>
           <div className="notifications-empty-filter">
@@ -263,19 +280,19 @@ export default function NotificationsPanel() {
             className={filter === "all" ? "active" : ""}
             onClick={() => setFilter("all")}
           >
-            הכל ({notifications.length})
+            הכל ({notificationCounts.all})
           </button>
           <button 
             className={filter === "read" ? "active" : ""}
             onClick={() => setFilter("read")}
           >
-            נקראו ({notifications.filter(n => n.read).length})
+            נקראו ({notificationCounts.read})
           </button>
           <button 
             className={filter === "unread" ? "active" : ""}
             onClick={() => setFilter("unread")}
           >
-            לא נקראו ({notifications.filter(n => !n.read).length})
+            לא נקראו ({notificationCounts.unread})
           </button>
         </div>
 
