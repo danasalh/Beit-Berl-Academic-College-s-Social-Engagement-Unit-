@@ -1,7 +1,7 @@
 // src/components/UsersData/UsersData.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { useUsers } from '../../contexts/UsersContext';
-import { useOrganizations } from '../../contexts/OrganizationsContext';
+import { useUsers } from '../../Contexts/UsersContext';
+import { useOrganizations } from '../../Contexts/OrganizationsContext';
 import UserProfile from '../UserProfile/UserProfile';
 import FilterBar from '../FilterBar/FilterBar';
 import './UsersData.css';
