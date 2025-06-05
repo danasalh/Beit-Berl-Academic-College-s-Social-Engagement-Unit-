@@ -66,7 +66,7 @@
 #fef3c7; color: 
 #b45309; }
 
-.role-badge.cv { background-color: 
+.role-badge.vc { background-color: 
 #e0f2fe; color: 
 #0369a1; }
 
@@ -248,3 +248,62 @@
 
 [dir="rtl"] .modal-footer { flex-direction: row-reverse; }
 
+/* Success Popup Styles */
+.success-popup {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.success-popup-content {
+  background: linear-gradient(135deg, #10b981, #065f46);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 300px;
+  max-width: 400px;
+}
+
+.success-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.success-popup-content p {
+  margin: 0;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Animation for popup entrance */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive design for success popup */
+@media (max-width: 768px) {
+  .success-popup {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+  }
+  
+  .success-popup-content {
+    min-width: auto;
+    max-width: none;
+  }
+}
