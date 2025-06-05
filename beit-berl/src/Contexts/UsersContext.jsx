@@ -295,52 +295,38 @@ export const UsersProvider = ({ children }) => {
       throw new Error('User ID is required');
     }
 
-    console.log('📝 Updating user with ID:', userId, userData);
     setLoading(true);
     setError(null);
 
     try {
-      // Try direct document reference first
-      const docRef = doc(db, 'users', userId);
-      const docSnap = await getDoc(docRef);
-      
-      let targetDocId = userId;
-      
-      if (!docSnap.exists()) {
-        // Fallback: find by ID field
-        const result = await findDocumentByUserId(userId);
-        if (!result) {
-          throw new Error(`User with ID ${userId} not found`);
-        }
-        targetDocId = result.docId;
-      }
+      console.log('📝 Updating user:', { userId, userData });
 
-      const updateData = {
+      // Ensure orgId is an array of numbers
+      const cleanedData = {
         ...userData,
+        // Convert orgId to array of numbers or empty array
+        orgId: Array.isArray(userData.orgId) 
+          ? userData.orgId.map(Number)
+          : [],
         updatedAt: serverTimestamp()
       };
 
-      await updateDoc(doc(db, 'users', targetDocId), updateData);
+      // Get document reference
+      const userRef = doc(db, 'users', String(userId));
+      
+      console.log('📝 Updating document with data:', cleanedData);
+      
+      // Update the document
+      await updateDoc(userRef, cleanedData);
 
       // Update local state
-      setUsers(prev => prev.map(user =>
-        (user.id === userId || user.docId === targetDocId)
-          ? { 
-              ...user, 
-              ...userData, 
-              updatedAt: new Date()
-            }
-          : user
-      ));
-
-      // Update current user if it's the same user
-      if (currentUser && (currentUser.id === userId || currentUser.docId === targetDocId)) {
-        setCurrentUser(prev => ({
-          ...prev,
-          ...userData,
-          updatedAt: new Date()
-        }));
-      }
+      setUsers(prev => 
+        prev.map(user => 
+          user.id === Number(userId) 
+            ? { ...user, ...cleanedData, updatedAt: new Date() }
+            : user
+        )
+      );
 
       console.log('✅ User updated successfully');
       return true;
