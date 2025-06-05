@@ -32,6 +32,25 @@ export const OrganizationsProvider = ({ children }) => {
   // Collection reference
   const organizationsCollection = collection(db, 'organizations');
 
+  // Debug: Check if Firebase is properly initialized
+  useEffect(() => {
+    console.log('🔥 Firebase db object:', db);
+    console.log('📁 Organizations collection reference:', organizationsCollection);
+  }, []);
+
+  // Helper function to generate unique ID
+  const generateUniqueId = (existingOrgs) => {
+    const existingIds = existingOrgs.map(org => org.id || 0);
+    let newId = Math.max(...existingIds, 0) + 1;
+    
+    // Make sure the ID is truly unique
+    while (existingIds.includes(newId)) {
+      newId++;
+    }
+    
+    return newId;
+  };
+
   // Get all organizations
   const getOrganizations = async () => {
     console.log('🏢 Fetching all organizations...');
@@ -39,20 +58,32 @@ export const OrganizationsProvider = ({ children }) => {
     setError(null);
     
     try {
+      console.log('📡 Making Firebase request...');
       const querySnapshot = await getDocs(organizationsCollection);
-      const orgData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      console.log('📦 Query snapshot received:', querySnapshot);
+      console.log('📊 Number of docs:', querySnapshot.size);
       
+      const orgData = querySnapshot.docs.map(doc => {
+        const data = { firebaseId: doc.id, ...doc.data() };
+        console.log('📄 Document data:', data);
+        return data;
+      });
+      
+      console.log('✅ Final organizations data:', orgData);
       setOrganizations(orgData);
       console.log('✅ Organizations fetched successfully:', orgData.length, 'organizations');
       return orgData;
     } catch (err) {
       console.error('❌ Error fetching organizations:', err);
+      console.error('❌ Error details:', {
+        code: err.code,
+        message: err.message,
+        stack: err.stack
+      });
       setError(err.message);
       throw err;
     } finally {
+      console.log('🏁 Setting loading to false');
       setLoading(false);
     }
   };
@@ -64,11 +95,23 @@ export const OrganizationsProvider = ({ children }) => {
     setError(null);
 
     try {
+      // First try to find by custom id field
+      const q = query(organizationsCollection, where('id', '==', orgId));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const orgDoc = querySnapshot.docs[0];
+        const orgData = { firebaseId: orgDoc.id, ...orgDoc.data() };
+        console.log('✅ Organization found by custom ID:', orgData);
+        return orgData;
+      }
+      
+      // If not found by custom ID, try Firebase document ID
       const orgDoc = await getDoc(doc(db, 'organizations', orgId));
       
       if (orgDoc.exists()) {
-        const orgData = { id: orgDoc.id, ...orgDoc.data() };
-        console.log('✅ Organization found:', orgData);
+        const orgData = { firebaseId: orgDoc.id, ...orgDoc.data() };
+        console.log('✅ Organization found by Firebase ID:', orgData);
         return orgData;
       } else {
         console.log('⚠️ Organization not found with ID:', orgId);
@@ -93,7 +136,7 @@ export const OrganizationsProvider = ({ children }) => {
       const q = query(organizationsCollection, where('City', '==', city));
       const querySnapshot = await getDocs(q);
       const orgData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
+        firebaseId: doc.id,
         ...doc.data()
       }));
       
@@ -115,16 +158,25 @@ export const OrganizationsProvider = ({ children }) => {
     setError(null);
 
     try {
-      const docRef = await addDoc(organizationsCollection, {
+      // Generate unique ID
+      const uniqueId = generateUniqueId(organizations);
+      
+      const newOrgData = {
         ...orgData,
+        id: uniqueId,
+        contactInfo: orgData.contactInfo || '',
+        orgRepId: orgData.orgRepId || null,
+        vcId: orgData.vcId || [],
         createdAt: new Date(),
         updatedAt: new Date()
-      });
+      };
       
-      const newOrg = { id: docRef.id, ...orgData };
+      const docRef = await addDoc(organizationsCollection, newOrgData);
+      
+      const newOrg = { firebaseId: docRef.id, ...newOrgData };
       setOrganizations(prev => [...prev, newOrg]);
       
-      console.log('✅ Organization created successfully with ID:', docRef.id);
+      console.log('✅ Organization created successfully with ID:', uniqueId, 'Firebase ID:', docRef.id);
       return docRef.id;
     } catch (err) {
       console.error('❌ Error creating organization:', err);
@@ -142,16 +194,24 @@ export const OrganizationsProvider = ({ children }) => {
     setError(null);
 
     try {
-      const orgRef = doc(db, 'organizations', orgId);
-      await updateDoc(orgRef, {
+      // Find the organization by custom ID
+      const org = organizations.find(o => o.id === orgId);
+      if (!org) {
+        throw new Error('Organization not found');
+      }
+
+      const orgRef = doc(db, 'organizations', org.firebaseId);
+      const updateData = {
         ...orgData,
         updatedAt: new Date()
-      });
+      };
+      
+      await updateDoc(orgRef, updateData);
       
       // Update local state
       setOrganizations(prev => prev.map(org => 
         org.id === orgId 
-          ? { ...org, ...orgData, updatedAt: new Date() }
+          ? { ...org, ...updateData }
           : org
       ));
       
@@ -173,7 +233,13 @@ export const OrganizationsProvider = ({ children }) => {
     setError(null);
 
     try {
-      await deleteDoc(doc(db, 'organizations', orgId));
+      // Find the organization by custom ID
+      const org = organizations.find(o => o.id === orgId);
+      if (!org) {
+        throw new Error('Organization not found');
+      }
+
+      await deleteDoc(doc(db, 'organizations', org.firebaseId));
       
       // Update local state
       setOrganizations(prev => prev.filter(org => org.id !== orgId));
@@ -196,29 +262,28 @@ export const OrganizationsProvider = ({ children }) => {
     setError(null);
 
     try {
-      // First get current organization data
-      const orgDoc = await getDoc(doc(db, 'organizations', orgId));
-      if (!orgDoc.exists()) {
+      // Find the organization by custom ID
+      const org = organizations.find(o => o.id === orgId);
+      if (!org) {
         throw new Error('Organization not found');
       }
 
-      const orgData = orgDoc.data();
-      const currentVolunteers = orgData.vcId || [];
+      const currentVolunteers = org.vcId || [];
       
       // Add volunteer if not already in the list
       if (!currentVolunteers.includes(volunteerId)) {
         const updatedVolunteers = [...currentVolunteers, volunteerId];
         
-        await updateDoc(doc(db, 'organizations', orgId), {
+        await updateDoc(doc(db, 'organizations', org.firebaseId), {
           vcId: updatedVolunteers,
           updatedAt: new Date()
         });
 
         // Update local state
-        setOrganizations(prev => prev.map(org => 
-          org.id === orgId 
-            ? { ...org, vcId: updatedVolunteers, updatedAt: new Date() }
-            : org
+        setOrganizations(prev => prev.map(o => 
+          o.id === orgId 
+            ? { ...o, vcId: updatedVolunteers, updatedAt: new Date() }
+            : o
         ));
 
         console.log('✅ Volunteer added to organization successfully');
@@ -243,28 +308,27 @@ export const OrganizationsProvider = ({ children }) => {
     setError(null);
 
     try {
-      // First get current organization data
-      const orgDoc = await getDoc(doc(db, 'organizations', orgId));
-      if (!orgDoc.exists()) {
+      // Find the organization by custom ID
+      const org = organizations.find(o => o.id === orgId);
+      if (!org) {
         throw new Error('Organization not found');
       }
 
-      const orgData = orgDoc.data();
-      const currentVolunteers = orgData.vcId || [];
+      const currentVolunteers = org.vcId || [];
       
       // Remove volunteer from the list
       const updatedVolunteers = currentVolunteers.filter(id => id !== volunteerId);
       
-      await updateDoc(doc(db, 'organizations', orgId), {
+      await updateDoc(doc(db, 'organizations', org.firebaseId), {
         vcId: updatedVolunteers,
         updatedAt: new Date()
       });
 
       // Update local state
-      setOrganizations(prev => prev.map(org => 
-        org.id === orgId 
-          ? { ...org, vcId: updatedVolunteers, updatedAt: new Date() }
-          : org
+      setOrganizations(prev => prev.map(o => 
+        o.id === orgId 
+          ? { ...o, vcId: updatedVolunteers, updatedAt: new Date() }
+          : o
       ));
 
       console.log('✅ Volunteer removed from organization successfully');
