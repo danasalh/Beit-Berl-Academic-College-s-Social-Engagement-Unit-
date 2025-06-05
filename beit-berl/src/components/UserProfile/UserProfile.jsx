@@ -1,7 +1,7 @@
 // src/components/UserProfile/UserProfile.jsx
 import './UserProfile.css';
 
-const UserProfile = ({ user, onClose }) => {
+const UserProfile = ({ user, organizations = [], onClose }) => {
   // Ensure user exists
   if (!user) {
     return null; // Don't render anything if no user
@@ -14,6 +14,31 @@ const UserProfile = ({ user, onClose }) => {
       return date.toDate().toLocaleDateString();
     }
     return new Date(date).toLocaleDateString();
+  };
+
+  // Helper function to get organization names from IDs
+  const getOrganizationNames = (orgIds) => {
+    if (!orgIds) return 'N/A';
+    
+    // Handle single orgId (backward compatibility)
+    if (typeof orgIds === 'string' || typeof orgIds === 'number') {
+      const org = organizations.find(o => o.id === orgIds || o.id === parseInt(orgIds));
+      return org ? org.name || `Org ${org.id}` : `Unknown Org (${orgIds})`;
+    }
+    
+    // Handle array of orgIds
+    if (Array.isArray(orgIds)) {
+      if (orgIds.length === 0) return 'N/A';
+      
+      const orgNames = orgIds.map(orgId => {
+        const org = organizations.find(o => o.id === orgId || o.id === parseInt(orgId));
+        return org ? org.name || `Org ${org.id}` : `Unknown Org (${orgId})`;
+      });
+      
+      return orgNames.join(', ');
+    }
+    
+    return 'N/A';
   };
 
   return (
@@ -56,6 +81,12 @@ const UserProfile = ({ user, onClose }) => {
               <label>Role:</label>
               <span className={`role-badge ${user.role}`}>
                 {user.role || 'N/A'}
+              </span>
+            </div>
+            <div className="detail-group">
+              <label>Organizations:</label>
+              <span className="organizations-list">
+                {getOrganizationNames(user.orgId)}
               </span>
             </div>
             <div className="detail-group">
