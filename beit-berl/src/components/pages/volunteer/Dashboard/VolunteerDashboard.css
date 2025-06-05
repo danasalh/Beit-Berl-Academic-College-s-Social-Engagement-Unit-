@@ -1,0 +1,38 @@
+.volunteer-dashboard-root {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.welcome-title {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #0077c2;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  text-shadow: 0 0 16px #90caf9, 0 0 8px #90caf9;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 4px #90caf9, 0 0 2px #90caf9;
+  }
+  to {
+    text-shadow: 0 0 24px #42a5f5, 0 0 12px #42a5f5;
+  }
+}
+
+.dashboard-bar-wrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+.dashboard-buttons-wrapper {
+  width: 100%;
+  max-width: 400px;
+  margin-top: 1.5rem;
+}

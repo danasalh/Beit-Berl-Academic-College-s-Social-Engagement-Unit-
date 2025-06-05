@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNotifications } from "../../../contexts/NotificationsContext";
 import { useUsers } from "../../../contexts/UsersContext";
 import "./NotificationsPanel.css";
+import Read_Unread from './Read_Unread/Read_Unread';
 
 export default function NotificationsPanel() {
   const [filter, setFilter] = useState("all");
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const popupRef = useRef();
 
   // Get context functions and state
   const {
@@ -145,6 +147,20 @@ export default function NotificationsPanel() {
       }
     }
   };
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        setOpenMenuId(null);
+      }
+    }
+    if (openMenuId) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openMenuId]);
 
   // Loading state
   if (loading || notificationsLoading) {
@@ -312,26 +328,12 @@ export default function NotificationsPanel() {
               >
                 ⋮
                 {openMenuId === notif.id && (
-                  <div className="menu-dropdown">
-                    <div
-                      className="menu-item"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleReadStatus(notif.id, true);
-                      }}
-                    >
-                      סמן כנקרא
-                    </div>
-                    <div
-                      className="menu-item"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleReadStatus(notif.id, false);
-                      }}
-                    >
-                      סמן כלא נקרא
-                    </div>
-                  </div>
+                  <Read_Unread
+                    ref={popupRef}
+                    onClose={() => setOpenMenuId(null)}
+                    onMarkRead={() => toggleReadStatus(notif.id, true)}
+                    onMarkUnread={() => toggleReadStatus(notif.id, false)}
+                  />
                 )}
               </div>
             </div>

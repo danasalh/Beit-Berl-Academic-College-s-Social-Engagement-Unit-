@@ -39,8 +39,8 @@ const ProgressBar = ({ hours = 0 }) => {
       </div>
 
       <div className="progress-bar-labels">
-        <span>60</span>
         <span>0</span>
+        {!isFull && <span>60</span>}
       </div>
     </div>
   );

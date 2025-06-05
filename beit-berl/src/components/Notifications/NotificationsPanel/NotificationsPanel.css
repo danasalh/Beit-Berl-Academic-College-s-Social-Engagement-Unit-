@@ -79,7 +79,7 @@
   border-radius: 6px;
   padding: 10px;
   cursor: pointer;
-  transition: background 0.2s, border 0.2s;
+  transition: box-shadow 0.3s, transform 0.3s, background 0.3s;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -88,6 +88,12 @@
 .notifications-item.selected {
   background: #fff;
   border: 1.5px solid #007bff;
+}
+.notifications-item:hover {
+  background: #e3f2fd;
+  box-shadow: 0 4px 16px 0 rgba(33, 150, 243, 0.15);
+  transform: translateY(-2px) scale(1.02);
+  cursor: pointer;
 }
 .notifications-item-time {
   font-size: 11px;
@@ -144,3 +150,42 @@
 .read-icon.unread {
   color: #007bff;
 }
+
+.read-unread-dropdown {
+  position: fixed;
+  z-index: 9999;
+  background: #fff;
+  box-shadow: 0 4px 16px 0 rgba(33, 150, 243, 0.15);
+  border-radius: 8px;
+  min-width: 140px;
+}
+
+// state
+const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
+
+// ב-onClick של ⋮
+onClick={(e) => {
+  e.stopPropagation();
+  const rect = e.currentTarget.getBoundingClientRect();
+  setPopupPosition({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
+  setOpenMenuId(openMenuId === notif.id ? null : notif.id);
+}}
+{openMenuId === notif.id && (
+  <Read_Unread
+    ref={popupRef}
+    position={popupPosition}
+    onClose={() => setOpenMenuId(null)}
+    onMarkRead={() => toggleReadStatus(notif.id, true)}
+    onMarkUnread={() => toggleReadStatus(notif.id, false)}
+  />
+)}
+<div
+  ref={ref}
+  className="read-unread-dropdown"
+  style={{
+    position: "fixed",
+    top: position?.top ?? 0,
+    left: position?.left ?? 0,
+    zIndex: 9999,
+  }}
+>

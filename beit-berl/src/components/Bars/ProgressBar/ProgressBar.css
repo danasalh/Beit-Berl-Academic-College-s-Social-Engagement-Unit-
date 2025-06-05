@@ -164,7 +164,9 @@
 .progress-bar-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
   margin-top: 6px;
-  color: #333;
+  font-size: 1rem;
+  width: 100%;
+  color: #2196f3; /* Blue color for the labels */
+  font-weight: bold;
 }
