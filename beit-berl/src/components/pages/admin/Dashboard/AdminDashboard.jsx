@@ -1,5 +1,7 @@
 // src/components/pages/admin/Dashboard/AdminDashboard.jsx
 
+import QuickTest from "../../../QuickTest";
+
 
 export default function AdminDashboard() {
   return (
