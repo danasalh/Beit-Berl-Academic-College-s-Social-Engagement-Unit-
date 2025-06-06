@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { HiLocationMarker, HiPencilAlt } from 'react-icons/hi';
 
-const OrgDetailsModal = ({ org, onClose, onSave, onDelete, isNew = false, allUsers = [] }) => {
-  const [isEditing, setIsEditing] = useState(isNew);
+const OrgDetailsModal = ({ 
+  org, 
+  onClose, 
+  onSave, 
+  onDelete, 
+  isNew = false, 
+  allUsers = [], 
+  isVolunteer = false 
+}) => {
+  const [isEditing, setIsEditing] = useState(isNew && !isVolunteer); // Don't allow editing if volunteer
   const [editedOrg, setEditedOrg] = useState(org);
   const [isSaving, setIsSaving] = useState(false);
 
   // Debug: Log the organization object
   console.log('🏢 OrgDetailsModal - Organization object:', org);
   console.log('👥 OrgDetailsModal - All users count:', allUsers.length);
+  console.log('👤 OrgDetailsModal - Is volunteer:', isVolunteer);
 
   // Helper function to get city value - handles different possible field names
   const getCityValue = (org) => {
@@ -137,6 +146,12 @@ const OrgDetailsModal = ({ org, onClose, onSave, onDelete, isNew = false, allUse
   };
 
   const handleSave = async () => {
+    // Prevent volunteers from saving
+    if (isVolunteer) {
+      console.log('❌ Volunteer users cannot save organizations');
+      return;
+    }
+
     // Basic validation
     if (!editedOrg.name?.trim()) {
       alert('שם הארגון הוא שדה חובה');
@@ -159,6 +174,12 @@ const OrgDetailsModal = ({ org, onClose, onSave, onDelete, isNew = false, allUse
   };
 
   const handleDelete = async () => {
+    // Prevent volunteers from deleting
+    if (isVolunteer) {
+      console.log('❌ Volunteer users cannot delete organizations');
+      return;
+    }
+
     if (window.confirm("האם את בטוחה שברצונך למחוק את הארגון?")) {
       try {
         await onDelete(org.id);
@@ -189,7 +210,7 @@ const OrgDetailsModal = ({ org, onClose, onSave, onDelete, isNew = false, allUse
           </button>
         </div>
 
-        {isEditing ? (
+        {isEditing && !isVolunteer ? (
           <div className="edit-form">
             <div className="form-group">
               <label className="form-label">שם הארגון *</label>
@@ -291,62 +312,69 @@ const OrgDetailsModal = ({ org, onClose, onSave, onDelete, isNew = false, allUse
             </div>
             
             <div className="contact-info">
-              
               <div className="contact-field">
                 <strong>פרטי יצירת קשר:</strong> {org.contactInfo || 'לא צוין'}
               </div>
               
-              <div className="contact-field">
-                <strong>נציג הארגון:</strong> {getOrgRepName(org.id)}
-              </div>
-              
-              <div className="contact-field">
-                <strong>רכזי מתנדבים:</strong> 
-                {vcNames.length > 0 ? (
-                  <div className="coordinators-list">
-                    {vcNames.map((name, index) => (
-                      <span key={index} className="coordinator-name">
-                        {name}
-                      </span>
-                    ))}
+              {/* Hide these fields from volunteers */}
+              {!isVolunteer && (
+                <>
+                  <div className="contact-field">
+                    <strong>נציג הארגון:</strong> {getOrgRepName(org.id)}
                   </div>
-                ) : (
-                  <span> לא צוין</span>
-                )}
-              </div>
-              
-              <div className="contact-field">
-                <strong>מספר מתנדבים:</strong> {volunteerCount}
-              </div>
+                  
+                  <div className="contact-field">
+                    <strong>רכזי מתנדבים:</strong> 
+                    {vcNames.length > 0 ? (
+                      <div className="coordinators-list">
+                        {vcNames.map((name, index) => (
+                          <span key={index} className="coordinator-name">
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span> לא צוין</span>
+                    )}
+                  </div>
+                  
+                  <div className="contact-field">
+                    <strong>מספר מתנדבים:</strong> {volunteerCount}
+                  </div>
 
-              {volunteerUsers.length > 0 && (
-                <div className="volunteers-list">
-                  <strong>רשימת מתנדבים:</strong>
-                  <div className="volunteers-names">
-                    {volunteerUsers.map(volunteer => (
-                      <span key={volunteer.id || volunteer.docId} className="volunteer-name">
-                        {volunteer.firstName || volunteer.name || `מזהה: ${volunteer.id || volunteer.docId}`}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                  {volunteerUsers.length > 0 && (
+                    <div className="volunteers-list">
+                      <strong>רשימת מתנדבים:</strong>
+                      <div className="volunteers-names">
+                        {volunteerUsers.map(volunteer => (
+                          <span key={volunteer.id || volunteer.docId} className="volunteer-name">
+                            {volunteer.firstName || volunteer.name || `מזהה: ${volunteer.id || volunteer.docId}`}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
-            <div className="modal-actions">
-              <button
-                onClick={() => setIsEditing(true)}
-                className="edit-button"
-              >
-                <HiPencilAlt /> עריכה
-              </button>
-              <button
-                className="delete-button"
-                onClick={handleDelete}
-              >
-                🗑 מחיקת הארגון
-              </button>
-            </div>
+            {/* Hide edit and delete buttons from volunteers */}
+            {!isVolunteer && (
+              <div className="modal-actions">
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="edit-button"
+                >
+                  <HiPencilAlt /> עריכה
+                </button>
+                <button
+                  className="delete-button"
+                  onClick={handleDelete}
+                >
+                  🗑 מחיקת הארגון
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

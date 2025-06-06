@@ -21,7 +21,9 @@ const OrganizationsList = () => {
   const {
     users,
     getUsers,
-    loading: usersLoading
+    loading: usersLoading,
+    currentUser,
+    currentUserHasRole
   } = useUsers();
 
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -29,6 +31,9 @@ const OrganizationsList = () => {
   const [cityFilter, setCityFilter] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [filteredOrgs, setFilteredOrgs] = useState([]);
+
+  // Check if current user is a volunteer
+  const isVolunteer = currentUserHasRole('volunteer') || currentUserHasRole('Volunteer');
 
   // Helper function to get city value - handles different possible field names
   const getCityValue = (org) => {
@@ -62,7 +67,8 @@ const OrganizationsList = () => {
   useEffect(() => {
     console.log('📊 Organizations state - loading:', loading, 'count:', organizations.length, 'error:', error);
     console.log('👥 Users state - loading:', usersLoading, 'count:', users.length);
-  }, [loading, organizations, error, usersLoading, users]);
+    console.log('👤 Current user role check - isVolunteer:', isVolunteer);
+  }, [loading, organizations, error, usersLoading, users, isVolunteer]);
 
   // Filter organizations based on search and city filter
   useEffect(() => {
@@ -87,6 +93,12 @@ const OrganizationsList = () => {
   }, [organizations, searchTerm, cityFilter]);
 
   const handleDeleteOrg = async (orgId) => {
+    // Prevent volunteers from deleting organizations
+    if (isVolunteer) {
+      console.log('❌ Volunteer users cannot delete organizations');
+      return;
+    }
+
     if (window.confirm("האם את בטוחה שברצונך למחוק את הארגון?")) {
       try {
         await deleteOrganization(orgId);
@@ -100,6 +112,12 @@ const OrganizationsList = () => {
   };
 
   const handleSaveOrg = async (orgData) => {
+    // Prevent volunteers from saving organizations
+    if (isVolunteer) {
+      console.log('❌ Volunteer users cannot create/edit organizations');
+      return;
+    }
+
     try {
       if (orgData.id && organizations.find(o => o.id === orgData.id)) {
         // Update existing organization
@@ -201,12 +219,15 @@ const OrganizationsList = () => {
             </button>
           </div>
 
-          <button
-            className="add-org-button"
-            onClick={() => setIsAdding(true)}
-          >
-            הוספת ארגון חדש
-          </button>
+          {/* Only show "Add Organization" button if user is NOT a volunteer */}
+          {!isVolunteer && (
+            <button
+              className="add-org-button"
+              onClick={() => setIsAdding(true)}
+            >
+              הוספת ארגון חדש
+            </button>
+          )}
         </div>
       </div>
 
@@ -224,6 +245,7 @@ const OrganizationsList = () => {
                 org={org}
                 onShowDetails={setSelectedOrg}
                 allUsers={users}
+                isVolunteer={isVolunteer}
               />
             ))}
           </div>
@@ -251,6 +273,7 @@ const OrganizationsList = () => {
           onDelete={handleDeleteOrg}
           isNew={isAdding}
           allUsers={users}
+          isVolunteer={isVolunteer}
         />
       )}
     </div>

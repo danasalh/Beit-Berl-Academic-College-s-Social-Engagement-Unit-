@@ -1,0 +1,172 @@
+.progress-bar-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+.progress-bar-track {
+  position: relative;
+  height: 24px;
+  background-color: #eee;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.progress-bar-track.celebrate {
+  animation: celebrateGlow 1.5s infinite;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+@keyframes celebrateGlow {
+  0% {
+    box-shadow: 0 0 6px #ffeb3b, 0 0 10px #f06292;
+  }
+  50% {
+    box-shadow: 0 0 12px #81d4fa, 0 0 18px #aed581;
+  }
+  100% {
+    box-shadow: 0 0 6px #ffeb3b, 0 0 10px #f06292;
+  }
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #43a047;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.progress-bar-fill.glow {
+  animation: fillGlow 1.2s ease-in-out infinite;
+  transform: scale(1.015);
+}
+
+@keyframes fillGlow {
+  0% {
+    box-shadow: 0 0 4px rgba(67, 160, 71, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(67, 160, 71, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 4px rgba(67, 160, 71, 0.4);
+  }
+}
+
+.progress-bar-fill-tooltip {
+  position: absolute;
+  top: 28px;
+  left: 100%;
+  transform: translateX(-100%) translateY(-10px);
+  font-size: 13px;
+  font-weight: bold;
+  color: #2196f3;
+  white-space: nowrap;
+  z-index: 11;
+  opacity: 0;
+  text-shadow: 0 0 2px rgba(33, 150, 243, 0.5);
+}
+
+.animate-tooltip {
+  animation: fadeDown 0.4s ease forwards;
+}
+
+@keyframes fadeDown {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%) translateY(-15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-100%) translateY(0);
+  }
+}
+
+.celebrate-text {
+  animation: bounceDance 1.2s ease-in-out infinite;
+  opacity: 1 !important;
+  color: #f50057;
+}
+
+@keyframes bounceDance {
+  0%, 100% {
+    transform: translateX(-100%) translateY(0);
+  }
+  25% {
+    transform: translateX(-100%) translateY(-5px) rotate(-2deg);
+  }
+  50% {
+    transform: translateX(-100%) translateY(3px) rotate(2deg);
+  }
+  75% {
+    transform: translateX(-100%) translateY(-4px) rotate(-1deg);
+  }
+}
+
+.progress-bar-tick-wrapper {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.progress-bar-tick {
+  width: 16px;
+  height: 16px;
+  background-color: #66bb6a;
+  border-radius: 50%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.progress-bar-tick-wrapper:hover .progress-bar-tick {
+  transform: scale(1.4);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+.progress-bar-tooltip {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-5px);
+  font-size: 12px;
+  color: #2196f3;
+  opacity: 0;
+  transition: all 0.25s ease;
+  font-weight: bold;
+  white-space: nowrap;
+  z-index: 10;
+  text-shadow: 0 0 2px rgba(33, 150, 243, 0.5);
+}
+
+.progress-bar-tick-wrapper:hover .progress-bar-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  animation: glow 0.8s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 4px rgba(33, 150, 243, 0.6);
+  }
+  50% {
+    text-shadow: 0 0 8px rgba(33, 150, 243, 0.8);
+  }
+  100% {
+    text-shadow: 0 0 4px rgba(33, 150, 243, 0.6);
+  }
+}
+
+.progress-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 1rem;
+  width: 100%;
+  color: #2196f3; /* Blue color for the labels */
+  font-weight: bold;
+}

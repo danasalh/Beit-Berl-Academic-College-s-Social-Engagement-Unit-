@@ -1,7 +1,5 @@
 // src/components/pages/orgRep/Dashboard/OrgRepDashboard.jsx
 
-import React from 'react';
-
 export default function OrgRepDashboard() {
   return (
     <div style={{ padding: '2rem' }}>
