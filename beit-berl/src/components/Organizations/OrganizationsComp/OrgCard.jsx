@@ -1,6 +1,6 @@
 import { HiLocationMarker } from 'react-icons/hi';
 
-const OrgCard = ({ org, onShowDetails, allUsers = [] }) => {
+const OrgCard = ({ org, onShowDetails, allUsers = [], isVolunteer = false }) => {
   // Helper function to truncate text
   const truncateText = (text, maxLength = 100) => {
     if (!text) return '';
@@ -65,11 +65,14 @@ const OrgCard = ({ org, onShowDetails, allUsers = [] }) => {
         </p>
       )}
 
-      <div className="org-stats">
-        <span className="volunteer-count">
-          מתנדבים פעילים: {volunteerCount}
-        </span>
-      </div>
+      {/* Only show volunteer count if user is NOT a volunteer */}
+      {!isVolunteer && (
+        <div className="org-stats">
+          <span className="volunteer-count">
+            מתנדבים פעילים: {volunteerCount}
+          </span>
+        </div>
+      )}
       
       <button 
         onClick={() => onShowDetails(org)}
