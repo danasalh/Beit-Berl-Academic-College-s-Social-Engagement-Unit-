@@ -4,6 +4,7 @@ import { useUsers } from '../../Contexts/UsersContext';
 import { useOrganizations } from '../../Contexts/OrganizationsContext';
 import UserProfile from '../UserProfile/UserProfile';
 import FilterBar from '../FilterBar/FilterBar';
+import FeedbackPopup from '../PopUps/FeedbackPopup/FeedbackPopup';
 import './UsersData.css';
 import { HiOutlineEye, HiOutlinePencil, HiX } from 'react-icons/hi';
 
@@ -34,7 +35,28 @@ const UsersData = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [statusUpdating, setStatusUpdating] = useState(null);
   const [componentLoading, setComponentLoading] = useState(false);
-  
+
+  //feedback states
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+  const [feedbackTargetUser, setFeedbackTargetUser] = useState(null);
+
+  // Handle feedback for volunteer users
+  const handleFeedback = useCallback((user) => {
+    console.log('Opening feedback popup for user:', user.id);
+    console.log('User data:', user);
+    setFeedbackTargetUser(user);
+    setShowFeedbackPopup(true);
+    // Close the profile modal when opening feedback
+    setShowProfile(false);
+    console.log('State should be updated - showFeedbackPopup: true');
+  }, []);
+
+  // Close feedback popup
+  const closeFeedbackPopup = useCallback(() => {
+    setShowFeedbackPopup(false);
+    setFeedbackTargetUser(null);
+  }, []);
+
   // Success notification state
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
@@ -55,13 +77,13 @@ const UsersData = () => {
       try {
         setComponentLoading(true);
         console.log('🚀 Fetching users and organizations on component mount...');
-        
+
         // Fetch both users and organizations
         await Promise.all([
           users.length === 0 ? getUsers() : Promise.resolve(),
           organizations.length === 0 ? getOrganizations() : Promise.resolve()
         ]);
-        
+
         console.log('✅ Data fetched successfully');
       } catch (error) {
         console.error('❌ Error fetching data:', error);
@@ -90,25 +112,25 @@ const UsersData = () => {
   // Helper function to get organization names from IDs
   const getOrganizationNames = useCallback((orgIds) => {
     if (!orgIds) return 'N/A';
-    
+
     // Handle single orgId (backward compatibility)
     if (typeof orgIds === 'string' || typeof orgIds === 'number') {
       const org = organizations.find(o => o.id === orgIds || o.id === parseInt(orgIds));
       return org ? org.name || `Org ${org.id}` : `Unknown Org (${orgIds})`;
     }
-    
+
     // Handle array of orgIds
     if (Array.isArray(orgIds)) {
       if (orgIds.length === 0) return 'N/A';
-      
+
       const orgNames = orgIds.map(orgId => {
         const org = organizations.find(o => o.id === orgId || o.id === parseInt(orgId));
         return org ? org.name || `Org ${org.id}` : `Unknown Org (${orgId})`;
       });
-      
+
       return orgNames.join(', ');
     }
-    
+
     return 'N/A';
   }, [organizations]);
 
@@ -137,20 +159,20 @@ const UsersData = () => {
 
     // Use docId instead of id for status updating
     setStatusUpdating(user.docId);
-    
+
     try {
       console.log(`Updating user ${user.docId} status from ${user.status} to ${statusAction.newStatus}`);
-      
+
       // Use docId for the update
       await updateUser(user.docId, { status: statusAction.newStatus });
-      
+
       // Refresh data after successful update
       await refreshData();
-      
+
       // Show success message
       const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User';
       showSuccess(`${userName} status updated to ${statusAction.newStatus} successfully!`);
-      
+
       console.log(`Successfully updated user ${user.docId} status to ${statusAction.newStatus}`);
     } catch (err) {
       console.error('Error updating user status:', err);
@@ -166,26 +188,26 @@ const UsersData = () => {
       console.error('No selected user document ID');
       return;
     }
-    
+
     try {
       console.log(`Updating user ${selectedUser.docId} status from ${selectedUser.status} to ${newStatus}`);
-      
+
       // Use docId for the update
       await updateUser(selectedUser.docId, { status: newStatus });
-      
+
       // Update selected user object locally
       setSelectedUser(prev => ({
         ...prev,
         status: newStatus
       }));
-      
+
       // Refresh data after successful update
       await refreshData();
-      
+
       // Show success message
       const userName = `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.email || 'User';
       showSuccess(`${userName} status updated to ${newStatus} successfully!`);
-      
+
       console.log(`Successfully updated user ${selectedUser.docId} status to ${newStatus}`);
     } catch (err) {
       console.error('Error updating user status:', err);
@@ -203,7 +225,7 @@ const UsersData = () => {
   // Handle edit user
   const handleEdit = useCallback((user) => {
     console.log('Editing user with ID:', user.id, 'Document ID:', user.docId);
-    
+
     // Get user's current organizations
     let userOrganizations = [];
     if (user.orgId) {
@@ -219,7 +241,7 @@ const UsersData = () => {
         }
       }
     }
-    
+
     setSelectedUser(user);
     setEditFormData({
       firstName: user.firstName || '',
@@ -284,9 +306,9 @@ const UsersData = () => {
         docId: selectedUser.docId,
         userId: selectedUser.id
       });
-      
+
       // Ensure orgIds is an array of numbers
-      const orgIds = selectedOrganizations.length > 0 
+      const orgIds = selectedOrganizations.length > 0
         ? selectedOrganizations.map(org => Number(org.id))
         : [];
 
@@ -311,20 +333,20 @@ const UsersData = () => {
 
       // Use the document ID instead of the user ID
       await updateUser(selectedUser.docId, updateData);
-      
+
       // Refresh data after successful update
       await refreshData();
-      
+
       // Show success message
       const userName = `${editFormData.firstName || ''} ${editFormData.lastName || ''}`.trim() || editFormData.email || 'User';
       showSuccess(`${userName} has been updated successfully!`);
-      
+
       // Clear form state after successful update
       setShowEditModal(false);
       setSelectedUser(null);
       setEditFormData({});
       setSelectedOrganizations([]);
-      
+
       console.log('✅ User updated successfully');
     } catch (err) {
       console.error('❌ Error updating user:', err);
@@ -348,7 +370,7 @@ const UsersData = () => {
   // Format date
   const formatDate = useCallback((timestamp) => {
     if (!timestamp) return 'N/A';
-    
+
     try {
       // Handle Firestore timestamp
       if (timestamp.toDate) {
@@ -393,22 +415,22 @@ const UsersData = () => {
   const filteredUsers = React.useMemo(() => {
     return users.filter(user => {
       const searchLower = searchTerm.toLowerCase();
-      
+
       // Search by email or phone
-      const matchesSearch = !searchTerm || 
+      const matchesSearch = !searchTerm ||
         (user.email && user.email.toLowerCase().includes(searchLower)) ||
         (user.phoneNumber && user.phoneNumber.toLowerCase().includes(searchLower));
-      
+
       // Separate first name and last name filters
-      const matchesFirstName = !filterFirstName || 
+      const matchesFirstName = !filterFirstName ||
         (user.firstName && user.firstName.toLowerCase().includes(filterFirstName.toLowerCase()));
-      
-      const matchesLastName = !filterLastName || 
+
+      const matchesLastName = !filterLastName ||
         (user.lastName && user.lastName.toLowerCase().includes(filterLastName.toLowerCase()));
-        
+
       const matchesRole = !filterRole || user.role === filterRole;
       const matchesStatus = !filterStatus || user.status === filterStatus;
-      
+
       return matchesSearch && matchesFirstName && matchesLastName && matchesRole && matchesStatus;
     });
   }, [users, searchTerm, filterFirstName, filterLastName, filterRole, filterStatus]);
@@ -422,7 +444,7 @@ const UsersData = () => {
 
   // Get available organizations for dropdown (excluding already selected ones)
   const availableOrganizations = React.useMemo(() => {
-    return organizations.filter(org => 
+    return organizations.filter(org =>
       !selectedOrganizations.some(selected => selected.id === org.id)
     );
   }, [organizations, selectedOrganizations]);
@@ -498,8 +520,8 @@ const UsersData = () => {
       {filteredUsers.length === 0 ? (
         <div className="no-users">
           <p>
-            {users.length === 0 
-              ? 'לא נמצאו משתמשים' 
+            {users.length === 0
+              ? 'לא נמצאו משתמשים'
               : 'לא נמצאו משתמשים התואמים לקריטריונים שנבחרו'
             }
           </p>
@@ -523,7 +545,7 @@ const UsersData = () => {
                 {filteredUsers.map((user) => {
                   const statusAction = getStatusAction(user.status);
                   const isUpdating = statusUpdating === user.docId;
-                  
+
                   return (
                     <tr key={user.docId || user.id}>
                       <td data-label="Name">
@@ -570,7 +592,7 @@ const UsersData = () => {
                             onClick={() => handleWatch(user)}
                             title="View Profile"
                           >
-                            <HiOutlineEye/>
+                            <HiOutlineEye />
                           </button>
                           <button
                             className="btn btn-edit"
@@ -596,6 +618,7 @@ const UsersData = () => {
           user={selectedUser}
           organizations={organizations}
           onClose={closeProfile}
+          onFeedback={handleFeedback}
         />
       )}
 
@@ -684,7 +707,7 @@ const UsersData = () => {
                 {/* Organizations Selection */}
                 <div className="form-group organizations-group">
                   <label>Organizations (Max 3):</label>
-                  
+
                   {/* Selected Organizations */}
                   {selectedOrganizations.length > 0 && (
                     <div className="selected-organizations">
@@ -713,8 +736,8 @@ const UsersData = () => {
                         disabled={availableOrganizations.length === 0}
                       >
                         <option value="">
-                          {availableOrganizations.length === 0 
-                            ? 'No more organizations available' 
+                          {availableOrganizations.length === 0
+                            ? 'No more organizations available'
                             : 'Select an organization to add'
                           }
                         </option>
@@ -741,7 +764,7 @@ const UsersData = () => {
                       </span>
                       <div className="status-actions">
                         {(selectedUser.status === 'pending' || selectedUser.status === 'waiting for approval') && (
-                          <button 
+                          <button
                             type="button"
                             className="btn btn-status btn-success"
                             onClick={() => handleStatusUpdateInModal('approved')}
@@ -750,7 +773,7 @@ const UsersData = () => {
                           </button>
                         )}
                         {selectedUser.status === 'approved' && (
-                          <button 
+                          <button
                             type="button"
                             className="btn btn-status btn-warning"
                             onClick={() => handleStatusUpdateInModal('inactive')}
@@ -759,7 +782,7 @@ const UsersData = () => {
                           </button>
                         )}
                         {selectedUser.status === 'inactive' && (
-                          <button 
+                          <button
                             type="button"
                             className="btn btn-status btn-success"
                             onClick={() => handleStatusUpdateInModal('approved')}
@@ -783,6 +806,14 @@ const UsersData = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Feedback Popup - Moved outside and with highest z-index */}
+      {showFeedbackPopup && feedbackTargetUser && (
+        <FeedbackPopup
+          targetUser={feedbackTargetUser}  
+          onClose={closeFeedbackPopup}
+        />
       )}
     </div>
   );
