@@ -11,6 +11,7 @@ import {
   query, 
   where, 
   orderBy,
+  onSnapshot, // Add this import
   Timestamp 
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -42,6 +43,31 @@ export const NotificationsProvider = ({ children }) => {
     // Ensure title is included (with fallback if not present in older documents)
     title: doc.data().title || 'Notification'
   }), []);
+
+  // NEW: Real-time listener for notifications by receiver
+  const subscribeToNotificationsByReceiver = useCallback((receiverId, callback) => {
+    console.log('🔔 Setting up real-time listener for receiver:', receiverId);
+    
+    const q = query(
+      notificationsCollection, 
+      where('receiverId', '==', receiverId),
+      orderBy('date', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, 
+      (querySnapshot) => {
+        const notificationsData = querySnapshot.docs.map(convertDocToNotification);
+        console.log(`✅ Real-time update: ${notificationsData.length} notifications for receiver: ${receiverId}`);
+        callback(notificationsData);
+      },
+      (error) => {
+        console.error('❌ Error in real-time listener:', error);
+        setError(error.message);
+      }
+    );
+
+    return unsubscribe;
+  }, [convertDocToNotification]);
 
   // Get all notifications
   const getNotifications = useCallback(async () => {
@@ -190,7 +216,7 @@ export const NotificationsProvider = ({ children }) => {
 
     try {
       // Validate notification type
-      const validTypes = ['reminder', 'approval-needed'];
+      const validTypes = ['reminder', 'approval-needed', 'feedback-notification']; // Add feedback-notification
       if (!validTypes.includes(notificationData.type)) {
         throw new Error(`Invalid notification type. Must be one of: ${validTypes.join(', ')}`);
       }
@@ -500,7 +526,8 @@ export const NotificationsProvider = ({ children }) => {
     deleteNotification,
     deleteAllReadNotifications,
     getNotificationCount,
-    searchNotifications
+    searchNotifications,
+    subscribeToNotificationsByReceiver // Add this new function
   };
 
   return (

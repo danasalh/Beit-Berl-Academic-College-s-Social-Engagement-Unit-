@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useNotifications } from "../../../contexts/NotificationsContext";
-import { useUsers } from "../../../contexts/UsersContext";
+import { useNotifications } from "../../../Contexts/NotificationsContext";
+import { useUsers } from "../../../Contexts/UsersContext";
 import "./NotificationsPanel.css";
 
 export default function NotificationsPanel() {
