@@ -147,3 +147,76 @@
     background-color: white;
   }
 }
+
+/* Additional CSS for SubmitHoursBar.css */
+
+.organization-selector {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.org-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  text-align: right;
+}
+
+.org-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background-color: white;
+  color: #2d3748;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: right;
+  direction: rtl;
+}
+
+.org-select:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.org-select:disabled {
+  background-color: #f7fafc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.org-select option {
+  padding: 0.5rem;
+  direction: rtl;
+}
+
+.no-organizations-message {
+  text-align: center;
+  padding: 2rem;
+  background-color: #fef5e7;
+  border: 1px solid #f6ad55;
+  border-radius: 0.5rem;
+  color: #c05621;
+}
+
+.no-organizations-message p {
+  margin: 0.5rem 0;
+  font-weight: 500;
+}
+
+/* Update submit button to show disabled state when no org selected */
+.submit-button:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.submit-button:disabled:hover {
+  background-color: #cbd5e0;
+  transform: none;
+}
