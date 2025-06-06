@@ -1,5 +1,4 @@
 import Settings from '../../../Settings/Settings';
-import UserProfile from '../../../UserProfile/UserProfile';
 
 export default function AdminSettings() {
   return (

@@ -307,3 +307,13 @@
     max-width: none;
   }
 }
+
+/* Z-index hierarchy for modals */
+.modal-overlay {
+  z-index: 1000;
+}
+
+.modal-content {
+  z-index: 1001;
+}
+

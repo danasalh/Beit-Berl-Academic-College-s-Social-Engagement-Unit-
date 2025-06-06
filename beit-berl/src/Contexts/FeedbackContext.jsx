@@ -1,5 +1,5 @@
 // src/contexts/FeedbackContext.jsx
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { 
   collection, 
   doc, 
@@ -26,11 +26,12 @@ export function FeedbackProvider({ children }) {
   const [error, setError] = useState(null);
 
   // Fetch all feedback for a volunteer
-  const getFeedbackByVolunteerId = async (volunteerId) => {
+  const getFeedbackByVolunteerId = useCallback(async (volunteerId) => {
     try {
       setLoading(true);
+      setError(null);
       console.log(`Fetching feedback for volunteer ID: ${volunteerId}`);
-      const feedbackCollection = collection(db, 'Feedback');
+      const feedbackCollection = collection(db, 'feedback');
       const q = query(
         feedbackCollection, 
         where('volunteerId', '==', volunteerId),
@@ -45,22 +46,23 @@ export function FeedbackProvider({ children }) {
       
       setFeedback(volunteerFeedback);
       console.log(`Found ${volunteerFeedback.length} feedback entries for volunteer:`, volunteerFeedback);
-      setLoading(false);
       return volunteerFeedback;
     } catch (err) {
       console.error('Error fetching volunteer feedback:', err);
       setError('Failed to fetch volunteer feedback');
-      setLoading(false);
       return [];
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
   // Fetch feedback given by a volunteer coordinator
-  const getFeedbackByCoordinatorId = async (coordinatorId) => {
+  const getFeedbackByCoordinatorId = useCallback(async (coordinatorId) => {
     try {
       setLoading(true);
+      setError(null);
       console.log(`Fetching feedback given by coordinator ID: ${coordinatorId}`);
-      const feedbackCollection = collection(db, 'Feedback');
+      const feedbackCollection = collection(db, 'feedback');
       const q = query(
         feedbackCollection, 
         where('fromVCId', '==', coordinatorId),
@@ -75,21 +77,22 @@ export function FeedbackProvider({ children }) {
       
       setFeedback(coordinatorFeedback);
       console.log(`Found ${coordinatorFeedback.length} feedback entries from coordinator:`, coordinatorFeedback);
-      setLoading(false);
       return coordinatorFeedback;
     } catch (err) {
       console.error('Error fetching coordinator feedback:', err);
       setError('Failed to fetch coordinator feedback');
-      setLoading(false);
       return [];
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
   // Get a single feedback by ID
-  const getFeedbackById = async (feedbackId) => {
+  const getFeedbackById = useCallback(async (feedbackId) => {
     try {
+      setError(null);
       console.log(`Fetching feedback with ID: ${feedbackId}`);
-      const feedbackRef = doc(db, 'Feedback', feedbackId);
+      const feedbackRef = doc(db, 'feedback', feedbackId);
       const feedbackSnap = await getDoc(feedbackRef);
       
       if (feedbackSnap.exists()) {
@@ -105,11 +108,12 @@ export function FeedbackProvider({ children }) {
       setError('Failed to get feedback');
       return null;
     }
-  };
+  }, []);
 
   // Create new feedback
-  const createFeedback = async (feedbackData) => {
+  const createFeedback = useCallback(async (feedbackData) => {
     try {
+      setError(null);
       // Ensure we set default values for required fields
       const completeFeedback = {
         date: new Date(),
@@ -117,7 +121,7 @@ export function FeedbackProvider({ children }) {
       };
       
       console.log('Creating new feedback with data:', completeFeedback);
-      const feedbackCollection = collection(db, 'Feedback');
+      const feedbackCollection = collection(db, 'feedback');
       const docRef = await addDoc(feedbackCollection, completeFeedback);
       const newFeedback = { id: docRef.id, ...completeFeedback };
       
@@ -131,13 +135,14 @@ export function FeedbackProvider({ children }) {
       setError('Failed to create feedback');
       return null;
     }
-  };
+  }, []);
 
   // Update existing feedback
-  const updateFeedback = async (feedbackId, feedbackData) => {
+  const updateFeedback = useCallback(async (feedbackId, feedbackData) => {
     try {
+      setError(null);
       console.log(`Updating feedback ${feedbackId} with data:`, feedbackData);
-      const feedbackRef = doc(db, 'Feedback', feedbackId);
+      const feedbackRef = doc(db, 'feedback', feedbackId);
       await updateDoc(feedbackRef, feedbackData);
       
       // Update state
@@ -154,13 +159,14 @@ export function FeedbackProvider({ children }) {
       setError('Failed to update feedback');
       return false;
     }
-  };
+  }, []);
 
   // Delete feedback
-  const deleteFeedback = async (feedbackId) => {
+  const deleteFeedback = useCallback(async (feedbackId) => {
     try {
+      setError(null);
       console.log(`Deleting feedback with ID: ${feedbackId}`);
-      const feedbackRef = doc(db, 'Feedback', feedbackId);
+      const feedbackRef = doc(db, 'feedback', feedbackId);
       await deleteDoc(feedbackRef);
       
       // Update state
@@ -173,7 +179,12 @@ export function FeedbackProvider({ children }) {
       setError('Failed to delete feedback');
       return false;
     }
-  };
+  }, []);
+
+  // Clear error function
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   const value = {
     feedback,
@@ -184,7 +195,8 @@ export function FeedbackProvider({ children }) {
     getFeedbackById,
     createFeedback,
     updateFeedback,
-    deleteFeedback
+    deleteFeedback,
+    clearError
   };
 
   return (
