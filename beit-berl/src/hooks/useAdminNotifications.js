@@ -1,15 +1,16 @@
-// src/hooks/useAdminNotifications.js
+// src/hooks/useRoleBasedNotifications.js
 import { useState, useEffect, useCallback } from 'react';
 import { useNotifications } from '../Contexts/NotificationsContext';
 import { useUsers } from '../Contexts/UsersContext';
 
-export const useAdminNotifications = () => {
+export const useRoleBasedNotifications = () => {
   const { 
     getNotificationsByReceiver, 
     getUnreadNotificationsByReceiver,
     markNotificationAsRead,
     markAllNotificationsAsRead,
-    getNotificationCount 
+    getNotificationCount,
+    subscribeToNotificationsByReceiver
   } = useNotifications();
   
   const { currentUser } = useUsers();
@@ -19,12 +20,19 @@ export const useAdminNotifications = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Check if current user is admin
-  const isAdmin = currentUser?.role === 'admin';
+  // Get current user ID consistently
+  const getUserId = (user) => user?.id || user?.docId;
+  const currentUserId = getUserId(currentUser);
 
-  // Fetch notifications for current admin user
+  // Check user role
+  const isAdmin = currentUser?.role === 'admin';
+  const isOrgRep = currentUser?.role === 'orgRep';
+  const isVC = currentUser?.role === 'vc';
+  const isVolunteer = currentUser?.role === 'volunteer';
+
+  // Fetch notifications for current user
   const fetchNotifications = useCallback(async () => {
-    if (!currentUser?.id || !isAdmin) {
+    if (!currentUserId) {
       setNotifications([]);
       setUnreadCount(0);
       return;
@@ -35,31 +43,74 @@ export const useAdminNotifications = () => {
 
     try {
       const [allNotifications, unreadNotifications] = await Promise.all([
-        getNotificationsByReceiver(String(currentUser.id)),
-        getUnreadNotificationsByReceiver(String(currentUser.id))
+        getNotificationsByReceiver(String(currentUserId)),
+        getUnreadNotificationsByReceiver(String(currentUserId))
       ]);
 
       setNotifications(allNotifications || []);
       setUnreadCount(unreadNotifications?.length || 0);
     } catch (err) {
-      console.error('Error fetching admin notifications:', err);
+      console.error('Error fetching notifications:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [currentUser?.id, isAdmin, getNotificationsByReceiver, getUnreadNotificationsByReceiver]);
+  }, [currentUserId, getNotificationsByReceiver, getUnreadNotificationsByReceiver]);
 
-  // Get only feedback notifications
+  // Set up real-time listener
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    console.log('🔔 Setting up real-time notifications for user:', currentUserId);
+    
+    const unsubscribe = subscribeToNotificationsByReceiver(
+      String(currentUserId),
+      (notificationsData) => {
+        console.log('📨 Real-time notifications update:', notificationsData.length);
+        setNotifications(notificationsData);
+        
+        // Update unread count
+        const unreadNotifications = notificationsData.filter(n => !n.read);
+        setUnreadCount(unreadNotifications.length);
+      }
+    );
+
+    return () => {
+      console.log('🔕 Cleaning up real-time notifications listener');
+      unsubscribe();
+    };
+  }, [currentUserId, subscribeToNotificationsByReceiver]);
+
+  // Get notifications by type
+  const getNotificationsByType = useCallback((type) => {
+    return notifications.filter(notification => notification.type === type);
+  }, [notifications]);
+
+  // Get approval-needed notifications (for admins, orgReps, VCs)
+  const getApprovalNotifications = useCallback(() => {
+    return notifications.filter(notification => 
+      notification.type === 'approval-needed'
+    );
+  }, [notifications]);
+
+  // Get unread approval notifications
+  const getUnreadApprovalNotifications = useCallback(() => {
+    return notifications.filter(notification => 
+      notification.type === 'approval-needed' && !notification.read
+    );
+  }, [notifications]);
+
+  // Get feedback notifications (for admins)
   const getFeedbackNotifications = useCallback(() => {
     return notifications.filter(notification => 
       notification.type === 'feedback-notification'
     );
   }, [notifications]);
 
-  // Get unread feedback notifications
-  const getUnreadFeedbackNotifications = useCallback(() => {
+  // Get reminder notifications (for volunteers)
+  const getReminderNotifications = useCallback(() => {
     return notifications.filter(notification => 
-      notification.type === 'feedback-notification' && !notification.read
+      notification.type === 'reminder'
     );
   }, [notifications]);
 
@@ -84,10 +135,10 @@ export const useAdminNotifications = () => {
 
   // Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
-    if (!currentUser?.id || !isAdmin) return;
+    if (!currentUserId) return;
 
     try {
-      await markAllNotificationsAsRead(String(currentUser.id));
+      await markAllNotificationsAsRead(String(currentUserId));
       // Update local state
       setNotifications(prev => 
         prev.map(notification => ({ ...notification, read: true }))
@@ -97,37 +148,19 @@ export const useAdminNotifications = () => {
       console.error('Error marking all notifications as read:', error);
       throw error;
     }
-  }, [currentUser?.id, isAdmin, markAllNotificationsAsRead]);
+  }, [currentUserId, markAllNotificationsAsRead]);
 
   // Get notification count
   const getCount = useCallback(async (unreadOnly = false) => {
-    if (!currentUser?.id || !isAdmin) return 0;
+    if (!currentUserId) return 0;
 
     try {
-      return await getNotificationCount(String(currentUser.id), unreadOnly);
+      return await getNotificationCount(String(currentUserId), unreadOnly);
     } catch (error) {
       console.error('Error getting notification count:', error);
       return 0;
     }
-  }, [currentUser?.id, isAdmin, getNotificationCount]);
-
-  // Auto-refresh notifications when user logs in or role changes
-  useEffect(() => {
-    if (isAdmin && currentUser?.id) {
-      fetchNotifications();
-    }
-  }, [fetchNotifications, isAdmin, currentUser?.id]);
-
-  // Set up interval to check for new notifications (optional)
-  useEffect(() => {
-    if (!isAdmin || !currentUser?.id) return;
-
-    const interval = setInterval(() => {
-      fetchNotifications();
-    }, 30000); // Check every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [fetchNotifications, isAdmin, currentUser?.id]);
+  }, [currentUserId, getNotificationCount]);
 
   return {
     // Data
@@ -135,19 +168,32 @@ export const useAdminNotifications = () => {
     unreadCount,
     loading,
     error,
+    currentUserId,
+    
+    // User role checks
     isAdmin,
+    isOrgRep,
+    isVC,
+    isVolunteer,
     
     // Methods
     fetchNotifications,
-    getFeedbackNotifications,
-    getUnreadFeedbackNotifications,
     markAsRead,
     markAllAsRead,
     getCount,
     
+    // Filtered notifications by type
+    getNotificationsByType,
+    getApprovalNotifications,
+    getUnreadApprovalNotifications,
+    getFeedbackNotifications,
+    getReminderNotifications,
+    
     // Computed values
     hasUnreadNotifications: unreadCount > 0,
+    approvalNotifications: getApprovalNotifications(),
+    unreadApprovalNotifications: getUnreadApprovalNotifications(),
     feedbackNotifications: getFeedbackNotifications(),
-    unreadFeedbackNotifications: getUnreadFeedbackNotifications()
+    reminderNotifications: getReminderNotifications()
   };
 };
