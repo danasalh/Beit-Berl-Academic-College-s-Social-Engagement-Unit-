@@ -1,7 +1,10 @@
-// src/components/UserProfile/UserProfile.jsx
+import React from 'react';
+import { useUsers } from '../../Contexts/UsersContext'; // Import the useUsers hook
 import './UserProfile.css';
 
-const UserProfile = ({ user, organizations = [], onClose }) => {
+const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
+  const { currentUser } = useUsers(); // Get current logged-in user
+
   // Ensure user exists
   if (!user) {
     return null; // Don't render anything if no user
@@ -19,27 +22,30 @@ const UserProfile = ({ user, organizations = [], onClose }) => {
   // Helper function to get organization names from IDs
   const getOrganizationNames = (orgIds) => {
     if (!orgIds) return 'N/A';
-    
+
     // Handle single orgId (backward compatibility)
     if (typeof orgIds === 'string' || typeof orgIds === 'number') {
       const org = organizations.find(o => o.id === orgIds || o.id === parseInt(orgIds));
       return org ? org.name || `Org ${org.id}` : `Unknown Org (${orgIds})`;
     }
-    
+
     // Handle array of orgIds
     if (Array.isArray(orgIds)) {
       if (orgIds.length === 0) return 'N/A';
-      
+
       const orgNames = orgIds.map(orgId => {
         const org = organizations.find(o => o.id === orgId || o.id === parseInt(orgId));
         return org ? org.name || `Org ${org.id}` : `Unknown Org (${orgId})`;
       });
-      
+
       return orgNames.join(', ');
     }
-    
+
     return 'N/A';
   };
+
+  // Check if current user is admin
+  const isAdmin = currentUser?.role === 'admin';
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -51,8 +57,8 @@ const UserProfile = ({ user, organizations = [], onClose }) => {
         <div className="modal-body">
           <div className="profile-section">
             <div className="profile-avatar">
-              {user.firstName ? user.firstName.charAt(0).toUpperCase() : 
-               user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+              {user.firstName ? user.firstName.charAt(0).toUpperCase() :
+                user.email ? user.email.charAt(0).toUpperCase() : 'U'}
             </div>
             <h4>{user.firstName || 'Unknown'} {user.lastName || ''}</h4>
           </div>
@@ -100,6 +106,26 @@ const UserProfile = ({ user, organizations = [], onClose }) => {
               <span>{formatDate(user.createdAt)}</span>
             </div>
           </div>
+          {/* Feedback Section - Only show for volunteers AND if current user is admin */}
+          {user.role === 'volunteer' && isAdmin && (
+            <div className="form-row">
+              <div className="form-group feedback-group">
+                <label>Volunteer Feedback:</label>
+                <div className="feedback-controls">
+                  <p className="feedback-description">
+                    Add or update feedback for this volunteer to help track their performance and development.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-feedback"
+                    onClick={() => onFeedback(user)}
+                  >
+                    Manage Feedback
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
