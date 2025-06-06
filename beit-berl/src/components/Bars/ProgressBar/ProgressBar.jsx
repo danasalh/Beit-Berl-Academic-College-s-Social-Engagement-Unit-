@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useUsers } from "../../../Contexts/UsersContext";
 import { useVolunteerHours } from "../../../Contexts/VolunteerHoursContext";
+import { useFeedbackReminderSystem } from "../../../utils/FeedbackReminderSystem";
 import "./ProgressBar.css";
 
 const ProgressBar = ({ 
@@ -9,10 +10,12 @@ const ProgressBar = ({
 }) => {
   const { currentUser } = useUsers();
   const { getTotalHoursForVolunteer } = useVolunteerHours();
+  const { checkAndSendFeedbackReminders } = useFeedbackReminderSystem();
   
   const [userHours, setUserHours] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isHoveringFill, setIsHoveringFill] = useState(false);
+  const [reminderCheckDone, setReminderCheckDone] = useState(false);
 
   // Use provided hours or fetch from database
   const displayHours = hours !== null ? hours : userHours;
@@ -34,6 +37,7 @@ const ProgressBar = ({
       if (!currentUser?.id) {
         console.log('👤 No current user, resetting hours to 0');
         setUserHours(0);
+        setReminderCheckDone(false);
         return;
       }
 
@@ -44,6 +48,7 @@ const ProgressBar = ({
         const totalHours = await getTotalHoursForVolunteer(currentUser.id, approvedOnly);
         setUserHours(totalHours);
         console.log(`✅ Total hours for user ${currentUser.id}: ${totalHours}`);
+
       } catch (err) {
         console.error('❌ Error fetching user hours:', err);
         setUserHours(0);
@@ -54,6 +59,51 @@ const ProgressBar = ({
 
     fetchUserHours();
   }, [currentUser?.id, getTotalHoursForVolunteer, approvedOnly, hours]);
+
+  // NON-BLOCKING reminder check - runs in background
+  useEffect(() => {
+    const checkReminders = async () => {
+      // Only check reminders if:
+      // 1. We have a current user who is a volunteer
+      // 2. We have approved hours > 0
+      // 3. We're showing approved hours only
+      // 4. We haven't already done the reminder check
+      // 5. We're not using provided hours (meaning this is the user's own progress)
+      if (currentUser?.role === 'volunteer' && 
+          displayHours > 0 && 
+          approvedOnly && 
+          !reminderCheckDone &&
+          hours === null) {
+        
+        console.log('🔔 Performing background reminder check for volunteer:', {
+          volunteerId: currentUser.id,
+          hours: displayHours
+        });
+
+        // Mark as done immediately to prevent multiple calls
+        setReminderCheckDone(true);
+
+        // Run reminder check in background - don't await it!
+        checkAndSendFeedbackReminders(String(currentUser.id), displayHours)
+          .then(() => {
+            console.log('✅ Background reminder check completed');
+          })
+          .catch((error) => {
+            console.error('❌ Error during background reminder check:', error);
+          });
+      }
+    };
+
+    // Only run if we have valid data and haven't checked yet
+    if (!loading && displayHours >= 0) {
+      checkReminders();
+    }
+  }, [currentUser, displayHours, approvedOnly, reminderCheckDone, checkAndSendFeedbackReminders, loading, hours]);
+
+  // Reset reminder check when user changes
+  useEffect(() => {
+    setReminderCheckDone(false);
+  }, [currentUser?.id]);
 
   // Show loading state if we're fetching data
   if (hours === null && loading) {
