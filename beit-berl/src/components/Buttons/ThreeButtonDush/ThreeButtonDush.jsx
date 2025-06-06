@@ -2,10 +2,11 @@ import React from "react";
 import { HiCheck, HiLibrary, HiChartBar } from "react-icons/hi";
 import "./ThreeButtonDush.css";
 
-const ThreeButtonDush = () => {
+// דוגמה בסיסית
+const ThreeButtonDush = ({ onMarkHoursClick }) => {
   return (
     <div className="three-button-dush">
-      <button className="dush-button">
+      <button className="dush-button" onClick={onMarkHoursClick}>
         <HiCheck className="dush-icon" />
         <span>!סימון שעות התנדבות</span>
       </button>

@@ -36,3 +36,72 @@
   max-width: 400px;
   margin-top: 1.5rem;
 }
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.popup-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  min-width: 320px;
+  box-shadow: 0 8px 32px 0 rgba(33, 150, 243, 0.18);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(40px) scale(0.96);
+  transition:
+    opacity 0.35s cubic-bezier(.4,2,.6,1),
+    transform 0.35s cubic-bezier(.4,2,.6,1);
+}
+
+.popup-animate {
+  opacity: 1;
+  transform: translateY(0) scale(1.03);
+  animation: popup-bounce-in 0.45s cubic-bezier(.4,2,.6,1);
+}
+
+@keyframes popup-bounce-in {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.92);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1.03);
+  }
+}
+
+.close-btn,
+.submit-button {
+  margin-top: 24px;
+  padding: 8px 24px;
+  background: #0077c2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  min-width: 120px; /* מוסיף מראה מלבני */
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+  display: inline-block;
+}
+
+.close-btn:hover {
+  background: #e57373;
+  color: #fff;
+  box-shadow: 0 0 8px #ffcdd2;
+}

@@ -160,32 +160,3 @@
   min-width: 140px;
 }
 
-// state
-const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
-
-// ב-onClick של ⋮
-onClick={(e) => {
-  e.stopPropagation();
-  const rect = e.currentTarget.getBoundingClientRect();
-  setPopupPosition({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
-  setOpenMenuId(openMenuId === notif.id ? null : notif.id);
-}}
-{openMenuId === notif.id && (
-  <Read_Unread
-    ref={popupRef}
-    position={popupPosition}
-    onClose={() => setOpenMenuId(null)}
-    onMarkRead={() => toggleReadStatus(notif.id, true)}
-    onMarkUnread={() => toggleReadStatus(notif.id, false)}
-  />
-)}
-<div
-  ref={ref}
-  className="read-unread-dropdown"
-  style={{
-    position: "fixed",
-    top: position?.top ?? 0,
-    left: position?.left ?? 0,
-    zIndex: 9999,
-  }}
->

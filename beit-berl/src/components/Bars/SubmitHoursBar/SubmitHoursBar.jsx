@@ -29,7 +29,7 @@ const SubmitHoursBar = ({ onSubmit }) => {
           type="range"
           min="0"
           max="8"
-          step="1"
+          step="0.5"
           value={value}
           onChange={handleChange}
           onMouseUp={handleRelease}
@@ -40,7 +40,7 @@ const SubmitHoursBar = ({ onSubmit }) => {
 
         {showLabel && (
           <div className="hours-tooltip animate-tooltip">
-            {value} שעות
+            {value % 1 === 0 ? value : value.toFixed(1)} שעות
           </div>
         )}
       </div>
