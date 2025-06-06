@@ -1,6 +1,6 @@
 // src/components/pages/vc/settings/VcSettings.jsx
 
-import React from 'react';
+import Settings from '../../../Settings/Settings';
 
 export default function VcSettings() {
   return (
