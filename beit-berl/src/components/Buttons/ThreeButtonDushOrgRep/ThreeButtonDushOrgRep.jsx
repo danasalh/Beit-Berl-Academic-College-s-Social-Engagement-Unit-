@@ -1,5 +1,5 @@
 import React from "react";
-import { HiLibrary, HiOutlineUserGroup, HiOutlineUser } from "react-icons/hi";
+import { HiOutlineUserGroup, HiOutlineUser } from "react-icons/hi";
 import "./ThreeButtonDushOrgRep.css";
 
 const ThreeButtonDushOrgRep = () => {
@@ -12,10 +12,6 @@ const ThreeButtonDushOrgRep = () => {
       <button className="dush-button">
         <HiOutlineUserGroup className="dush-icon" />
         <span>רכזים y</span>
-      </button>
-      <button className="dush-button">
-        <HiLibrary className="dush-icon" />
-        <span>הארגון שלי</span>
       </button>
     </div>
   );

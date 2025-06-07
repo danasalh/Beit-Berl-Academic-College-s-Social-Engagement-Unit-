@@ -39,14 +39,9 @@ const OrganizationsList = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('🔄 Loading organizations and users...');
-        
-        // Load organizations if we don't have them yet
         if (organizations.length === 0 && !loading) {
           await getOrganizations();
         }
-        
-        // Load users if we don't have them yet
         if (users.length === 0 && !usersLoading) {
           await getUsers();
         }
@@ -56,13 +51,8 @@ const OrganizationsList = () => {
     };
 
     loadData();
-  }, []); // Empty dependency array to run only once
-
-  // Debug effect to track state changes
-  useEffect(() => {
-    console.log('📊 Organizations state - loading:', loading, 'count:', organizations.length, 'error:', error);
-    console.log('👥 Users state - loading:', usersLoading, 'count:', users.length);
-  }, [loading, organizations, error, usersLoading, users]);
+    // eslint-disable-next-line
+  }, []);
 
   // Filter organizations based on search and city filter
   useEffect(() => {
@@ -82,7 +72,6 @@ const OrganizationsList = () => {
       });
     }
 
-    console.log('🔍 Filtered organizations:', filtered.length, 'out of', organizations.length);
     setFilteredOrgs(filtered);
   }, [organizations, searchTerm, cityFilter]);
 
@@ -91,9 +80,7 @@ const OrganizationsList = () => {
       try {
         await deleteOrganization(orgId);
         setSelectedOrg(null);
-        console.log('Organization deleted successfully');
       } catch (err) {
-        console.error('Failed to delete organization:', err);
         alert('שגיאה במחיקת הארגון');
       }
     }
@@ -105,36 +92,25 @@ const OrganizationsList = () => {
         // Update existing organization
         const { id, ...updateData } = orgData;
         await updateOrganization(id, updateData);
-        console.log('Organization updated successfully');
       } else {
         // Create new organization
         const { id, ...createData } = orgData;
         await createOrganization(createData);
-        console.log('Organization created successfully');
       }
-      
       setSelectedOrg(null);
       setIsAdding(false);
     } catch (err) {
-      console.error('Failed to save organization:', err);
       alert('שגיאה בשמירת הארגון');
     }
   };
 
   const handleSearch = async () => {
     if (cityFilter && !searchTerm) {
-      // Search by city using the specific method
       try {
         await getOrganizationsByCity(cityFilter);
       } catch (err) {
         console.error('Failed to search by city:', err);
       }
-    } else {
-      // For general search, we rely on the useEffect filtering
-      console.log('🔍 Performing client-side search with filters:', {
-        searchTerm,
-        cityFilter
-      });
     }
   };
 
@@ -148,7 +124,6 @@ const OrganizationsList = () => {
           </div>
           <button 
             onClick={() => {
-              console.log('🔄 Manual refresh triggered');
               getOrganizations();
               getUsers();
             }}
@@ -176,7 +151,7 @@ const OrganizationsList = () => {
   }
 
   return (
-    <div className="organizations-page" dir="rtl">
+    <div className="organizations-page" dir="rtl" style={{ background: "#f9fafb", minHeight: "100vh" }}>
       {/* Header */}
       <div className="page-header">
         {/* Search and Filter Section */}
@@ -211,7 +186,7 @@ const OrganizationsList = () => {
       </div>
 
       {/* Organizations Grid */}
-      <div className="organizations-container">
+      <div className="organizations-container" style={{ background: "transparent" }}>
         {filteredOrgs.length === 0 ? (
           <div className="no-results">
             {organizations.length === 0 ? 'אין ארגונים רשומים' : 'לא נמצאו ארגונים המתאימים לחיפוש'}
