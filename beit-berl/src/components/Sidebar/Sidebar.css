@@ -146,63 +146,50 @@
 }
 
 .nav-item {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  border: none;
   background: transparent;
-  color: #333;
-  cursor: pointer;
+  border: none;
+  color: #1976d2;
+  font-size: 1.08rem;
+  width: 100%;
   text-align: right;
-  transition: all 0.2s ease;
-  gap: 0.75rem;
-  /* Remove focus outline */
-  outline: none;
-}
-
-/* Adding this to ensure no outline appears when focused */
-.nav-item:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-/* New hover state with light background */
-.nav-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-/* New active state with light background */
-.nav-item.active {
-  background-color: rgba(0, 0, 0, 0.08);
-  color: #333;
-}
-
-.nav-icon {
+  padding: 0.8rem 0.5rem;
+  border-radius: 8px;
+  margin-bottom: 0.3rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  color: #777; /* Default gray color for inactive icons */
-  transition: color 0.2s;
+  gap: 0.7rem;
+  cursor: pointer;
+  transition:
+    background 0.22s cubic-bezier(.4,2,.6,1),
+    color 0.22s cubic-bezier(.4,2,.6,1),
+    box-shadow 0.22s cubic-bezier(.4,2,.6,1),
+    transform 0.22s cubic-bezier(.4,2,.6,1);
+  position: relative;
 }
 
-/* Active icon styling */
-.nav-icon.active {
-  color: #000; /* Black color for active icon */
+.nav-item .nav-icon,
+.nav-item .nav-label {
+  transition: color 0.22s, transform 0.22s;
 }
 
-.nav-label {
-  flex: 1;
-  text-align: right;
-  font-weight: 400;
-  transition: font-weight 0.2s;
+.nav-item:hover,
+.nav-item.active {
+  background: #e3f2fd;
+  color: #0d47a1;
+  box-shadow: 0 4px 18px #90caf944;
+  transform: scale(1.045) translateX(-4px);
 }
 
-/* Active label styling */
+.nav-item:hover .nav-icon,
+.nav-item.active .nav-icon {
+  color: #1565c0;
+  transform: scale(1.18);
+}
+
+.nav-item:hover .nav-label,
 .nav-item.active .nav-label {
-  font-weight: 500;
+  color: #1565c0;
+  transform: scale(1.06);
 }
 
 /* Logout button styling */
@@ -373,4 +360,25 @@
 /* Global style to remove the focus outline and tap highlight on all interactive elements */
 button, a, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
   -webkit-tap-highlight-color: transparent;
+}
+
+.user-name {
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.sidebar:not(.open) .user-greeting {
+  display: none;
+}
+
+.sidebar:not(.open) .nav-item:focus,
+.sidebar:not(.open) .nav-item:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.nav-item:focus,
+.nav-item:active {
+  outline: none !important;
+  box-shadow: none !important;
 }

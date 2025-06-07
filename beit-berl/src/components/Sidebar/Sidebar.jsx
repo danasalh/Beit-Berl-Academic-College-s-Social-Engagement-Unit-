@@ -126,7 +126,7 @@ const Sidebar = ({ userRole, userName }) => {
           
           {/* User greeting */}
           <div className="user-greeting">
-            {isOpen && <p>{userName || 'משתמש'} שלום</p>}
+            שלום <span className="user-name">{userName}</span>
           </div>
           
           {/* Navigation links */}
