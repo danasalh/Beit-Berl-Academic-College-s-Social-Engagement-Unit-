@@ -55,8 +55,8 @@ const Sidebar = ({ userRole, userName }) => {
       case 'admin':
         return [
           { path: '/admin/dashboard', label: 'דשבורד', icon: <HiHome size={20} /> },
-          { path: '/admin/search', label: 'ניהול משתמשים', icon: <HiSearch size={20} /> },
-          { path: '/admin/organizations', label: 'ניהול ארגונים', icon: <HiOfficeBuilding size={20} /> },
+          { path: '/admin/search', label: 'חיפוש', icon: <HiSearch size={20} /> },
+          { path: '/admin/organizations', label: 'ארגונים', icon: <HiOfficeBuilding size={20} /> },
           { path: '/admin/notifications', label: 'התראות', icon: <HiBell size={20} /> },
           { path: '/admin/settings', label: 'הגדרות', icon: <HiCog size={20} /> },
         ];
@@ -126,7 +126,7 @@ const Sidebar = ({ userRole, userName }) => {
           
           {/* User greeting */}
           <div className="user-greeting">
-            {isOpen && <p>{userName || 'משתמש'} שלום</p>}
+            שלום <span className="user-name">{userName}</span>
           </div>
           
           {/* Navigation links */}
