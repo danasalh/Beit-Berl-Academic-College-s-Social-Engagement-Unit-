@@ -1,7 +1,5 @@
-
-import React from 'react';
 import './FilterBar.css';
-import { HiOutlineSearch } from "react-icons/hi";
+import { HiOutlineSearch} from "react-icons/hi";
 
 const FilterBar = ({ 
   searchTerm = '', 
@@ -14,8 +12,11 @@ const FilterBar = ({
   setFilterRole = () => {}, 
   filterStatus = '', 
   setFilterStatus = () => {},
+  filterOrganization = '',
+  setFilterOrganization = () => {},
   uniqueRoles = [],
   uniqueStatuses = [],
+  uniqueOrganizations = [],
   clearFilters = () => {}
 }) => {
   
@@ -27,7 +28,7 @@ const FilterBar = ({
     <div className="filter-bar">
       <input
         type="text"
-        placeholder="Search by email or phone..."
+        placeholder="חיפוש לפי טלפון או מייל"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-input"
@@ -35,7 +36,7 @@ const FilterBar = ({
       
       <input
         type="text"
-        placeholder="Filter by first name"
+        placeholder="חיפוש לפי שם פרטי" 
         value={filterFirstName}
         onChange={(e) => setFilterFirstName(e.target.value)}
         className="search-input"
@@ -43,7 +44,7 @@ const FilterBar = ({
       
       <input
         type="text"
-        placeholder="Filter by last name"
+        placeholder="חיפוש לפי שם משפחה"  
         value={filterLastName}
         onChange={(e) => setFilterLastName(e.target.value)}
         className="search-input"
@@ -54,7 +55,7 @@ const FilterBar = ({
         onChange={(e) => setFilterRole(e.target.value)}
         className="filter-select"
       >
-        <option value="">All Roles</option>
+        <option value="">כל התפקידים</option>
         {uniqueRoles.map(role => (
           <option key={role} value={role}>{role}</option>
         ))}
@@ -65,18 +66,29 @@ const FilterBar = ({
         onChange={(e) => setFilterStatus(e.target.value)}
         className="filter-select"
       >
-        <option value="">All Statuses</option>
+        <option value="">כל הסטטוסים</option>
         {uniqueStatuses.map(status => (
           <option key={status} value={status}>{status}</option>
         ))}
       </select>
+
+      <select
+        value={filterOrganization}
+        onChange={(e) => setFilterOrganization(e.target.value)}
+        className="filter-select"
+      >
+        <option value="">כל הארגונים</option>
+        {uniqueOrganizations.map(org => (
+          <option key={org.id} value={org.name}>{org.name}</option>
+        ))}
+      </select>
       
-      {(searchTerm || filterFirstName || filterLastName || filterRole || filterStatus) && (
+      {(searchTerm || filterFirstName || filterLastName || filterRole || filterStatus || filterOrganization) && (
         <button 
           className="search-btn clear-filter-btn" 
           onClick={handleClearFilters}
         >
-          Clear Filters
+          ניקוי סינון
         </button>
       )}
       

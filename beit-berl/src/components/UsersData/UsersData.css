@@ -1,4 +1,4 @@
-/* src/components/UsersData/UsersData.css / / Main container styles */ .users-data-container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 1.5rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
+.users-data-container { width: 90%; max-width: 1280px; margin: 0 auto; padding: 1.5rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
 
 /* Header styles */ .users-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid 
 #eaeaea; }
@@ -32,7 +32,7 @@
 .retry-btn:hover { background-color: 
 #dc2626; }
 
-/* Table styles */ .table-container { overflow: hidden; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+.table-container { overflow: hidden; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
 
 .table-wrapper { width: 100%; overflow-x: auto; }
 
@@ -40,18 +40,18 @@
 
 .users-table th { background-color: 
 #f8fafc; color: 
-#4b5563; font-weight: 600; text-align: left; padding: 1rem; border-bottom: 1px solid 
+#4b5563; font-weight: 600; text-align: right; padding: 1rem; border-bottom: 1px solid 
 #e2e8f0; white-space: nowrap; }
 
 .users-table td { padding: 1rem; border-bottom: 1px solid 
 #e2e8f0; vertical-align: middle; }
 
-.users-table tr:last-child td { border-bottom: none; }
+.users-table tr:last-child td { border-bottom: none;}
 
 .users-table tr:hover { background-color: 
 #f1f5f9; }
 
-/* User info styling */ .user-name { display: flex; align-items: center; gap: 0.75rem; }
+.user-name { display: flex; align-items: center; gap: 0.75rem; justify-content: right;}
 
 .user-avatar { display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 50%; background-color: 
 #3b82f6; color: white; font-weight: 600; font-size: 1rem; }
@@ -59,8 +59,8 @@
 /* Role badge styling */ .role-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; text-transform: capitalize; }
 
 .role-badge.admin { background-color: 
-#ede9fe; color: 
-#6d28d9; }
+#d1fae5; color: 
+#047857; }
 
 .role-badge.orgRep { background-color: 
 #fef3c7; color: 
@@ -71,8 +71,8 @@
 #0369a1; }
 
 .role-badge.volunteer { background-color: 
-#d1fae5; color: 
-#047857; }
+#ede9fe; color: 
+#6d28d9; }
 
 .role-badge.no-role { background-color: 
 #f3f4f6; color: 
@@ -92,9 +92,9 @@
 #f3f4f6; color: 
 #6b7280; }
 
-/* Status management */ .status-management { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.status-management { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 
-/* Action buttons */ .btn { cursor: pointer; padding: 0.5rem 1rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500; border: none; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
+.btn { cursor: pointer; padding: 0.5rem 1rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500; border: none; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
 
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -317,3 +317,82 @@
   z-index: 1001;
 }
 
+/* Add these styles to your UsersData.css file */
+
+.export-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.btn-export {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-export:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838, #1ea085);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-export:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-export:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.export-icon {
+  font-size: 16px;
+}
+
+.export-spinner {
+  font-size: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.export-info {
+  margin-top: 8px;
+  color: #6c757d;
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .export-section {
+    padding: 12px;
+    margin: 15px 0;
+  }
+  
+  .btn-export {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}

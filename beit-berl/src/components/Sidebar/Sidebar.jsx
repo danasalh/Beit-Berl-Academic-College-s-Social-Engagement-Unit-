@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getAuth, signOut } from 'firebase/auth';
-import { HiMenu, HiX, HiHome, HiSearch, HiOfficeBuilding, HiBell, HiCog, HiLogout } from 'react-icons/hi';
+import { HiMenu, HiX, HiHome, HiUserGroup, HiOfficeBuilding, HiBell, HiCog, HiLogout } from 'react-icons/hi';
 import AreYouSure from '../PopUps/AreYouSure/AreYouSure';
 import './Sidebar.css';
 
@@ -55,7 +55,7 @@ const Sidebar = ({ userRole, userName }) => {
       case 'admin':
         return [
           { path: '/admin/dashboard', label: 'דשבורד', icon: <HiHome size={20} /> },
-          { path: '/admin/search', label: 'ניהול משתמשים', icon: <HiSearch size={20} /> },
+          { path: '/admin/search', label: 'ניהול משתמשים', icon: <HiUserGroup size={20} /> },
           { path: '/admin/organizations', label: 'ניהול ארגונים', icon: <HiOfficeBuilding size={20} /> },
           { path: '/admin/notifications', label: 'התראות', icon: <HiBell size={20} /> },
           { path: '/admin/settings', label: 'הגדרות', icon: <HiCog size={20} /> },
