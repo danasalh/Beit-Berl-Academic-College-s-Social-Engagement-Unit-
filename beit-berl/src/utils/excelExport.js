@@ -31,8 +31,6 @@ export const exportUsersToExcel = (users, getOrganizationNames, formatDate, opti
       'ארגונים': getOrganizationNames(user.orgId),
       'סטטוס': user.status || '',
       'תאריך יצירה': formatDate(user.createdAt),
-      'מזהה משתמש': user.id || '',
-      'מזהה מסמך': user.docId || ''
     }));
 
     console.log('📊 Export data prepared:', exportData.length, 'rows');
