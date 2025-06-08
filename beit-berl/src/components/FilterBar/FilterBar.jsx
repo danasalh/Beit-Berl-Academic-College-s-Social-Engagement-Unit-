@@ -1,5 +1,5 @@
 import './FilterBar.css';
-import { HiOutlineSearch , HiDownload} from "react-icons/hi";
+import { HiOutlineSearch} from "react-icons/hi";
 
 const FilterBar = ({ 
   searchTerm = '', 
@@ -94,9 +94,6 @@ const FilterBar = ({
       
       <button className="search-btn" onClick={() => console.log("Filters applied")}>
         <HiOutlineSearch />
-      </button>
-      <button className='download-btn' onClick={() => console.log("Download data")}>
-        <HiDownload />
       </button>
     </div>
   );
