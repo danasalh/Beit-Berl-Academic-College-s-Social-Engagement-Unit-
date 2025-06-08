@@ -176,6 +176,7 @@
 .nav-item .nav-icon,
 .nav-item .nav-label {
   transition: color 0.22s, transform 0.22s;
+  font-size: 1rem;
 }
 
 .nav-item:hover,
@@ -324,10 +325,6 @@
 
   .sidebar:not(.open) .nav-item:hover {
     background-color: rgba(0, 0, 0, 0.05);
-  }
-
-  .sidebar:not(.open) .nav-item.active {
-    background-color: rgba(0, 0, 0, 0.08);
   }
 
   .sidebar:not(.open) .nav-icon {
