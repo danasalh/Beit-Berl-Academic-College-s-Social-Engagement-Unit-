@@ -24,6 +24,48 @@ export default function NotificationsPanel() {
   const [loading, setLoading] = useState(true);
   const [hasInitialized, setHasInitialized] = useState(false);
 
+  // Notification type configurations - contains titles and display info
+  const notificationTypeConfig = useMemo(() => ({
+    'reminder': {
+      title: 'תזכורת',
+      displayName: 'תזכורת',
+      color: '#ff9800',
+      icon: '🔔'
+    },
+    'approval-needed': {
+      title: 'דרוש אישור',
+      displayName: 'דרוש אישור',
+      color: '#f44336',
+      icon: '⚠️'
+    },
+    'feedback-notification': {
+      title: 'הוזן פידבק חדש במערכת',
+      displayName: 'פידבק חדש',
+      color: '#4caf50',
+      icon: '💬'
+    }
+  }), []);
+
+  // Helper function to get notification display properties
+  const getNotificationDisplayProps = useCallback((notification) => {
+    const config = notificationTypeConfig[notification.type] || {};
+    
+    // For feedback-notification, prioritize the config title over notification.title
+    let finalTitle;
+    if (notification.type === 'feedback-notification') {
+      finalTitle = config.title || notification.title || 'הוזן פידבק חדש במערכת';
+    } else {
+      finalTitle = notification.title || config.title || 'הודעה חדשה';
+    }
+    
+    return {
+      title: finalTitle,
+      displayName: config.displayName || notification.type || 'הודעה',
+      color: config.color || '#2196f3',
+      icon: config.icon || '📄'
+    };
+  }, [notificationTypeConfig]);
+
   // Helper functions to format date and time - memoized to prevent recreating on every render
   const formatTime = useCallback((date) => {
     if (!date) return '';
@@ -64,22 +106,34 @@ export default function NotificationsPanel() {
       const userNotifications = await getNotificationsByReceiver(currentUser.id);
 
       // Transform notifications to match the expected format
-      const transformedNotifications = userNotifications.map(notif => ({
-        id: notif.id,
-        title: notif.title,
-        message: notif.content,
-        time: formatTime(notif.date),
-        date: formatDate(notif.date),
-        read: notif.read,
-        type: notif.type,
-        originalDate: notif.date
-      }));
+      const transformedNotifications = userNotifications.map(notif => {
+        const displayProps = getNotificationDisplayProps(notif);
+        
+        return {
+          id: notif.id,
+          title: displayProps.title,
+          message: notif.content,
+          time: formatTime(notif.date),
+          date: formatDate(notif.date),
+          read: notif.read,
+          type: notif.type,
+          originalDate: notif.date,
+          displayName: displayProps.displayName,
+          color: displayProps.color,
+          icon: displayProps.icon
+        };
+      });
 
-      setNotifications(transformedNotifications);
+      // Sort notifications by date (newest first)
+      const sortedNotifications = transformedNotifications.sort((a, b) => {
+        return new Date(b.originalDate) - new Date(a.originalDate);
+      });
+
+      setNotifications(sortedNotifications);
 
       // Set the first notification as selected if none is selected and we have notifications
-      if (transformedNotifications.length > 0 && !selectedNotification) {
-        setSelectedNotification(transformedNotifications[0]);
+      if (sortedNotifications.length > 0 && !selectedNotification) {
+        setSelectedNotification(sortedNotifications[0]);
       }
 
       setHasInitialized(true);
@@ -89,7 +143,7 @@ export default function NotificationsPanel() {
     } finally {
       setLoading(false);
     }
-  }, [currentUser?.id, getNotificationsByReceiver, formatTime, formatDate, hasInitialized, selectedNotification]);
+  }, [currentUser?.id, getNotificationsByReceiver, formatTime, formatDate, hasInitialized, selectedNotification, getNotificationDisplayProps]);
 
   // Fetch notifications when component mounts or when currentUser.id changes
   useEffect(() => {
@@ -162,6 +216,18 @@ export default function NotificationsPanel() {
       }
     }
   }, [markNotificationAsRead]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openMenuId && !event.target.closest('.notifications-item-menu')) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openMenuId]);
 
   // Loading state - only show on initial load
   if (loading && !hasInitialized) {
@@ -256,11 +322,7 @@ export default function NotificationsPanel() {
               {selectedNotification.type && (
                 <div className="notifications-type">
                   <span className={`type-badge ${selectedNotification.type}`}>
-                    {selectedNotification.type === 'reminder'
-                      ? 'תזכורת'
-                      : selectedNotification.type === 'approval-needed'
-                        ? 'דרוש אישור'
-                        : selectedNotification.type}
+                    {selectedNotification.icon} {selectedNotification.displayName}
                   </span>
                 </div>
               )}
@@ -305,11 +367,14 @@ export default function NotificationsPanel() {
                 </div>
                 <div className="notifications-item-title">
                   <span className={`read-icon ${notif.read ? "read" : "unread"}`}>
-                    {notif.read ? "✅" : "📩"}
+                    {notif.read ? "✅" : notif.icon}
                   </span>
                   <span className="title-text">{notif.title}</span>
                   {notif.type && (
-                    <span className={`type-indicator ${notif.type}`}></span>
+                    <span 
+                      className={`type-indicator ${notif.type}`}
+                      style={{ backgroundColor: notif.color }}
+                    ></span>
                   )}
                 </div>
               </div>
@@ -354,11 +419,7 @@ export default function NotificationsPanel() {
                   {notif.type && (
                     <div className="notifications-type">
                       <span className={`type-badge ${notif.type}`}>
-                        {notif.type === 'reminder'
-                          ? 'תזכורת'
-                          : notif.type === 'approval-needed'
-                            ? 'דרוש אישור'
-                            : notif.type}
+                        {notif.icon} {notif.displayName}
                       </span>
                     </div>
                   )}
