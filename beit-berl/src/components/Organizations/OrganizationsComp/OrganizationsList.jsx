@@ -21,7 +21,9 @@ const OrganizationsList = () => {
   const {
     users,
     getUsers,
-    loading: usersLoading
+    loading: usersLoading,
+    currentUser,
+    currentUserHasRole
   } = useUsers();
 
   const [selectedOrg, setSelectedOrg] = useState(null);
@@ -29,6 +31,9 @@ const OrganizationsList = () => {
   const [cityFilter, setCityFilter] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [filteredOrgs, setFilteredOrgs] = useState([]);
+
+  // Check if current user is a volunteer
+  const isVolunteer = currentUserHasRole('volunteer') || currentUserHasRole('Volunteer');
 
   // Helper function to get city value - handles different possible field names
   const getCityValue = (org) => {
@@ -39,9 +44,14 @@ const OrganizationsList = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log('🔄 Loading organizations and users...');
+        
+        // Load organizations if we don't have them yet
         if (organizations.length === 0 && !loading) {
           await getOrganizations();
         }
+        
+        // Load users if we don't have them yet
         if (users.length === 0 && !usersLoading) {
           await getUsers();
         }
@@ -51,8 +61,14 @@ const OrganizationsList = () => {
     };
 
     loadData();
-    // eslint-disable-next-line
-  }, []);
+  }, []); // Empty dependency array to run only once
+
+  // Debug effect to track state changes
+  useEffect(() => {
+    console.log('📊 Organizations state - loading:', loading, 'count:', organizations.length, 'error:', error);
+    console.log('👥 Users state - loading:', usersLoading, 'count:', users.length);
+    console.log('👤 Current user role check - isVolunteer:', isVolunteer);
+  }, [loading, organizations, error, usersLoading, users, isVolunteer]);
 
   // Filter organizations based on search and city filter
   useEffect(() => {
@@ -72,45 +88,71 @@ const OrganizationsList = () => {
       });
     }
 
+    console.log('🔍 Filtered organizations:', filtered.length, 'out of', organizations.length);
     setFilteredOrgs(filtered);
   }, [organizations, searchTerm, cityFilter]);
 
   const handleDeleteOrg = async (orgId) => {
+    // Prevent volunteers from deleting organizations
+    if (isVolunteer) {
+      console.log('❌ Volunteer users cannot delete organizations');
+      return;
+    }
+
     if (window.confirm("האם את בטוחה שברצונך למחוק את הארגון?")) {
       try {
         await deleteOrganization(orgId);
         setSelectedOrg(null);
+        console.log('Organization deleted successfully');
       } catch (err) {
+        console.error('Failed to delete organization:', err);
         alert('שגיאה במחיקת הארגון');
       }
     }
   };
 
   const handleSaveOrg = async (orgData) => {
+    // Prevent volunteers from saving organizations
+    if (isVolunteer) {
+      console.log('❌ Volunteer users cannot create/edit organizations');
+      return;
+    }
+
     try {
       if (orgData.id && organizations.find(o => o.id === orgData.id)) {
         // Update existing organization
         const { id, ...updateData } = orgData;
         await updateOrganization(id, updateData);
+        console.log('Organization updated successfully');
       } else {
         // Create new organization
         const { id, ...createData } = orgData;
         await createOrganization(createData);
+        console.log('Organization created successfully');
       }
+      
       setSelectedOrg(null);
       setIsAdding(false);
     } catch (err) {
+      console.error('Failed to save organization:', err);
       alert('שגיאה בשמירת הארגון');
     }
   };
 
   const handleSearch = async () => {
     if (cityFilter && !searchTerm) {
+      // Search by city using the specific method
       try {
         await getOrganizationsByCity(cityFilter);
       } catch (err) {
         console.error('Failed to search by city:', err);
       }
+    } else {
+      // For general search, we rely on the useEffect filtering
+      console.log('🔍 Performing client-side search with filters:', {
+        searchTerm,
+        cityFilter
+      });
     }
   };
 
@@ -124,6 +166,7 @@ const OrganizationsList = () => {
           </div>
           <button 
             onClick={() => {
+              console.log('🔄 Manual refresh triggered');
               getOrganizations();
               getUsers();
             }}
@@ -151,7 +194,7 @@ const OrganizationsList = () => {
   }
 
   return (
-    <div className="organizations-page" dir="rtl" style={{ background: "#f9fafb", minHeight: "100vh" }}>
+    <div className="organizations-page" dir="rtl">
       {/* Header */}
       <div className="page-header">
         {/* Search and Filter Section */}
@@ -176,17 +219,20 @@ const OrganizationsList = () => {
             </button>
           </div>
 
-          <button
-            className="add-org-button"
-            onClick={() => setIsAdding(true)}
-          >
-            הוספת ארגון חדש
-          </button>
+          {/* Only show "Add Organization" button if user is NOT a volunteer */}
+          {!isVolunteer && (
+            <button
+              className="add-org-button"
+              onClick={() => setIsAdding(true)}
+            >
+              הוספת ארגון חדש
+            </button>
+          )}
         </div>
       </div>
 
       {/* Organizations Grid */}
-      <div className="organizations-container" style={{ background: "transparent" }}>
+      <div className="organizations-container">
         {filteredOrgs.length === 0 ? (
           <div className="no-results">
             {organizations.length === 0 ? 'אין ארגונים רשומים' : 'לא נמצאו ארגונים המתאימים לחיפוש'}
@@ -199,6 +245,7 @@ const OrganizationsList = () => {
                 org={org}
                 onShowDetails={setSelectedOrg}
                 allUsers={users}
+                isVolunteer={isVolunteer}
               />
             ))}
           </div>
@@ -226,6 +273,7 @@ const OrganizationsList = () => {
           onDelete={handleDeleteOrg}
           isNew={isAdding}
           allUsers={users}
+          isVolunteer={isVolunteer}
         />
       )}
     </div>
