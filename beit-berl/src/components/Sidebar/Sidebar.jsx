@@ -55,8 +55,8 @@ const Sidebar = ({ userRole, userName }) => {
       case 'admin':
         return [
           { path: '/admin/dashboard', label: 'דשבורד', icon: <HiHome size={20} /> },
-          { path: '/admin/search', label: 'חיפוש', icon: <HiSearch size={20} /> },
-          { path: '/admin/organizations', label: 'ארגונים', icon: <HiOfficeBuilding size={20} /> },
+          { path: '/admin/search', label: 'ניהול משתמשים', icon: <HiSearch size={20} /> },
+          { path: '/admin/organizations', label: 'ניהול ארגונים', icon: <HiOfficeBuilding size={20} /> },
           { path: '/admin/notifications', label: 'התראות', icon: <HiBell size={20} /> },
           { path: '/admin/settings', label: 'הגדרות', icon: <HiCog size={20} /> },
         ];
