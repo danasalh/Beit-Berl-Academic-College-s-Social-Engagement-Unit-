@@ -5,6 +5,7 @@ import { useOrganizations } from '../../Contexts/OrganizationsContext';
 import UserProfile from '../UserProfile/UserProfile';
 import FilterBar from '../FilterBar/FilterBar';
 import FeedbackPopup from '../PopUps/FeedbackPopup/FeedbackPopup';
+import { exportUsersToExcel } from '../../utils/excelExport';
 import './UsersData.css';
 import { HiOutlineEye, HiOutlinePencil, HiX } from 'react-icons/hi';
 
@@ -510,6 +511,43 @@ const UsersData = () => {
     );
   }
 
+  const handleExportToExcel = useCallback(() => {
+    console.log('🔄 Initiating Excel export...');
+
+    try {
+      const exportOptions = {
+        isFiltered: filteredUsers.length !== users.length,
+        totalCount: users.length
+      };
+
+      const result = exportUsersToExcel(
+        filteredUsers,
+        getOrganizationNames,
+        formatDate,
+        exportOptions
+      );
+
+      if (result.success) {
+        showSuccess(result.message);
+
+        // Optional: Log export activity for analytics
+        console.log('📈 Export Analytics:', {
+          totalUsers: users.length,
+          exportedUsers: result.exportedCount,
+          hasFilters: exportOptions.isFiltered,
+          timestamp: new Date().toISOString(),
+          filename: result.filename
+        });
+      } else {
+        alert(result.message);
+      }
+
+    } catch (error) {
+      console.error('❌ Export handler error:', error);
+      alert(`שגיאה בייצוא הנתונים: ${error.message}`);
+    }
+  }, [filteredUsers, users, getOrganizationNames, formatDate, showSuccess]);
+
   return (
     <div className="users-data-container">
       {/* Success Popup */}
@@ -552,6 +590,23 @@ const UsersData = () => {
         uniqueOrganizations={uniqueOrganizations}
         clearFilters={clearFilters}
       />
+
+      <div className="export-section">
+        <button
+          className="btn btn-export"
+          onClick={handleExportToExcel}
+          disabled={filteredUsers.length === 0}
+          title={filteredUsers.length === 0 ? "אין נתונים לייצוא" : "ייצא לאקסל"}
+        >
+          <span className="export-icon">📊</span>
+          ייצא לאקסל ({filteredUsers.length} רשומות)
+        </button>
+        {filteredUsers.length !== users.length && (
+          <small className="export-info">
+            יתווצאו רק הרשומות המוצגות לפי הסינון הנוכחי
+          </small>
+        )}
+      </div>
 
       {filteredUsers.length === 0 ? (
         <div className="no-users">
