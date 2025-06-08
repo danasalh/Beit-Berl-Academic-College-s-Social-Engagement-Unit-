@@ -112,16 +112,16 @@ export const FeedbackProvider = ({ children }) => {
         ? orgDetails.name || orgDetails.organizationName || `Organization ${orgDetails.id}`
         : 'Unknown Organization';
 
-      const notificationTitle = 'New Feedback Submitted';
-      const notificationContent = `The user ${fromUserName} from ${orgName} entered a new feedback for the volunteer ${volunteerName} at ${new Date().toLocaleString()}. View the user profile to see the new feedback log.`;
+      // Move title to notification panel - use generic type-based approach
+      const notificationContent = `המשתמש ${fromUserName} מ ${orgName} הזין פידבק חדש עבור המתנדב ${volunteerName} at ${new Date().toLocaleString()}. ניתן לראות את הפידבק בפרופיל המתנדב.`;
 
       // Create notifications for all admin users
       const notificationPromises = adminUsers.map(admin => {
         const notificationData = {
           receiverId: String(admin.id),
           relatedId: String(feedbackData.volunteerId),
-          type: 'feedback-notification',
-          title: notificationTitle,
+          type: 'feedback-notification', // This will be used in NotificationsPanel for styling and title
+          title: '', // Will be generated in NotificationsPanel based on type
           content: notificationContent,
           date: Timestamp.now(),
           read: false,
@@ -132,7 +132,10 @@ export const FeedbackProvider = ({ children }) => {
             feedbackId: feedbackData.id,
             volunteerId: feedbackData.volunteerId,
             fromUserId: feedbackData.fromVCId,
-            orgId: fromUserDetails?.orgId?.[0] || null
+            orgId: fromUserDetails?.orgId?.[0] || null,
+            volunteerName,
+            fromUserName,
+            orgName
           }
         };
 
