@@ -28,10 +28,10 @@ export default function NotificationsPanel() {
   const formatTime = useCallback((date) => {
     if (!date) return '';
     const dateObj = date instanceof Date ? date : new Date(date);
-    return dateObj.toLocaleTimeString('he-IL', { 
-      hour: '2-digit', 
+    return dateObj.toLocaleTimeString('he-IL', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: false 
+      hour12: false
     });
   }, []);
 
@@ -58,11 +58,11 @@ export default function NotificationsPanel() {
       if (!hasInitialized) {
         setLoading(true);
       }
-      
+
       console.log('Fetching notifications for user:', currentUser.id);
-      
+
       const userNotifications = await getNotificationsByReceiver(currentUser.id);
-      
+
       // Transform notifications to match the expected format
       const transformedNotifications = userNotifications.map(notif => ({
         id: notif.id,
@@ -76,14 +76,14 @@ export default function NotificationsPanel() {
       }));
 
       setNotifications(transformedNotifications);
-      
+
       // Set the first notification as selected if none is selected and we have notifications
       if (transformedNotifications.length > 0 && !selectedNotification) {
         setSelectedNotification(transformedNotifications[0]);
       }
-      
+
       setHasInitialized(true);
-      
+
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -120,7 +120,7 @@ export default function NotificationsPanel() {
       } else {
         await markNotificationAsUnread(id);
       }
-      
+
       // Update local state
       setNotifications(prev =>
         prev.map(notif =>
@@ -142,19 +142,19 @@ export default function NotificationsPanel() {
   // Handle notification selection and mark as read
   const handleNotificationSelect = useCallback(async (notif) => {
     setSelectedNotification(notif);
-    
+
     // Mark as read if it's unread
     if (!notif.read) {
       try {
         await markNotificationAsRead(notif.id);
-        
+
         // Update local state
         setNotifications(prev =>
           prev.map(n =>
             n.id === notif.id ? { ...n, read: true } : n
           )
         );
-        
+
         // Update selected notification
         setSelectedNotification(prev => ({ ...prev, read: true }));
       } catch (error) {
@@ -214,19 +214,19 @@ export default function NotificationsPanel() {
       <div className="notifications-panel-container">
         <div className="notifications-sidebar">
           <div className="notifications-filters">
-            <button 
+            <button
               className={filter === "all" ? "active" : ""}
               onClick={() => setFilter("all")}
             >
               הכל ({notificationCounts.all})
             </button>
-            <button 
+            <button
               className={filter === "read" ? "active" : ""}
               onClick={() => setFilter("read")}
             >
               נקראו ({notificationCounts.read})
             </button>
-            <button 
+            <button
               className={filter === "unread" ? "active" : ""}
               onClick={() => setFilter("unread")}
             >
@@ -245,50 +245,46 @@ export default function NotificationsPanel() {
     <div className="notifications-panel-container">
       {/* Main notification display */}
       <div className="notifications-main">
-        {selectedNotification ? (
+        {selectedNotification && (
           <>
             <h2 className="notifications-title">{selectedNotification.title}</h2>
             <div className="notifications-time">
               {selectedNotification.time} | {selectedNotification.date}
             </div>
             <div className="notifications-content">
-              <p className="notifications-message">
-                {selectedNotification.message}
-              </p>
+              <p className="notifications-message">{selectedNotification.message}</p>
               {selectedNotification.type && (
                 <div className="notifications-type">
                   <span className={`type-badge ${selectedNotification.type}`}>
-                    {selectedNotification.type === 'reminder' ? 'תזכורת' : 
-                     selectedNotification.type === 'approval-needed' ? 'דרוש אישור' : 
-                     selectedNotification.type}
+                    {selectedNotification.type === 'reminder'
+                      ? 'תזכורת'
+                      : selectedNotification.type === 'approval-needed'
+                        ? 'דרוש אישור'
+                        : selectedNotification.type}
                   </span>
                 </div>
               )}
             </div>
           </>
-        ) : (
-          <div className="notifications-select-prompt">
-            <p>בחר הודעה לצפייה</p>
-          </div>
         )}
       </div>
 
       {/* Sidebar with notifications list */}
       <div className="notifications-sidebar">
         <div className="notifications-filters">
-          <button 
+          <button
             className={filter === "all" ? "active" : ""}
             onClick={() => setFilter("all")}
           >
             הכל ({notificationCounts.all})
           </button>
-          <button 
+          <button
             className={filter === "read" ? "active" : ""}
             onClick={() => setFilter("read")}
           >
             נקראו ({notificationCounts.read})
           </button>
-          <button 
+          <button
             className={filter === "unread" ? "active" : ""}
             onClick={() => setFilter("unread")}
           >
@@ -300,9 +296,8 @@ export default function NotificationsPanel() {
           {filteredNotifications.map((notif) => (
             <div
               key={notif.id}
-              className={`notifications-item ${
-                selectedNotification?.id === notif.id ? "selected" : ""
-              } ${!notif.read ? "unread" : ""}`}
+              className={`notifications-item ${selectedNotification?.id === notif.id ? "selected" : ""
+                } ${!notif.read ? "unread" : ""}`}
             >
               <div onClick={() => handleNotificationSelect(notif)}>
                 <div className="notifications-item-time">
@@ -351,6 +346,24 @@ export default function NotificationsPanel() {
                   </div>
                 )}
               </div>
+
+              {/* Show expanded content on mobile under item */}
+              {selectedNotification?.id === notif.id && (
+                <div className="notifications-item-expanded-content">
+                  <p>{notif.message}</p>
+                  {notif.type && (
+                    <div className="notifications-type">
+                      <span className={`type-badge ${notif.type}`}>
+                        {notif.type === 'reminder'
+                          ? 'תזכורת'
+                          : notif.type === 'approval-needed'
+                            ? 'דרוש אישור'
+                            : notif.type}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
