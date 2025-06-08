@@ -33,6 +33,7 @@ const UsersData = () => {
   const [filterLastName, setFilterLastName] = useState('');
   const [filterRole, setFilterRole] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [filterOrganization, setFilterOrganization] = useState('');
   const [statusUpdating, setStatusUpdating] = useState(null);
   const [componentLoading, setComponentLoading] = useState(false);
 
@@ -395,6 +396,7 @@ const UsersData = () => {
     setFilterLastName('');
     setFilterRole('');
     setFilterStatus('');
+    setFilterOrganization(''); // Add this line
   }, []);
 
   // Retry function
@@ -431,16 +433,47 @@ const UsersData = () => {
       const matchesRole = !filterRole || user.role === filterRole;
       const matchesStatus = !filterStatus || user.status === filterStatus;
 
-      return matchesSearch && matchesFirstName && matchesLastName && matchesRole && matchesStatus;
+      // Organization filter
+      const matchesOrganization = !filterOrganization ||
+        getOrganizationNames(user.orgId).toLowerCase().includes(filterOrganization.toLowerCase());
+
+      return matchesSearch && matchesFirstName && matchesLastName && matchesRole && matchesStatus && matchesOrganization;
     });
-  }, [users, searchTerm, filterFirstName, filterLastName, filterRole, filterStatus]);
+  }, [users, searchTerm, filterFirstName, filterLastName, filterRole, filterStatus, filterOrganization, getOrganizationNames]);
 
   // Get unique roles, statuses for filter options
-  const { uniqueRoles, uniqueStatuses } = React.useMemo(() => {
+  const { uniqueRoles, uniqueStatuses, uniqueOrganizations } = React.useMemo(() => {
     const roles = [...new Set(users.map(user => user.role).filter(Boolean))];
     const statuses = [...new Set(users.map(user => user.status).filter(Boolean))];
-    return { uniqueRoles: roles, uniqueStatuses: statuses };
-  }, [users]);
+
+    // Get unique organizations
+    const orgSet = new Set();
+    users.forEach(user => {
+      if (user.orgId) {
+        if (Array.isArray(user.orgId)) {
+          user.orgId.forEach(orgId => {
+            const org = organizations.find(o => o.id === orgId || o.id === parseInt(orgId));
+            if (org && org.name) {
+              orgSet.add(JSON.stringify({ id: org.id, name: org.name }));
+            }
+          });
+        } else {
+          const org = organizations.find(o => o.id === user.orgId || o.id === parseInt(user.orgId));
+          if (org && org.name) {
+            orgSet.add(JSON.stringify({ id: org.id, name: org.name }));
+          }
+        }
+      }
+    });
+
+    const uniqueOrgs = Array.from(orgSet).map(orgStr => JSON.parse(orgStr));
+
+    return {
+      uniqueRoles: roles,
+      uniqueStatuses: statuses,
+      uniqueOrganizations: uniqueOrgs
+    };
+  }, [users, organizations]);
 
   // Get available organizations for dropdown (excluding already selected ones)
   const availableOrganizations = React.useMemo(() => {
@@ -457,7 +490,7 @@ const UsersData = () => {
       <div className="users-data-container">
         <div className="loading-spinner">
           <div className="spinner"></div>
-          <p>Loading users...</p>
+          <p>טוען את המידע...</p>
         </div>
       </div>
     );
@@ -490,12 +523,12 @@ const UsersData = () => {
       )}
 
       <div className="users-header">
-        <h2>Users Management</h2>
+        <h2>ניהול משתמשים</h2>
         <div className="users-stats">
-          Total Users: <span className="stat-number">{users.length}</span>
+          כמות משתמשים במערכת: <span className="stat-number">{users.length}</span>
           {filteredUsers.length !== users.length && (
             <span className="filtered-count">
-              (Showing {filteredUsers.length})
+              (מציג {filteredUsers.length})
             </span>
           )}
         </div>
@@ -512,8 +545,11 @@ const UsersData = () => {
         setFilterRole={setFilterRole}
         filterStatus={filterStatus}
         setFilterStatus={setFilterStatus}
+        filterOrganization={filterOrganization}
+        setFilterOrganization={setFilterOrganization}
         uniqueRoles={uniqueRoles}
         uniqueStatuses={uniqueStatuses}
+        uniqueOrganizations={uniqueOrganizations}
         clearFilters={clearFilters}
       />
 
@@ -532,13 +568,13 @@ const UsersData = () => {
             <table className="users-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Organizations</th>
-                  <th>Status</th>
-                  <th>Created At</th>
-                  <th>Operations</th>
+                  <th>שם</th>
+                  <th>כתובת דוא"ל</th>
+                  <th>תפקיד</th>
+                  <th>ארגונים</th>
+                  <th>סטטוס</th>
+                  <th>תאריך יצירה</th>
+                  <th>פעולות</th>
                 </tr>
               </thead>
               <tbody>
@@ -572,16 +608,6 @@ const UsersData = () => {
                           <span className={`status-badge ${user.status}`}>
                             {user.status}
                           </span>
-                          {statusAction && (
-                            <button
-                              className={`btn btn-status btn-${statusAction.variant}`}
-                              onClick={() => handleStatusUpdate(user)}
-                              disabled={isUpdating}
-                              title={`${statusAction.label} user`}
-                            >
-                              {isUpdating ? 'מעדכן...' : statusAction.label}
-                            </button>
-                          )}
                         </div>
                       </td>
                       <td data-label="Created At">{formatDate(user.createdAt)}</td>
@@ -811,7 +837,7 @@ const UsersData = () => {
       {/* Feedback Popup - Moved outside and with highest z-index */}
       {showFeedbackPopup && feedbackTargetUser && (
         <FeedbackPopup
-          targetUser={feedbackTargetUser}  
+          targetUser={feedbackTargetUser}
           onClose={closeFeedbackPopup}
         />
       )}

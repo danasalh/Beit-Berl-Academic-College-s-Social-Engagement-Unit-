@@ -31,6 +31,7 @@ const LimitedUsersData = () => {
     const [filterLastName, setFilterLastName] = useState('');
     const [filterRole, setFilterRole] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
+    const [filterOrganization, setFilterOrganization] = useState('');
     const [showNotAllowedPopup, setShowNotAllowedPopup] = useState(false);
     const [notAllowedRole, setNotAllowedRole] = useState('');
 
@@ -217,6 +218,7 @@ const LimitedUsersData = () => {
         setFilterLastName('');
         setFilterRole('');
         setFilterStatus('');
+        setFilterOrganization(''); // Add this line
     }, []);
 
     // Retry function
@@ -269,15 +271,31 @@ const LimitedUsersData = () => {
             const matchesRole = !filterRole || user.role === filterRole;
             const matchesStatus = !filterStatus || user.status === filterStatus;
 
-            return matchesSearch && matchesFirstName && matchesLastName && matchesRole && matchesStatus;
+            // Organization filter - check if any of user's shared organizations match
+            const matchesOrganization = !filterOrganization || (() => {
+                const userOrgIds = Array.isArray(user.orgId)
+                    ? user.orgId.map(id => Number(id))
+                    : [Number(user.orgId)];
+
+                const currentUserOrgIds = getCurrentUserOrgIds();
+                const sharedOrgIds = userOrgIds.filter(orgId => currentUserOrgIds.includes(orgId));
+
+                const sharedOrgNames = organizations
+                    .filter(org => sharedOrgIds.includes(Number(org.id)))
+                    .map(org => org.name)
+                    .join(', ');
+
+                return sharedOrgNames.toLowerCase().includes(filterOrganization.toLowerCase());
+            })();
+
+            return matchesSearch && matchesFirstName && matchesLastName && matchesRole && matchesStatus && matchesOrganization;
         });
 
-        console.log('Final filtered users count:', finalFilteredUsers.length);
         return finalFilteredUsers;
-    }, [users, currentUser, hasSharedOrganization, searchTerm, filterFirstName, filterLastName, filterRole, filterStatus]);
+    }, [users, currentUser, hasSharedOrganization, searchTerm, filterFirstName, filterLastName, filterRole, filterStatus, filterOrganization, getCurrentUserOrgIds, organizations]);
 
     // Get unique roles, statuses for filter options
-    const { uniqueRoles, uniqueStatuses } = React.useMemo(() => {
+    const { uniqueRoles, uniqueStatuses, uniqueOrganizations } = React.useMemo(() => {
         const orgFilteredUsers = users.filter(user => {
             if (currentUser && user.id === currentUser.id) {
                 return false;
@@ -287,8 +305,34 @@ const LimitedUsersData = () => {
 
         const roles = [...new Set(orgFilteredUsers.map(user => user.role).filter(Boolean))];
         const statuses = [...new Set(orgFilteredUsers.map(user => user.status).filter(Boolean))];
-        return { uniqueRoles: roles, uniqueStatuses: statuses };
-    }, [users, currentUser, hasSharedOrganization]);
+
+        // Get unique shared organizations
+        const orgSet = new Set();
+        const currentUserOrgIds = getCurrentUserOrgIds();
+
+        orgFilteredUsers.forEach(user => {
+            const userOrgIds = Array.isArray(user.orgId)
+                ? user.orgId.map(id => Number(id))
+                : [Number(user.orgId)];
+
+            const sharedOrgIds = userOrgIds.filter(orgId => currentUserOrgIds.includes(orgId));
+
+            sharedOrgIds.forEach(orgId => {
+                const org = organizations.find(o => Number(o.id) === orgId);
+                if (org && org.name) {
+                    orgSet.add(JSON.stringify({ id: org.id, name: org.name }));
+                }
+            });
+        });
+
+        const uniqueOrgs = Array.from(orgSet).map(orgStr => JSON.parse(orgStr));
+
+        return {
+            uniqueRoles: roles,
+            uniqueStatuses: statuses,
+            uniqueOrganizations: uniqueOrgs
+        };
+    }, [users, currentUser, hasSharedOrganization, getCurrentUserOrgIds, organizations]);
 
     // Check if current user is logged in
     if (!currentUser) {
@@ -333,7 +377,7 @@ const LimitedUsersData = () => {
 
             <div className="users-header">
                 <h2>
-                    Users Management
+                    ניהול משתמשים
                     {/* Background loading indicator */}
                     {showBackgroundLoading && (
                         <span className="loading-indicator" title="Loading data in background...">
@@ -342,7 +386,7 @@ const LimitedUsersData = () => {
                     )}
                 </h2>
                 <div className="users-stats">
-                    Organization Users: <span className="stat-number">{filteredUsers.length}</span>
+                    משתמשים בארגון: <span className="stat-number">{filteredUsers.length}</span>
                     {searchTerm || filterFirstName || filterLastName || filterRole || filterStatus ? (
                         <span className="filtered-count">
                             (Filtered)
@@ -354,9 +398,9 @@ const LimitedUsersData = () => {
             {/* Show error banner if there's an error but we have some data */}
             {error && hasInitialData && (
                 <div className="error-banner">
-                    <span>⚠️ Failed to update data: {error}</span>
+                    <span>⚠️ עדכון המידע כשל {error}</span>
                     <button onClick={handleRetry} className="retry-btn-small">
-                        Retry
+                        לנסות שוב
                     </button>
                 </div>
             )}
@@ -372,8 +416,11 @@ const LimitedUsersData = () => {
                 setFilterRole={setFilterRole}
                 filterStatus={filterStatus}
                 setFilterStatus={setFilterStatus}
+                filterOrganization={filterOrganization}
+                setFilterOrganization={setFilterOrganization}
                 uniqueRoles={uniqueRoles}
                 uniqueStatuses={uniqueStatuses}
+                uniqueOrganizations={uniqueOrganizations}
                 clearFilters={clearFilters}
             />
 
@@ -381,14 +428,14 @@ const LimitedUsersData = () => {
                 <div className="no-users">
                     <p>
                         {!currentUser
-                            ? 'Please log in to view users'
+                            ? 'יש להתחבר כדי לראות את רשימת המשתמשים'
                             : getCurrentUserOrgIds().length === 0
-                                ? 'You are not assigned to any organization'
+                                ? 'אין לך עדיין שיוך לארגון'
                                 : searchTerm || filterFirstName || filterLastName || filterRole || filterStatus
-                                    ? 'No users match the selected criteria'
+                                    ? 'לא נמצאו משתמשים התואמים את הקריטריונים שלך'
                                     : showBackgroundLoading
-                                        ? 'Loading users...'
-                                        : 'No users found in your organizations'
+                                        ? 'טוען משתמשים...'
+                                        : 'אין משתמשים זמינים כרגע'
                         }
                     </p>
                 </div>
@@ -398,13 +445,13 @@ const LimitedUsersData = () => {
                         <table className="users-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Organizations</th>
-                                    <th>Created At</th>
-                                    <th>Operations</th>
+                                    <th>שם</th>
+                                    <th>כתובת דוא"ל</th>
+                                    <th>תפקיד</th>
+                                    <th>סטטוס</th>
+                                    <th>ארגונים</th>
+                                    <th>תאריך יצירה</th>
+                                    <th>פעולות</th>
                                 </tr>
                             </thead>
                             <tbody>
