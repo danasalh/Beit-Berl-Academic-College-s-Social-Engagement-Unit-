@@ -86,24 +86,14 @@
   max-width: 72rem;
   margin: 0 auto;
   padding: 32px 16px;
+  /* אין כאן רקע לבן! */
 }
 
 .org-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
-}
-
-@media (min-width: 768px) {
-  .org-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .org-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  /* אין כאן רקע לבן! */
 }
 
 /* Organization Card Styles */
@@ -113,11 +103,17 @@
   border: 1px solid #e5e7eb;
   padding: 16px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s;
+  transition:
+    box-shadow 0.25s cubic-bezier(.4,2,.6,1),
+    transform 0.25s cubic-bezier(.4,2,.6,1),
+    border-color 0.2s;
 }
 
 .org-card:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px 0 rgba(33, 150, 243, 0.18);
+  transform: translateY(-6px) scale(1.035);
+  border-color: #90caf9;
+  z-index: 2;
 }
 
 .org-card-header {
