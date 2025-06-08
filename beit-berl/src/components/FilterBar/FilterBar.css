@@ -25,9 +25,8 @@
   cursor: pointer;
 }
 
-.search-btn , 
-.download-btn {
-  background-color: rgb(108, 169, 239);
+.search-btn{
+  background-color: rgb(251, 182, 9);
   color: white;
   border: none;
   padding: 10px 14px;
