@@ -40,20 +40,20 @@ export const UsersProvider = ({ children }) => {
       // First try to get the document directly using userId as document ID
       const docRef = doc(db, 'users', userId);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         return { docId: docSnap.id, data: docSnap.data() };
       }
-      
+
       // If not found, try to find by 'id' field (fallback)
       const q = query(usersCollection, where('id', '==', userId));
       const querySnapshot = await getDocs(q);
-      
+
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
         return { docId: doc.id, data: doc.data() };
       }
-      
+
       return null;
     } catch (err) {
       console.error('Error finding document by user ID:', err);
@@ -70,19 +70,19 @@ export const UsersProvider = ({ children }) => {
     }
 
     console.log('👤 Setting current user by ID:', userId);
-    
+
     try {
       // Try to get user document directly using userId as document ID
       const docRef = doc(db, 'users', userId);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         const userData = {
           docId: docSnap.id,
           id: userId, // Ensure ID is set
           ...docSnap.data()
         };
-        
+
         setCurrentUser(userData);
         console.log('✅ Current user set (direct):', userData);
         return userData;
@@ -162,7 +162,7 @@ export const UsersProvider = ({ children }) => {
 
     try {
       const result = await findDocumentByUserId(userId);
-      
+
       if (result) {
         const userData = {
           docId: result.docId,
@@ -197,7 +197,7 @@ export const UsersProvider = ({ children }) => {
 
     try {
       const q = query(
-        usersCollection, 
+        usersCollection,
         where('role', '==', role),
         orderBy('createdAt', 'desc')
       );
@@ -232,7 +232,7 @@ export const UsersProvider = ({ children }) => {
 
     try {
       const q = query(
-        usersCollection, 
+        usersCollection,
         where('orgId', '==', orgId),
         orderBy('createdAt', 'desc')
       );
@@ -269,7 +269,7 @@ export const UsersProvider = ({ children }) => {
 
       const docRef = await addDoc(usersCollection, userDataWithTimestamps);
 
-      const newUser = { 
+      const newUser = {
         docId: docRef.id,
         id: docRef.id, // Use document ID as user ID
         ...userDataWithTimestamps,
@@ -301,28 +301,33 @@ export const UsersProvider = ({ children }) => {
     try {
       console.log('📝 Updating user:', { userId, userData });
 
-      // Ensure orgId is an array of numbers
+      // Prepare the update data
       const cleanedData = {
         ...userData,
-        // Convert orgId to array of numbers or empty array
-        orgId: Array.isArray(userData.orgId) 
-          ? userData.orgId.map(Number)
-          : [],
         updatedAt: serverTimestamp()
       };
 
+      // ONLY process orgId if it's explicitly provided in userData
+      if ('orgId' in userData) {
+        // Ensure orgId is an array of numbers when provided
+        cleanedData.orgId = Array.isArray(userData.orgId)
+          ? userData.orgId.map(Number)
+          : userData.orgId ? [Number(userData.orgId)] : [];
+      }
+      // If orgId is not in userData, don't touch the existing orgId field
+
       // Get document reference
       const userRef = doc(db, 'users', String(userId));
-      
+
       console.log('📝 Updating document with data:', cleanedData);
-      
+
       // Update the document
       await updateDoc(userRef, cleanedData);
 
       // Update local state
-      setUsers(prev => 
-        prev.map(user => 
-          user.id === Number(userId) 
+      setUsers(prev =>
+        prev.map(user =>
+          user.id === Number(userId)
             ? { ...user, ...cleanedData, updatedAt: new Date() }
             : user
         )
@@ -344,7 +349,7 @@ export const UsersProvider = ({ children }) => {
     if (!currentUser || !currentUser.id) {
       throw new Error('No current user to update');
     }
-    
+
     return await updateUser(currentUser.id, userData);
   };
 
@@ -362,9 +367,9 @@ export const UsersProvider = ({ children }) => {
       // Try direct document reference first
       const docRef = doc(db, 'users', userId);
       const docSnap = await getDoc(docRef);
-      
+
       let targetDocId = userId;
-      
+
       if (!docSnap.exists()) {
         // Fallback: find by ID field
         const result = await findDocumentByUserId(userId);
@@ -377,7 +382,7 @@ export const UsersProvider = ({ children }) => {
       await deleteDoc(doc(db, 'users', targetDocId));
 
       // Update local state
-      setUsers(prev => prev.filter(user => 
+      setUsers(prev => prev.filter(user =>
         user.id !== userId && user.docId !== targetDocId
       ));
 
@@ -437,7 +442,7 @@ export const UsersProvider = ({ children }) => {
     }
 
     console.log('🔍 Searching users:', searchTerm);
-    
+
     const filteredUsers = users.filter(user => {
       const searchableFields = [
         user.name,
@@ -477,25 +482,25 @@ export const UsersProvider = ({ children }) => {
     currentUser,
     loading,
     error,
-    
+
     // CRUD operations
     getUsers,
     getUserById,
     createUser,
     updateUser,
     deleteUser,
-    
+
     // Current user management
     setCurrentUserById,
     clearCurrentUser,
     getCurrentUser,
     currentUserHasRole,
     updateCurrentUser,
-    
+
     // Filtered queries
     getUsersByRole,
     getUsersByOrganization,
-    
+
     // Utility functions
     updateUserStatus,
     bulkUpdateUsers,
