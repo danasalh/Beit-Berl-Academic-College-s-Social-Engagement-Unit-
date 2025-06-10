@@ -32,12 +32,40 @@ const OrganizationsList = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [filteredOrgs, setFilteredOrgs] = useState([]);
 
-  // Check if current user is a volunteer
+  // Check user roles
   const isVolunteer = currentUserHasRole('volunteer') || currentUserHasRole('Volunteer');
+  const isOrgRep = currentUserHasRole('orgRep') || currentUserHasRole('OrgRep');
 
   // Helper function to get city value - handles different possible field names
   const getCityValue = (org) => {
     return org.City || org.city || org.CITY || org.location || org.Location || '';
+  };
+
+  // Helper function to filter organizations for orgRep users
+  const filterOrganizationsForOrgRep = (orgs) => {
+    if (!isOrgRep || !currentUser || !currentUser.orgId) {
+      return orgs;
+    }
+
+    // Ensure orgId is an array
+    const userOrgIds = Array.isArray(currentUser.orgId) 
+      ? currentUser.orgId 
+      : [currentUser.orgId];
+
+    console.log('🔍 Filtering organizations for orgRep user:', {
+      userOrgIds,
+      totalOrgs: orgs.length
+    });
+
+    // Filter organizations where the organization ID is in the user's orgId array
+    const filteredOrgs = orgs.filter(org => {
+      const orgIdMatch = userOrgIds.includes(org.id);
+      console.log(`Org ${org.id} (${org.name}): ${orgIdMatch ? 'INCLUDED' : 'EXCLUDED'}`);
+      return orgIdMatch;
+    });
+
+    console.log('✅ Filtered organizations for orgRep:', filteredOrgs.length, 'organizations');
+    return filteredOrgs;
   };
 
   // Load organizations and users when component mounts
@@ -67,13 +95,20 @@ const OrganizationsList = () => {
   useEffect(() => {
     console.log('📊 Organizations state - loading:', loading, 'count:', organizations.length, 'error:', error);
     console.log('👥 Users state - loading:', usersLoading, 'count:', users.length);
-    console.log('👤 Current user role check - isVolunteer:', isVolunteer);
-  }, [loading, organizations, error, usersLoading, users, isVolunteer]);
+    console.log('👤 Current user role check - isVolunteer:', isVolunteer, 'isOrgRep:', isOrgRep);
+    console.log('👤 Current user orgId:', currentUser?.orgId);
+  }, [loading, organizations, error, usersLoading, users, isVolunteer, isOrgRep, currentUser]);
 
-  // Filter organizations based on search and city filter
+  // Filter organizations based on search, city filter, and user role
   useEffect(() => {
     let filtered = organizations;
 
+    // First, apply role-based filtering for orgRep users
+    if (isOrgRep) {
+      filtered = filterOrganizationsForOrgRep(filtered);
+    }
+
+    // Then apply search term filtering
     if (searchTerm) {
       filtered = filtered.filter(org => 
         org.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -81,6 +116,7 @@ const OrganizationsList = () => {
       );
     }
 
+    // Finally apply city filtering
     if (cityFilter) {
       filtered = filtered.filter(org => {
         const cityValue = getCityValue(org);
@@ -88,14 +124,22 @@ const OrganizationsList = () => {
       });
     }
 
-    console.log('🔍 Filtered organizations:', filtered.length, 'out of', organizations.length);
+    console.log('🔍 Final filtered organizations:', {
+      original: organizations.length,
+      afterRoleFilter: isOrgRep ? filterOrganizationsForOrgRep(organizations).length : organizations.length,
+      afterSearchFilter: filtered.length,
+      searchTerm,
+      cityFilter,
+      userRole: currentUser?.role
+    });
+
     setFilteredOrgs(filtered);
-  }, [organizations, searchTerm, cityFilter]);
+  }, [organizations, searchTerm, cityFilter, isOrgRep, currentUser]);
 
   const handleDeleteOrg = async (orgId) => {
-    // Prevent volunteers from deleting organizations
-    if (isVolunteer) {
-      console.log('❌ Volunteer users cannot delete organizations');
+    // Prevent volunteers and orgReps from deleting organizations
+    if (isVolunteer || isOrgRep) {
+      console.log('❌ Volunteer and orgRep users cannot delete organizations');
       return;
     }
 
@@ -112,9 +156,9 @@ const OrganizationsList = () => {
   };
 
   const handleSaveOrg = async (orgData) => {
-    // Prevent volunteers from saving organizations
-    if (isVolunteer) {
-      console.log('❌ Volunteer users cannot create/edit organizations');
+    // Prevent volunteers and orgReps from saving organizations
+    if (isVolunteer || isOrgRep) {
+      console.log('❌ Volunteer and orgRep users cannot create/edit organizations');
       return;
     }
 
@@ -219,8 +263,8 @@ const OrganizationsList = () => {
             </button>
           </div>
 
-          {/* Only show "Add Organization" button if user is NOT a volunteer */}
-          {!isVolunteer && (
+          {/* Only show "Add Organization" button if user is NOT a volunteer AND NOT an orgRep */}
+          {!isVolunteer && !isOrgRep && (
             <button
               className="add-org-button"
               onClick={() => setIsAdding(true)}
@@ -229,13 +273,26 @@ const OrganizationsList = () => {
             </button>
           )}
         </div>
+
+        {/* Show info message for orgRep users */}
+        {isOrgRep && (
+          <div className="role-info-message">
+            <p>מציג את רשימת הסניפים של הארגון שלך</p>
+          </div>
+        )}
       </div>
 
       {/* Organizations Grid */}
       <div className="organizations-container">
         {filteredOrgs.length === 0 ? (
           <div className="no-results">
-            {organizations.length === 0 ? 'אין ארגונים רשומים' : 'לא נמצאו ארגונים המתאימים לחיפוש'}
+            {isOrgRep ? (
+              currentUser?.orgId && currentUser.orgId.length > 0 
+                ? 'לא נמצאו סניפים המתאימים לחיפוש'
+                : 'לא הוגדרו ארגונים עבור המשתמש שלך'
+            ) : (
+              organizations.length === 0 ? 'אין ארגונים רשומים' : 'לא נמצאו ארגונים המתאימים לחיפוש'
+            )}
           </div>
         ) : (
           <div className="org-grid">

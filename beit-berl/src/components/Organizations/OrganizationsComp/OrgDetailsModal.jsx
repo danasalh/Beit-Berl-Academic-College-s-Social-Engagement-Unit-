@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { HiLocationMarker, HiPencilAlt } from 'react-icons/hi';
+import { useUsers } from '../../../Contexts/UsersContext';
 
 const OrgDetailsModal = ({ 
   org, 
@@ -14,10 +15,15 @@ const OrgDetailsModal = ({
   const [editedOrg, setEditedOrg] = useState(org);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Get current user and check if admin
+  const { currentUser, currentUserHasRole } = useUsers();
+  const isAdmin = currentUserHasRole('admin') || currentUserHasRole('Admin');
+
   // Debug: Log the organization object
   console.log('🏢 OrgDetailsModal - Organization object:', org);
   console.log('👥 OrgDetailsModal - All users count:', allUsers.length);
   console.log('👤 OrgDetailsModal - Is volunteer:', isVolunteer);
+  console.log('👤 OrgDetailsModal - Is admin:', isAdmin);
 
   // Helper function to get city value - handles different possible field names
   const getCityValue = (org) => {
@@ -174,9 +180,9 @@ const OrgDetailsModal = ({
   };
 
   const handleDelete = async () => {
-    // Prevent volunteers from deleting
-    if (isVolunteer) {
-      console.log('❌ Volunteer users cannot delete organizations');
+    // Only allow admins to delete
+    if (!isAdmin) {
+      console.log('❌ Only admin users can delete organizations');
       return;
     }
 
@@ -367,12 +373,15 @@ const OrgDetailsModal = ({
                 >
                   <HiPencilAlt /> עריכה
                 </button>
-                <button
-                  className="delete-button"
-                  onClick={handleDelete}
-                >
-                  🗑 מחיקת הארגון
-                </button>
+                {/* Only show delete button for admin users */}
+                {isAdmin && (
+                  <button
+                    className="delete-button"
+                    onClick={handleDelete}
+                  >
+                    🗑 מחיקת הארגון
+                  </button>
+                )}
               </div>
             )}
           </div>
