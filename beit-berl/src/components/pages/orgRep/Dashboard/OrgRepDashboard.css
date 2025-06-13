@@ -47,6 +47,10 @@
   scroll-margin-top: 100px; /* Offset for smooth scrolling */
 }
 
+.organizations-list {
+  justify-content: center;
+}
+
 /* Smooth scrolling for the entire page */
 html {
   scroll-behavior: smooth;
