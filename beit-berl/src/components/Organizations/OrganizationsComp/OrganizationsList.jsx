@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import OrgCard from './OrgCard';
 import OrgDetailsModal from './OrgDetailsModal';
 import { HiOutlineSearch } from "react-icons/hi";

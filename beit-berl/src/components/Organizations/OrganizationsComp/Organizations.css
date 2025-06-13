@@ -1,8 +1,9 @@
 /* Main Page Styles */
 .organizations-page {
   direction: rtl;
-  max-width: 90%;
   justify-content: center;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header Styles */
