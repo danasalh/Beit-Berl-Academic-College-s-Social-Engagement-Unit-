@@ -189,7 +189,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
         const newFeedback = await createFeedback(feedbackData);
         
         if (newFeedback) {
-          showSuccess('Feedback added successfully');
+          showSuccess('הפידבק נוסף בהצלחה');
           await refreshFeedback(); // Use refreshFeedback instead of fetchFeedback
           handleCancel();
         } else {
@@ -248,7 +248,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
         {/* Header */}
         <div className="feedback-popup-header">
           <h2>
-            Feedback for {targetUser.firstName} {targetUser.lastName}
+            מציג פידבק עבור {targetUser.firstName} {targetUser.lastName}
           </h2>
           <button className="close-btn" onClick={onClose}>
             <HiX />
@@ -273,7 +273,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
           {!isEditing && !showLoading && (
             <div className="add-feedback-section">
               <button className="add-feedback-btn" onClick={handleAddNew}>
-                <HiPlus /> Add New Feedback
+                <HiPlus /> הוספת פידבק חדש
               </button>
             </div>
           )}
@@ -282,16 +282,16 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
           {isEditing && (
             <div className="feedback-form-section">
               <h3>
-                {editingFeedback ? 'Edit Feedback' : 'Add New Feedback'}
+                {editingFeedback ? 'עריכת פידבק' : 'הוספת פידבק חדש'}
               </h3>
               <div className="feedback-form">
                 <div className="form-group">
-                  <label htmlFor="feedback-content">Feedback Content</label>
+                  <label htmlFor="feedback-content">פרטי הפידבק</label>
                   <textarea
                     id="feedback-content"
                     value={feedbackContent}
                     onChange={(e) => setFeedbackContent(e.target.value)}
-                    placeholder="Enter your feedback..."
+                    placeholder="הוספת פידבק כאן..."
                     rows={4}
                     disabled={isSubmitting}
                   />
@@ -304,7 +304,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
                     onClick={handleCancel}
                     disabled={isSubmitting}
                   >
-                    Cancel
+                    ביטול
                   </button>
                   <button 
                     type="button"
@@ -312,7 +312,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
                     onClick={handleSubmit}
                     disabled={isSubmitting || !feedbackContent.trim()}
                   >
-                    {isSubmitting ? 'Saving...' : (editingFeedback ? 'Update' : 'Add Feedback')}
+                    {isSubmitting ? 'שומר...' : (editingFeedback ? 'עדכון' : 'הוספת פידבק')}
                   </button>
                 </div>
               </div>
@@ -322,7 +322,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
           {/* My Feedback Section */}
           {!showLoading && myFeedback.length > 0 && (
             <div className="feedback-section">
-              <h3>My Feedback</h3>
+              <h3>הפידבק שאני הזנתי</h3>
               <div className="feedback-list">
                 {myFeedback.map((feedback) => (
                   <div key={feedback.id} className="feedback-item my-feedback">
@@ -360,7 +360,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
           {/* Others' Feedback Section */}
           {!showLoading && othersFeedback.length > 0 && (
             <div className="feedback-section">
-              <h3>Other Feedback</h3>
+              <h3>פידבק שניתן על ידי אחרים</h3>
               <div className="feedback-list">
                 {othersFeedback.map((feedback) => (
                   <div key={feedback.id} className="feedback-item others-feedback">
@@ -382,8 +382,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
           {/* No Feedback Message */}
           {!showLoading && feedbackList.length === 0 && (
             <div className="no-feedback">
-              <p>No feedback available yet.</p>
-              <p>Be the first to add feedback for this user!</p>
+              <p>לא הוזן עדיין פידבק עבור משתמש זה</p>
             </div>
           )}
 
@@ -391,7 +390,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
           {showLoading && (
             <div className="loading-state">
               <div className="spinner"></div>
-              <p>Loading feedback...</p>
+              <p>טוען פידבק...</p>
             </div>
           )}
         </div>
