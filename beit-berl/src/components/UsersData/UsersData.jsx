@@ -5,9 +5,11 @@ import { useOrganizations } from '../../Contexts/OrganizationsContext';
 import UserProfile from '../UserProfile/UserProfile';
 import FilterBar from '../FilterBar/FilterBar';
 import FeedbackPopup from '../PopUps/FeedbackPopup/FeedbackPopup';
+import HoursData from '../HoursData/HoursData'; 
 import { exportUsersToExcel } from '../../utils/excelExport';
+import UserEdit from './UserEdit';
 import './UsersData.css';
-import { HiOutlineEye, HiOutlinePencil, HiX } from 'react-icons/hi';
+import { HiOutlineEye, HiOutlinePencil, HiOutlineClock } from 'react-icons/hi';
 
 const UsersData = () => {
   const {
@@ -37,6 +39,7 @@ const UsersData = () => {
   const [filterOrganization, setFilterOrganization] = useState('');
   const [statusUpdating, setStatusUpdating] = useState(null);
   const [componentLoading, setComponentLoading] = useState(false);
+  const [showHoursModal, setShowHoursModal] = useState(false);
 
   //feedback states
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
@@ -57,6 +60,22 @@ const UsersData = () => {
   const closeFeedbackPopup = useCallback(() => {
     setShowFeedbackPopup(false);
     setFeedbackTargetUser(null);
+  }, []);
+
+  // Handle hours management - UPDATED
+  const handleHours = useCallback((user) => {
+    console.log('Opening hours management for user:', user.id);
+    setSelectedUser(user);
+    setShowHoursModal(true);
+    // Close other modals when opening hours
+    setShowProfile(false);
+    setShowEditModal(false);
+  }, []);
+
+  // Close hours modal
+  const closeHoursModal = useCallback(() => {
+    setShowHoursModal(false);
+    setSelectedUser(null);
   }, []);
 
   // Success notification state
@@ -682,6 +701,16 @@ const UsersData = () => {
                           >
                             <HiOutlinePencil />
                           </button>
+                          {/* UPDATED: Added onClick handler and conditional display */}
+                          {user.role === 'volunteer' && (
+                            <button
+                              className="btn btn-hours"
+                              onClick={() => handleHours(user)}
+                              title="Manage Hours"
+                            >
+                              <HiOutlineClock />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -705,188 +734,26 @@ const UsersData = () => {
 
       {/* Edit User Modal */}
       {showEditModal && selectedUser && (
-        <div className="modal-overlay" onClick={closeEditModal}>
-          <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Edit User</h3>
-              <button className="close-btn" onClick={closeEditModal}>×</button>
-            </div>
-            <div className="modal-body">
-              <form className="edit-form" onSubmit={(e) => e.preventDefault()}>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="firstName">First Name:</label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="firstName"
-                      value={editFormData.firstName || ''}
-                      onChange={handleInputChange}
-                      placeholder="Enter first name"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="lastName">Last Name:</label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      value={editFormData.lastName || ''}
-                      onChange={handleInputChange}
-                      placeholder="Enter last name"
-                      required
-                    />
-                  </div>
-                </div>
+        <UserEdit
+          editFormData={editFormData}
+          selectedUser={selectedUser}
+          selectedOrganizations={selectedOrganizations}
+          availableOrganizations={availableOrganizations}
+          closeEditModal={closeEditModal}
+          handleInputChange={handleInputChange}
+          handleOrganizationSelect={handleOrganizationSelect}
+          removeSelectedOrganization={removeSelectedOrganization}
+          handleStatusUpdateInModal={handleStatusUpdateInModal}
+          handleSaveEdit={handleSaveEdit}
+        />
+      )}
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="email">Email:</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={editFormData.email || ''}
-                      onChange={handleInputChange}
-                      placeholder="Enter email"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="phoneNumber">Phone Number:</label>
-                    <input
-                      type="tel"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={editFormData.phoneNumber || ''}
-                      onChange={handleInputChange}
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="role">Role:</label>
-                    <select
-                      id="role"
-                      name="role"
-                      value={editFormData.role}
-                      onChange={handleInputChange}
-                      required
-                    >
-                      <option value="">Select Role</option>
-                      <option value="admin">Admin</option>
-                      <option value="orgRep">orgRep</option>
-                      <option value="vc">vc</option>
-                      <option value="volunteer">volunteer</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Organizations Selection */}
-                <div className="form-group organizations-group">
-                  <label>Organizations (Max 3):</label>
-
-                  {/* Selected Organizations */}
-                  {selectedOrganizations.length > 0 && (
-                    <div className="selected-organizations">
-                      {selectedOrganizations.map(org => (
-                        <div key={org.id} className="selected-org-item">
-                          <span className="org-name">{org.name}</span>
-                          <button
-                            type="button"
-                            className="remove-org-btn"
-                            onClick={() => removeSelectedOrganization(org.id)}
-                            title="Remove organization"
-                          >
-                            <HiX />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Add Organization Dropdown */}
-                  {selectedOrganizations.length < 3 && (
-                    <div className="add-organization">
-                      <select
-                        onChange={handleOrganizationSelect}
-                        defaultValue=""
-                        disabled={availableOrganizations.length === 0}
-                      >
-                        <option value="">
-                          {availableOrganizations.length === 0
-                            ? 'No more organizations available'
-                            : 'Select an organization to add'
-                          }
-                        </option>
-                        {availableOrganizations.map(org => (
-                          <option key={org.id} value={org.id}>
-                            {org.name || `Organization ${org.id}`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  <small className="form-help">
-                    {selectedOrganizations.length}/3 organizations selected
-                  </small>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group status-group">
-                    <label>Status Management:</label>
-                    <div className="status-controls">
-                      <span className={`status-badge ${selectedUser.status}`}>
-                        Current: {selectedUser.status}
-                      </span>
-                      <div className="status-actions">
-                        {(selectedUser.status === 'pending' || selectedUser.status === 'waiting for approval') && (
-                          <button
-                            type="button"
-                            className="btn btn-status btn-success"
-                            onClick={() => handleStatusUpdateInModal('approved')}
-                          >
-                            Approve User
-                          </button>
-                        )}
-                        {selectedUser.status === 'approved' && (
-                          <button
-                            type="button"
-                            className="btn btn-status btn-warning"
-                            onClick={() => handleStatusUpdateInModal('inactive')}
-                          >
-                            Deactivate User
-                          </button>
-                        )}
-                        {selectedUser.status === 'inactive' && (
-                          <button
-                            type="button"
-                            className="btn btn-status btn-success"
-                            onClick={() => handleStatusUpdateInModal('approved')}
-                          >
-                            Reactivate User
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={closeEditModal}>
-                Cancel
-              </button>
-              <button className="btn btn-primary" onClick={handleSaveEdit}>
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Hours Management Modal - NEW */}
+      {showHoursModal && selectedUser && (
+        <HoursData
+          volunteer={selectedUser}
+          onClose={closeHoursModal}
+        />
       )}
 
       {/* Feedback Popup - Moved outside and with highest z-index */}
