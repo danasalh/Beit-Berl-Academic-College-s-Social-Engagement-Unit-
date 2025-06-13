@@ -1,10 +1,10 @@
 import React from 'react';
-import OrganizationPopup from './components/OrgCards/OrganizationPopup';
+import OrganizationCard from './components/OrgCards/OrganizationCard';
 
 function App() {
   return (
     <div>
-      <OrganizationPopup />
+      <OrganizationCard />
     </div>
   );
 }

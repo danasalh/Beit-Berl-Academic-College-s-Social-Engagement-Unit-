@@ -1,0 +1,109 @@
+/* App Container */
+.app-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f9fafb 0%, #dbeafe 100%);
+  padding: 1.5rem;
+}
+
+.card-wrapper {
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+/* Organization Card */
+.organization-card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #f3f4f6;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.organization-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-0.25rem);
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.organization-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+.location-info {
+  display: flex;
+  align-items: center;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.location-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+}
+
+.city-name {
+  font-size: 0.875rem;
+}
+
+/* Organization Avatar */
+.organization-avatar {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+/* Organization Description */
+.organization-description {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Card Footer */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.member-count {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.users-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.25rem;
+}
