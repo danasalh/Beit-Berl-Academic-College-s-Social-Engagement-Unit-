@@ -35,16 +35,23 @@ const OrganizationsList = () => {
   // Check user roles
   const isVolunteer = currentUserHasRole('volunteer') || currentUserHasRole('Volunteer');
   const isOrgRep = currentUserHasRole('orgRep') || currentUserHasRole('OrgRep');
+  const isVc = currentUserHasRole('vc') || currentUserHasRole('Vc');
 
   // Helper function to get city value - handles different possible field names
   const getCityValue = (org) => {
     return org.City || org.city || org.CITY || org.location || org.Location || '';
   };
 
-  // Helper function to filter organizations for orgRep users
-  const filterOrganizationsForOrgRep = (orgs) => {
-    if (!isOrgRep || !currentUser || !currentUser.orgId) {
+  // Filter organizations for orgRep and VC users
+  const filterOrganizationsForUser = (orgs) => {
+    // If user is neither orgRep nor VC, return all orgs
+    if (!isOrgRep && !isVc) {
       return orgs;
+    }
+
+    if (!currentUser || !currentUser.orgId) {
+      console.log('⚠️ No organizations assigned to user');
+      return [];
     }
 
     // Ensure orgId is an array
@@ -52,7 +59,8 @@ const OrganizationsList = () => {
       ? currentUser.orgId 
       : [currentUser.orgId];
 
-    console.log('🔍 Filtering organizations for orgRep user:', {
+    console.log('🔍 Filtering organizations for user:', {
+      role: isVc ? 'VC' : 'OrgRep',
       userOrgIds,
       totalOrgs: orgs.length
     });
@@ -64,7 +72,7 @@ const OrganizationsList = () => {
       return orgIdMatch;
     });
 
-    console.log('✅ Filtered organizations for orgRep:', filteredOrgs.length, 'organizations');
+    console.log('✅ Filtered organizations:', filteredOrgs.length, 'organizations');
     return filteredOrgs;
   };
 
@@ -103,38 +111,37 @@ const OrganizationsList = () => {
   useEffect(() => {
     let filtered = organizations;
 
-    // First, apply role-based filtering for orgRep users
-    if (isOrgRep) {
-      filtered = filterOrganizationsForOrgRep(filtered);
+    // Apply role-based filtering for orgRep and VC users
+    if (isOrgRep || isVc) {
+      filtered = filterOrganizationsForUser(filtered);
     }
 
-    // Then apply search term filtering
-    if (searchTerm) {
-      filtered = filtered.filter(org => 
-        org.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        org.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    // Only apply search and city filters if user is not a VC
+    if (!isVc) {
+      if (searchTerm) {
+        filtered = filtered.filter(org => 
+          org.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          org.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
 
-    // Finally apply city filtering
-    if (cityFilter) {
-      filtered = filtered.filter(org => {
-        const cityValue = getCityValue(org);
-        return cityValue?.toLowerCase().includes(cityFilter.toLowerCase());
-      });
+      if (cityFilter) {
+        filtered = filtered.filter(org => {
+          const cityValue = getCityValue(org);
+          return cityValue?.toLowerCase().includes(cityFilter.toLowerCase());
+        });
+      }
     }
 
     console.log('🔍 Final filtered organizations:', {
       original: organizations.length,
-      afterRoleFilter: isOrgRep ? filterOrganizationsForOrgRep(organizations).length : organizations.length,
-      afterSearchFilter: filtered.length,
-      searchTerm,
-      cityFilter,
-      userRole: currentUser?.role
+      afterRoleFilter: filtered.length,
+      userRole: currentUser?.role,
+      isVc
     });
 
     setFilteredOrgs(filtered);
-  }, [organizations, searchTerm, cityFilter, isOrgRep, currentUser]);
+  }, [organizations, searchTerm, cityFilter, isOrgRep, isVc, currentUser]);
 
   const handleDeleteOrg = async (orgId) => {
     // Prevent volunteers and orgReps from deleting organizations
@@ -239,48 +246,49 @@ const OrganizationsList = () => {
 
   return (
     <div className="organizations-page" dir="rtl">
-      {/* Header */}
-      <div className="page-header">
-        {/* Search and Filter Section */}
-        <div className="search-section">
-          <div className="search-inputs">
-            <input
-              type="text"
-              placeholder="שם הארגון"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-            <input
-              type="text"
-              placeholder="עיר"
-              value={cityFilter}
-              onChange={(e) => setCityFilter(e.target.value)}
-              className="search-input"
-            />
-            <button className="search-button" onClick={handleSearch}>
-              <HiOutlineSearch className="search-icon" />
-            </button>
+      {/* Only show header for non-VC users */}
+      {!isVc && (
+        <div className="page-header">
+          <div className="search-section">
+            <div className="search-inputs">
+              <input
+                type="text"
+                placeholder="שם הארגון"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              <input
+                type="text"
+                placeholder="עיר"
+                value={cityFilter}
+                onChange={(e) => setCityFilter(e.target.value)}
+                className="search-input"
+              />
+              <button className="search-button" onClick={handleSearch}>
+                <HiOutlineSearch className="search-icon" />
+              </button>
+            </div>
+
+            {/* Only show "Add Organization" button if user is admin */}
+            {!isVolunteer && !isOrgRep && !isVc && (
+              <button
+                className="add-org-button"
+                onClick={() => setIsAdding(true)}
+              >
+                הוספת ארגון חדש
+              </button>
+            )}
           </div>
 
-          {/* Only show "Add Organization" button if user is NOT a volunteer AND NOT an orgRep */}
-          {!isVolunteer && !isOrgRep && (
-            <button
-              className="add-org-button"
-              onClick={() => setIsAdding(true)}
-            >
-              הוספת ארגון חדש
-            </button>
+          {/* Only show OrgRep info message if user is OrgRep */}
+          {isOrgRep && (
+            <div className="role-info-message">
+              <p>מציג את רשימת הסניפים של הארגון שלך</p>
+            </div>
           )}
         </div>
-
-        {/* Show info message for orgRep users */}
-        {isOrgRep && (
-          <div className="role-info-message">
-            <p>מציג את רשימת הסניפים של הארגון שלך</p>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Organizations Grid */}
       <div className="organizations-container">
