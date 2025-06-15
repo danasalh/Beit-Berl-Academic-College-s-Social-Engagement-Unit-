@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useVolunteerHours } from '../../Contexts/VolunteerHoursContext';
 import { useUsers } from '../../Contexts/UsersContext';
 import { useOrganizations } from '../../Contexts/OrganizationsContext';
@@ -12,11 +12,14 @@ const HoursList = () => {
   const { organizations } = useOrganizations();
 
   const [pendingHoursData, setPendingHoursData] = useState([]);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [selectedVolunteer, setSelectedVolunteer] = useState(null);
   const [showHoursModal, setShowHoursModal] = useState(false);
+  
+  // Use ref to track if initial load has been triggered
+  const initialLoadTriggered = useRef(false);
 
   // Check if current user can approve hours for a specific organization
   const canApproveForOrg = useCallback((orgId) => {
@@ -50,7 +53,7 @@ const HoursList = () => {
       if (isRefresh) {
         setRefreshing(true);
       } else {
-        setInitialLoading(true);
+        setLoading(true);
       }
       
       setError(null);
@@ -117,7 +120,7 @@ const HoursList = () => {
       console.error('❌ Error fetching pending hours:', err);
       setError(err.message);
     } finally {
-      setInitialLoading(false);
+      setLoading(false);
       setRefreshing(false);
     }
   }, [getVolunteerHours, canApproveForOrg, getUserById]);
@@ -142,10 +145,13 @@ const HoursList = () => {
     fetchPendingHours(true);
   }, [fetchPendingHours]);
 
-  // Load data on component mount
+  // Load data on component mount - only once
   useEffect(() => {
-    fetchPendingHours(false);
-  }, [fetchPendingHours]);
+    if (!initialLoadTriggered.current && currentUser) {
+      initialLoadTriggered.current = true;
+      fetchPendingHours(false);
+    }
+  }, [currentUser]); // Only depend on currentUser
 
   // Get volunteer display name
   const getVolunteerName = useCallback((volunteer) => {
@@ -154,8 +160,8 @@ const HoursList = () => {
            `Volunteer ${volunteer?.id}`;
   }, []);
 
-  // Show initial loading only on first load
-  if (initialLoading && pendingHoursData.length === 0 && !error) {
+  // Don't render anything until we have currentUser
+  if (!currentUser) {
     return (
       <div className="hours-list-container">
         <div className="hours-list-header">
@@ -170,16 +176,98 @@ const HoursList = () => {
         <div className="hours-list-content">
           <div className="loading-section">
             <div className="spinner"></div>
-            <p>טוען נתוני שעות ממתינות...</p>
+            <p>טוען נתוני משתמש...</p>
           </div>
         </div>
       </div>
     );
   }
 
+  // Render content based on state
+  const renderContent = () => {
+    if (error) {
+      return (
+        <div className="error-section">
+          <HiOutlineExclamation className="error-icon" />
+          <p>שגיאה בטעינת הנתונים: {error}</p>
+          <button className="retry-btn" onClick={() => fetchPendingHours(false)}>
+            נסה שוב
+          </button>
+        </div>
+      );
+    }
+
+    if (loading) {
+      return (
+        <div className="loading-section">
+          <div className="spinner"></div>
+          <p>טוען נתוני שעות ממתינות...</p>
+        </div>
+      );
+    }
+
+    if (pendingHoursData.length === 0) {
+      return (
+        <div className="no-pending-section">
+          <HiOutlineClock className="no-pending-icon" />
+          <h3>אין שעות הממתינות לאישור</h3>
+          <p>כל השעות הרלוונטיות כבר אושרו</p>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {/* Summary with refresh indicator */}
+        <div className="pending-summary">
+          <span className="summary-text">
+            {pendingHoursData.length} מתנדבים עם שעות הממתינות לאישור
+            {refreshing && <span className="refresh-indicator"> (מעדכן...)</span>}
+          </span>
+        </div>
+
+        {/* Pending Hours List */}
+        <div className="pending-hours-list">
+          {pendingHoursData.map(({ volunteer, pendingRecords, totalPendingHours }) => (
+            <div key={volunteer.id} className="pending-hours-row">
+              <div className="volunteer-info">
+                <div className="volunteer-name">
+                  {getVolunteerName(volunteer)}
+                </div>
+                <div className="volunteer-details">
+                  <span className="pending-count">
+                    {pendingRecords.length} בקשות
+                  </span>
+                  <span className="separator">•</span>
+                  <span className="pending-hours">
+                    {totalPendingHours} שעות
+                  </span>
+                  <span className="separator">•</span>
+                  <span className="organizations">
+                    {Array.from(new Set(pendingRecords.map(r => getOrganizationName(r.orgId)))).join(', ')}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="row-actions">
+                <button
+                  className="hours-btn"
+                  onClick={() => handleOpenHoursModal(volunteer)}
+                  disabled={refreshing}
+                >
+                  שעות
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  };
+
   return (
     <div className="hours-list-container">
-      {/* Header */}
+      {/* Header - Always visible to prevent layout shift */}
       <div className="hours-list-header">
         <div className="header-content">
           <HiOutlineClock className="header-icon" />
@@ -191,76 +279,16 @@ const HoursList = () => {
         <button 
           className="refresh-btn"
           onClick={handleRefresh}
-          disabled={refreshing}
+          disabled={refreshing || loading}
           title="רענן נתונים"
         >
           <HiRefresh className={refreshing ? 'rotating' : ''} />
         </button>
       </div>
 
-      {/* Content */}
+      {/* Content - Consistent container to prevent layout shift */}
       <div className="hours-list-content">
-        {error ? (
-          <div className="error-section">
-            <HiOutlineExclamation className="error-icon" />
-            <p>שגיאה בטעינת הנתונים: {error}</p>
-            <button className="retry-btn" onClick={() => fetchPendingHours(false)}>
-              נסה שוב
-            </button>
-          </div>
-        ) : pendingHoursData.length === 0 && !initialLoading ? (
-          <div className="no-pending-section">
-            <HiOutlineClock className="no-pending-icon" />
-            <h3>אין שעות הממתינות לאישור</h3>
-            <p>כל השעות הרלוונטיות כבר אושרו</p>
-          </div>
-        ) : (
-          <>
-            {/* Summary with refresh indicator */}
-            <div className="pending-summary">
-              <span className="summary-text">
-                {pendingHoursData.length} מתנדבים עם שעות הממתינות לאישור
-                {refreshing && <span className="refresh-indicator"> (מעדכן...)</span>}
-              </span>
-            </div>
-
-            {/* Pending Hours List */}
-            <div className="pending-hours-list">
-              {pendingHoursData.map(({ volunteer, pendingRecords, totalPendingHours }) => (
-                <div key={volunteer.id} className="pending-hours-row">
-                  <div className="volunteer-info">
-                    <div className="volunteer-name">
-                      {getVolunteerName(volunteer)}
-                    </div>
-                    <div className="volunteer-details">
-                      <span className="pending-count">
-                        {pendingRecords.length} בקשות
-                      </span>
-                      <span className="separator">•</span>
-                      <span className="pending-hours">
-                        {totalPendingHours} שעות
-                      </span>
-                      <span className="separator">•</span>
-                      <span className="organizations">
-                        {Array.from(new Set(pendingRecords.map(r => getOrganizationName(r.orgId)))).join(', ')}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="row-actions">
-                    <button
-                      className="hours-btn"
-                      onClick={() => handleOpenHoursModal(volunteer)}
-                      disabled={refreshing}
-                    >
-                      שעות
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+        {renderContent()}
       </div>
 
       {/* Hours Modal */}
