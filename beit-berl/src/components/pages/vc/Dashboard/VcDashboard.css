@@ -1,0 +1,65 @@
+@keyframes glow {
+  from {
+    text-shadow: 0 0 4px #90caf9, 0 0 2px #90caf9;
+  }
+  to {
+    text-shadow: 0 0 24px #42a5f5, 0 0 12px #42a5f5;
+  }
+}
+
+.vc-dashboard {
+  padding: 2rem;
+}
+
+.vc-welcome-title {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #0077c2;
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
+  text-shadow: 0 0 16px #90caf9, 0 0 8px #90caf9;
+  animation: glow 2s ease-in-out infinite alternate;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.vc-dashboard-header {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.org-preview,
+.volunteers-btn {
+  flex: 1 1 300px;
+  max-width: 500px;
+}
+
+@media (max-width: 600px) {
+  .vc-welcome-title {
+    font-size: 1.3rem !important;
+    max-width: 98vw !important;
+  }
+
+  .vc-dashboard-header {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .org-preview,
+  .volunteers-btn {
+    width: 100%;
+    max-width: 90vw;
+  }
+
+  .vol-button {
+    width: 100% !important;
+    font-size: 1rem !important;
+  }
+}
