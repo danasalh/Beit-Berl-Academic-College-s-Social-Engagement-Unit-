@@ -1,23 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { HiLocationMarker, HiPencilAlt } from 'react-icons/hi';
+import { useState, useEffect } from 'react';
+import { HiLocationMarker, HiPencilAlt, HiOutlineX, HiChevronDown } from 'react-icons/hi';
+import { useUsers } from '../../../Contexts/UsersContext';
 
-const OrgDetailsModal = ({ 
-  org, 
-  onClose, 
-  onSave, 
-  onDelete, 
-  isNew = false, 
-  allUsers = [], 
-  isVolunteer = false 
+const OrgDetailsModal = ({
+  org,
+  onClose,
+  onSave,
+  onDelete,
+  isNew = false,
+  allUsers = [],
+  isVolunteer = false
 }) => {
-  const [isEditing, setIsEditing] = useState(isNew && !isVolunteer); // Don't allow editing if volunteer
+  const [isEditing, setIsEditing] = useState(isNew && !isVolunteer);
   const [editedOrg, setEditedOrg] = useState(org);
   const [isSaving, setIsSaving] = useState(false);
+  const [vcDropdownOpen, setVcDropdownOpen] = useState(false);
+
+  // Get current user and check if admin
+  const { currentUser, currentUserHasRole } = useUsers();
+  const isAdmin = currentUserHasRole('admin') || currentUserHasRole('Admin');
 
   // Debug: Log the organization object
   console.log('🏢 OrgDetailsModal - Organization object:', org);
   console.log('👥 OrgDetailsModal - All users count:', allUsers.length);
   console.log('👤 OrgDetailsModal - Is volunteer:', isVolunteer);
+  console.log('👤 OrgDetailsModal - Is admin:', isAdmin);
+
+  // Get all volunteer coordinators from users
+  const getVolunteerCoordinators = () => {
+    if (!allUsers || !Array.isArray(allUsers)) {
+      return [];
+    }
+
+    return allUsers.filter(user => {
+      const isVC = user.role === 'vc' || user.role === 'VC' || user.role === 'volunteerCoordinator';
+      return isVC;
+    }).map(user => {
+      const firstName = user.firstName || '';
+      const lastName = user.lastName || '';
+      const fullName = `${firstName} ${lastName}`.trim();
+
+      return {
+        id: user.id || user.docId,
+        name: fullName || user.name || `מזהה: ${user.id || user.docId}`,
+        user: user
+      };
+    });
+  };
+
+  const volunteerCoordinators = getVolunteerCoordinators();
 
   // Helper function to get city value - handles different possible field names
   const getCityValue = (org) => {
@@ -43,37 +74,74 @@ const OrgDetailsModal = ({
     }
   };
 
-  // Helper function to get user name by ID
-  const getUserNameById = (userId) => {
+  // Helper function to get full user name by ID
+  const getFullNameById = (userId) => {
     if (!userId || !allUsers || !Array.isArray(allUsers)) {
       return `מזהה: ${userId || 'לא זמין'}`;
     }
 
-    const user = allUsers.find(u => u.id === userId || u.docId === userId);
-    if (user && user.firstName) {
-      return user.firstName;
+    // Try to find user by both id and docId fields
+    const user = allUsers.find(u =>
+      u.id === userId ||
+      u.docId === userId ||
+      u.id === String(userId) ||
+      u.docId === String(userId) ||
+      String(u.id) === String(userId) ||
+      String(u.docId) === String(userId)
+    );
+
+    if (user) {
+      const firstName = user.firstName || '';
+      const lastName = user.lastName || '';
+      const fullName = `${firstName} ${lastName}`.trim();
+
+      if (fullName) {
+        return fullName;
+      }
+
+      // Fallback to name field if firstName/lastName not available
+      if (user.name) {
+        return user.name;
+      }
     }
-    
+
     return `מזהה: ${userId}`;
   };
 
-  // Helper function to get organization representative name
+  // Helper function to get organization representative full name
   const getOrgRepName = (orgId) => {
     if (!orgId || !allUsers || !Array.isArray(allUsers)) {
       return 'לא צוין';
     }
 
     // Find user who is orgRep for this organization
-    const orgRep = allUsers.find(user => 
-      user.role === 'orgRep' && 
-      (user.orgId === orgId || 
-       (Array.isArray(user.orgId) && user.orgId.includes(orgId)))
-    );
+    const orgRep = allUsers.find(user => {
+      const isOrgRep = user.role === 'orgRep' || user.role === 'OrgRep';
+      if (!isOrgRep) return false;
 
-    if (orgRep && orgRep.firstName) {
-      return orgRep.firstName;
+      // Check if user's orgId matches (could be single ID or array)
+      if (Array.isArray(user.orgId)) {
+        return user.orgId.includes(orgId) || user.orgId.includes(String(orgId));
+      } else {
+        return user.orgId === orgId || user.orgId === String(orgId) || String(user.orgId) === String(orgId);
+      }
+    });
+
+    if (orgRep) {
+      const firstName = orgRep.firstName || '';
+      const lastName = orgRep.lastName || '';
+      const fullName = `${firstName} ${lastName}`.trim();
+
+      if (fullName) {
+        return fullName;
+      }
+
+      // Fallback to name field
+      if (orgRep.name) {
+        return orgRep.name;
+      }
     }
-    
+
     return 'לא צוין';
   };
 
@@ -83,9 +151,39 @@ const OrgDetailsModal = ({
       return [];
     }
 
+    console.log('🔍 Looking for VCs with IDs:', vcIds);
+    console.log('👥 Available users:', allUsers.map(u => ({ id: u.id, docId: u.docId, name: u.firstName, role: u.role })));
+
     return vcIds.map(vcId => {
-      const user = allUsers.find(u => u.id === vcId || u.docId === vcId);
-      return user && user.firstName ? user.firstName : `מזהה: ${vcId}`;
+      // Find user by ID (try multiple matching strategies)
+      const user = allUsers.find(u =>
+        u.id === vcId ||
+        u.docId === vcId ||
+        u.id === String(vcId) ||
+        u.docId === String(vcId) ||
+        String(u.id) === String(vcId) ||
+        String(u.docId) === String(vcId)
+      );
+
+      if (user) {
+        const firstName = user.firstName || '';
+        const lastName = user.lastName || '';
+        const fullName = `${firstName} ${lastName}`.trim();
+
+        if (fullName) {
+          console.log(`✅ Found VC: ${fullName} for ID: ${vcId}`);
+          return fullName;
+        }
+
+        // Fallback to name field
+        if (user.name) {
+          console.log(`✅ Found VC (name field): ${user.name} for ID: ${vcId}`);
+          return user.name;
+        }
+      }
+
+      console.log(`❌ VC not found for ID: ${vcId}`);
+      return `מזהה: ${vcId}`;
     });
   };
 
@@ -98,12 +196,15 @@ const OrgDetailsModal = ({
     const volunteers = allUsers.filter(user => {
       // Check if user is a volunteer
       const isVolunteer = user.role === "volunteer" || user.role === "Volunteer";
-      
+
       if (!isVolunteer) return false;
 
       // Check if user's orgId array contains this organization's id
-      const userOrgIds = Array.isArray(user.orgId) ? user.orgId : [];
-      return userOrgIds.includes(organization.id);
+      if (Array.isArray(user.orgId)) {
+        return user.orgId.includes(organization.id) || user.orgId.includes(String(organization.id));
+      } else {
+        return user.orgId === organization.id || user.orgId === String(organization.id) || String(user.orgId) === String(organization.id);
+      }
     });
 
     return volunteers.length;
@@ -118,12 +219,15 @@ const OrgDetailsModal = ({
     return allUsers.filter(user => {
       // Check if user is a volunteer
       const isVolunteer = user.role === "volunteer" || user.role === "Volunteer";
-      
+
       if (!isVolunteer) return false;
 
       // Check if user's orgId array contains this organization's id
-      const userOrgIds = Array.isArray(user.orgId) ? user.orgId : [];
-      return userOrgIds.includes(organization.id);
+      if (Array.isArray(user.orgId)) {
+        return user.orgId.includes(organization.id) || user.orgId.includes(String(organization.id));
+      } else {
+        return user.orgId === organization.id || user.orgId === String(organization.id) || String(user.orgId) === String(organization.id);
+      }
     });
   };
 
@@ -132,17 +236,68 @@ const OrgDetailsModal = ({
     setEditedOrg(org);
   }, [org]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (vcDropdownOpen && !event.target.closest('.vc-dropdown-container')) {
+        setVcDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [vcDropdownOpen]);
+
   const handleChange = (field, value) => {
     if (field === 'city') {
       // Handle city field specially
       setEditedOrg(prev => setCityValue(prev, value));
-    } else if (field === 'vcId') {
-      // Handle vcId as array of numbers
-      const ids = value.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-      setEditedOrg(prev => ({ ...prev, [field]: ids }));
     } else {
       setEditedOrg(prev => ({ ...prev, [field]: value }));
     }
+  };
+
+  // Handle volunteer coordinator selection
+  const handleVcSelection = (vcId) => {
+    const currentVcIds = Array.isArray(editedOrg.vcId) ? editedOrg.vcId : [];
+
+    // Convert vcId to string for consistent comparison
+    const vcIdStr = String(vcId);
+
+    let newVcIds;
+    // Compare as strings to avoid type issues
+    const isCurrentlySelected = currentVcIds.some(id => String(id) === vcIdStr);
+
+    if (isCurrentlySelected) {
+      // Remove if already selected - keep original data type
+      newVcIds = currentVcIds.filter(id => String(id) !== vcIdStr);
+    } else {
+      // Add if not selected - try to maintain original data type
+      const originalVcId = isNaN(vcId) ? vcId : Number(vcId);
+      newVcIds = [...currentVcIds, originalVcId];
+    }
+
+    console.log('🔄 Updating VC IDs from:', currentVcIds, 'to:', newVcIds);
+    setEditedOrg(prev => ({ ...prev, vcId: newVcIds }));
+  };
+
+
+  // Get selected VC names for display
+  const getSelectedVcNames = () => {
+    if (!editedOrg.vcId || !Array.isArray(editedOrg.vcId) || editedOrg.vcId.length === 0) {
+      return 'בחר רכזי מתנדבים';
+    }
+
+    const selectedNames = editedOrg.vcId.map(vcId => {
+      const vc = volunteerCoordinators.find(coordinator =>
+        String(coordinator.id) === String(vcId)
+      );
+      return vc ? vc.name : `מזהה: ${vcId}`;
+    }).filter(name => name && !name.includes('NaN')); // Filter out NaN names
+
+    return selectedNames.length > 0 ? selectedNames.join(', ') : 'בחר רכזי מתנדבים';
   };
 
   const handleSave = async () => {
@@ -174,9 +329,9 @@ const OrgDetailsModal = ({
   };
 
   const handleDelete = async () => {
-    // Prevent volunteers from deleting
-    if (isVolunteer) {
-      console.log('❌ Volunteer users cannot delete organizations');
+    // Only allow admins to delete
+    if (!isAdmin) {
+      console.log('❌ Only admin users can delete organizations');
       return;
     }
 
@@ -198,15 +353,15 @@ const OrgDetailsModal = ({
       <div className="modal-content">
         <div className="modal-header">
           <h2 className="modal-title">
-            {isNew ? 'הוספת ארגון חדש' : 
-             isEditing ? 'עריכת פרטי הארגון' : 'פרטי הארגון'}
+            {isNew ? 'הוספת ארגון חדש' :
+              isEditing ? 'עריכת פרטי הארגון' : 'פרטי הארגון'}
           </h2>
-          <button 
+          <button
             onClick={onClose}
-            className="close-button"
+            className="close-btn"
             aria-label="סגור"
           >
-            ❌
+            <HiOutlineX />
           </button>
         </div>
 
@@ -222,7 +377,7 @@ const OrgDetailsModal = ({
                 required
               />
             </div>
-            
+
             <div className="form-group">
               <label className="form-label">עיר</label>
               <input
@@ -232,7 +387,7 @@ const OrgDetailsModal = ({
                 className="form-input"
               />
             </div>
-            
+
             <div className="form-group">
               <label className="form-label">תיאור</label>
               <textarea
@@ -242,7 +397,7 @@ const OrgDetailsModal = ({
                 className="form-textarea"
               />
             </div>
-            
+
             <div className="form-group">
               <label className="form-label">פרטי יצירת קשר</label>
               <input
@@ -254,15 +409,108 @@ const OrgDetailsModal = ({
               />
             </div>
 
+            {/* Updated VC Selection Dropdown */}
             <div className="form-group">
-              <label className="form-label">רכזי מתנדבים (מזהים מופרדים בפסיק)</label>
-              <input
-                type="text"
-                value={Array.isArray(editedOrg.vcId) ? editedOrg.vcId.join(', ') : ''}
-                onChange={(e) => handleChange('vcId', e.target.value)}
-                className="form-input"
-                placeholder="1, 2, 3"
-              />
+              <label className="form-label">רכזי מתנדבים</label>
+              <div className="vc-dropdown-container" style={{ position: 'relative' }}>
+                <div
+                  className="form-input vc-selector"
+                  onClick={() => setVcDropdownOpen(!vcDropdownOpen)}
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    minHeight: '40px',
+                    padding: '8px 12px'
+                  }}
+                >
+                  <span style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    color: getSelectedVcNames() === 'בחר רכזי מתנדבים' ? '#999' : 'inherit'
+                  }}>
+                    {getSelectedVcNames()}
+                  </span>
+                  <HiChevronDown
+                    style={{
+                      transform: vcDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s ease'
+                    }}
+                  />
+                </div>
+
+                {vcDropdownOpen && (
+                  <div
+                    className="vc-dropdown-menu"
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      backgroundColor: 'white',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      zIndex: 1000,
+                      maxHeight: '200px',
+                      overflowY: 'auto'
+                    }}
+                  >
+                    {volunteerCoordinators.length === 0 ? (
+                      <div style={{ padding: '12px', color: '#666', textAlign: 'center' }}>
+                        אין רכזי מתנדבים זמינים
+                      </div>
+                    ) : (
+                      volunteerCoordinators.map((vc) => {
+                        const isSelected = Array.isArray(editedOrg.vcId) &&
+                          editedOrg.vcId.some(selectedId => String(selectedId) === String(vc.id));
+
+                        return (
+                          <div
+                            key={vc.id}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleVcSelection(vc.id);
+                            }}
+                            style={{
+                              padding: '12px',
+                              cursor: 'pointer',
+                              backgroundColor: isSelected ? '#e3f2fd' : 'transparent',
+                              borderBottom: '1px solid #eee',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected) {
+                                e.target.style.backgroundColor = '#f5f5f5';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected) {
+                                e.target.style.backgroundColor = 'transparent';
+                              }
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              readOnly // Changed from onChange={() => {}} and removed pointerEvents: 'none'
+                            />
+                            <span>{vc.name}</span>
+                            <span style={{ fontSize: '12px', color: '#666' }}>
+                              (מזהה: {vc.id})
+                            </span>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="form-actions">
@@ -279,7 +527,7 @@ const OrgDetailsModal = ({
                     onClose();
                   } else {
                     setIsEditing(false);
-                    setEditedOrg(org); // Reset changes
+                    setEditedOrg(org); 
                   }
                 }}
                 className="cancel-button"
@@ -305,26 +553,26 @@ const OrgDetailsModal = ({
                 </div>
               )}
             </div>
-            
+
             <div className="org-description-modal">
               <h4>תיאור:</h4>
               <p>{org.description || 'אין תיאור זמין'}</p>
             </div>
-            
+
             <div className="contact-info">
               <div className="contact-field">
                 <strong>פרטי יצירת קשר:</strong> {org.contactInfo || 'לא צוין'}
               </div>
-              
+
               {/* Hide these fields from volunteers */}
               {!isVolunteer && (
                 <>
                   <div className="contact-field">
                     <strong>נציג הארגון:</strong> {getOrgRepName(org.id)}
                   </div>
-                  
+
                   <div className="contact-field">
-                    <strong>רכזי מתנדבים:</strong> 
+                    <strong>רכזי מתנדבים:</strong>
                     {vcNames.length > 0 ? (
                       <div className="coordinators-list">
                         {vcNames.map((name, index) => (
@@ -337,7 +585,7 @@ const OrgDetailsModal = ({
                       <span> לא צוין</span>
                     )}
                   </div>
-                  
+
                   <div className="contact-field">
                     <strong>מספר מתנדבים:</strong> {volunteerCount}
                   </div>
@@ -346,11 +594,18 @@ const OrgDetailsModal = ({
                     <div className="volunteers-list">
                       <strong>רשימת מתנדבים:</strong>
                       <div className="volunteers-names">
-                        {volunteerUsers.map(volunteer => (
-                          <span key={volunteer.id || volunteer.docId} className="volunteer-name">
-                            {volunteer.firstName || volunteer.name || `מזהה: ${volunteer.id || volunteer.docId}`}
-                          </span>
-                        ))}
+                        {volunteerUsers.map(volunteer => {
+                          const firstName = volunteer.firstName || '';
+                          const lastName = volunteer.lastName || '';
+                          const fullName = `${firstName} ${lastName}`.trim();
+                          const displayName = fullName || volunteer.name || `מזהה: ${volunteer.id || volunteer.docId}`;
+
+                          return (
+                            <span key={volunteer.id || volunteer.docId} className="volunteer-name">
+                              {displayName}
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -367,12 +622,15 @@ const OrgDetailsModal = ({
                 >
                   <HiPencilAlt /> עריכה
                 </button>
-                <button
-                  className="delete-button"
-                  onClick={handleDelete}
-                >
-                  🗑 מחיקת הארגון
-                </button>
+                {/* Only show delete button for admin users */}
+                {isAdmin && (
+                  <button
+                    className="delete-button"
+                    onClick={handleDelete}
+                  >
+                    🗑 מחיקת הארגון
+                  </button>
+                )}
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import OrgCard from './OrgCard';
 import OrgDetailsModal from './OrgDetailsModal';
 import { HiOutlineSearch } from "react-icons/hi";
@@ -32,12 +32,48 @@ const OrganizationsList = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [filteredOrgs, setFilteredOrgs] = useState([]);
 
-  // Check if current user is a volunteer
+  // Check user roles
   const isVolunteer = currentUserHasRole('volunteer') || currentUserHasRole('Volunteer');
+  const isOrgRep = currentUserHasRole('orgRep') || currentUserHasRole('OrgRep');
+  const isVc = currentUserHasRole('vc') || currentUserHasRole('Vc');
 
   // Helper function to get city value - handles different possible field names
   const getCityValue = (org) => {
     return org.City || org.city || org.CITY || org.location || org.Location || '';
+  };
+
+  // Filter organizations for orgRep and VC users
+  const filterOrganizationsForUser = (orgs) => {
+    // If user is neither orgRep nor VC, return all orgs
+    if (!isOrgRep && !isVc) {
+      return orgs;
+    }
+
+    if (!currentUser || !currentUser.orgId) {
+      console.log('⚠️ No organizations assigned to user');
+      return [];
+    }
+
+    // Ensure orgId is an array
+    const userOrgIds = Array.isArray(currentUser.orgId) 
+      ? currentUser.orgId 
+      : [currentUser.orgId];
+
+    console.log('🔍 Filtering organizations for user:', {
+      role: isVc ? 'VC' : 'OrgRep',
+      userOrgIds,
+      totalOrgs: orgs.length
+    });
+
+    // Filter organizations where the organization ID is in the user's orgId array
+    const filteredOrgs = orgs.filter(org => {
+      const orgIdMatch = userOrgIds.includes(org.id);
+      console.log(`Org ${org.id} (${org.name}): ${orgIdMatch ? 'INCLUDED' : 'EXCLUDED'}`);
+      return orgIdMatch;
+    });
+
+    console.log('✅ Filtered organizations:', filteredOrgs.length, 'organizations');
+    return filteredOrgs;
   };
 
   // Load organizations and users when component mounts
@@ -67,35 +103,50 @@ const OrganizationsList = () => {
   useEffect(() => {
     console.log('📊 Organizations state - loading:', loading, 'count:', organizations.length, 'error:', error);
     console.log('👥 Users state - loading:', usersLoading, 'count:', users.length);
-    console.log('👤 Current user role check - isVolunteer:', isVolunteer);
-  }, [loading, organizations, error, usersLoading, users, isVolunteer]);
+    console.log('👤 Current user role check - isVolunteer:', isVolunteer, 'isOrgRep:', isOrgRep);
+    console.log('👤 Current user orgId:', currentUser?.orgId);
+  }, [loading, organizations, error, usersLoading, users, isVolunteer, isOrgRep, currentUser]);
 
-  // Filter organizations based on search and city filter
+  // Filter organizations based on search, city filter, and user role
   useEffect(() => {
     let filtered = organizations;
 
-    if (searchTerm) {
-      filtered = filtered.filter(org => 
-        org.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        org.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    // Apply role-based filtering for orgRep and VC users
+    if (isOrgRep || isVc) {
+      filtered = filterOrganizationsForUser(filtered);
     }
 
-    if (cityFilter) {
-      filtered = filtered.filter(org => {
-        const cityValue = getCityValue(org);
-        return cityValue?.toLowerCase().includes(cityFilter.toLowerCase());
-      });
+    // Only apply search and city filters if user is not a VC
+    if (!isVc) {
+      if (searchTerm) {
+        filtered = filtered.filter(org => 
+          org.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          org.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      if (cityFilter) {
+        filtered = filtered.filter(org => {
+          const cityValue = getCityValue(org);
+          return cityValue?.toLowerCase().includes(cityFilter.toLowerCase());
+        });
+      }
     }
 
-    console.log('🔍 Filtered organizations:', filtered.length, 'out of', organizations.length);
+    console.log('🔍 Final filtered organizations:', {
+      original: organizations.length,
+      afterRoleFilter: filtered.length,
+      userRole: currentUser?.role,
+      isVc
+    });
+
     setFilteredOrgs(filtered);
-  }, [organizations, searchTerm, cityFilter]);
+  }, [organizations, searchTerm, cityFilter, isOrgRep, isVc, currentUser]);
 
   const handleDeleteOrg = async (orgId) => {
-    // Prevent volunteers from deleting organizations
-    if (isVolunteer) {
-      console.log('❌ Volunteer users cannot delete organizations');
+    // Prevent volunteers and orgReps from deleting organizations
+    if (isVolunteer || isOrgRep) {
+      console.log('❌ Volunteer and orgRep users cannot delete organizations');
       return;
     }
 
@@ -112,9 +163,9 @@ const OrganizationsList = () => {
   };
 
   const handleSaveOrg = async (orgData) => {
-    // Prevent volunteers from saving organizations
-    if (isVolunteer) {
-      console.log('❌ Volunteer users cannot create/edit organizations');
+    // Prevent volunteers and orgReps from saving organizations
+    if (isVolunteer || isOrgRep) {
+      console.log('❌ Volunteer and orgRep users cannot create/edit organizations');
       return;
     }
 
@@ -195,47 +246,61 @@ const OrganizationsList = () => {
 
   return (
     <div className="organizations-page" dir="rtl">
-      {/* Header */}
-      <div className="page-header">
-        {/* Search and Filter Section */}
-        <div className="search-section">
-          <div className="search-inputs">
-            <input
-              type="text"
-              placeholder="שם הארגון"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-            <input
-              type="text"
-              placeholder="עיר"
-              value={cityFilter}
-              onChange={(e) => setCityFilter(e.target.value)}
-              className="search-input"
-            />
-            <button className="search-button" onClick={handleSearch}>
-              <HiOutlineSearch className="search-icon" />
-            </button>
+      {/* Only show header for non-VC users */}
+      {!isVc && (
+        <div className="page-header">
+          <div className="search-section">
+            <div className="search-inputs">
+              <input
+                type="text"
+                placeholder="שם הארגון"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              <input
+                type="text"
+                placeholder="עיר"
+                value={cityFilter}
+                onChange={(e) => setCityFilter(e.target.value)}
+                className="search-input"
+              />
+              <button className="search-button" onClick={handleSearch}>
+                <HiOutlineSearch className="search-icon" />
+              </button>
+            </div>
+
+            {/* Only show "Add Organization" button if user is admin */}
+            {!isVolunteer && !isOrgRep && !isVc && (
+              <button
+                className="add-org-button"
+                onClick={() => setIsAdding(true)}
+              >
+                הוספת ארגון חדש
+              </button>
+            )}
           </div>
 
-          {/* Only show "Add Organization" button if user is NOT a volunteer */}
-          {!isVolunteer && (
-            <button
-              className="add-org-button"
-              onClick={() => setIsAdding(true)}
-            >
-              הוספת ארגון חדש
-            </button>
+          {/* Only show OrgRep info message if user is OrgRep */}
+          {isOrgRep && (
+            <div className="role-info-message">
+              <p>מציג את רשימת הסניפים של הארגון שלך</p>
+            </div>
           )}
         </div>
-      </div>
+      )}
 
       {/* Organizations Grid */}
       <div className="organizations-container">
         {filteredOrgs.length === 0 ? (
           <div className="no-results">
-            {organizations.length === 0 ? 'אין ארגונים רשומים' : 'לא נמצאו ארגונים המתאימים לחיפוש'}
+            {isOrgRep ? (
+              currentUser?.orgId && currentUser.orgId.length > 0 
+                ? 'לא נמצאו סניפים המתאימים לחיפוש'
+                : 'לא הוגדרו ארגונים עבור המשתמש שלך'
+            ) : (
+              organizations.length === 0 ? 'אין ארגונים רשומים' : 'לא נמצאו ארגונים המתאימים לחיפוש'
+            )}
           </div>
         ) : (
           <div className="org-grid">

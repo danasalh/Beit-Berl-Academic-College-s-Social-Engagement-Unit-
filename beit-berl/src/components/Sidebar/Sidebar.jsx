@@ -54,7 +54,7 @@ const Sidebar = ({ userRole, userName }) => {
     switch(userRole) {
       case 'admin':
         return [
-          { path: '/admin/dashboard', label: 'דשבורד', icon: <HiHome size={20} /> },
+          { path: '/admin/dashboard', label: 'דף הבית', icon: <HiHome size={20} /> },
           { path: '/admin/search', label: 'ניהול משתמשים', icon: <HiUserGroup size={20} /> },
           { path: '/admin/organizations', label: 'ניהול ארגונים', icon: <HiOfficeBuilding size={20} /> },
           { path: '/admin/notifications', label: 'התראות', icon: <HiBell size={20} /> },
@@ -62,21 +62,21 @@ const Sidebar = ({ userRole, userName }) => {
         ];
       case 'orgRep':
         return [
-          { path: '/orgRep/dashboard', label: 'דשבורד', icon: <HiHome size={20} /> },
+          { path: '/orgRep/dashboard', label: 'דף הבית', icon: <HiHome size={20} /> },
           { path: '/orgRep/organization', label: 'הארגון שלי', icon: <HiOfficeBuilding size={20} /> },
           { path: '/orgRep/notifications', label: 'התראות', icon: <HiBell size={20} /> },
           { path: '/orgRep/settings', label: 'הגדרות', icon: <HiCog size={20} /> },
         ];
       case 'vc':
         return [
-          { path: '/vc/dashboard', label: 'דשבורד', icon: <HiHome size={20} /> },
+          { path: '/vc/dashboard', label: 'דף הבית', icon: <HiHome size={20} /> },
           { path: '/vc/organization', label: 'הארגון שלי', icon: <HiOfficeBuilding size={20} /> },
           { path: '/vc/notifications', label: 'התראות', icon: <HiBell size={20} /> },
           { path: '/vc/settings', label: 'הגדרות', icon: <HiCog size={20} /> },
         ];
       case 'volunteer':
         return [
-          { path: '/volunteer/dashboard', label: 'דשבורד', icon: <HiHome size={20} /> },
+          { path: '/volunteer/dashboard', label: 'דף הבית', icon: <HiHome size={20} /> },
           { path: '/volunteer/organizations', label: 'ארגונים', icon: <HiOfficeBuilding size={20} /> },
           { path: '/volunteer/notifications', label: 'התראות', icon: <HiBell size={20} /> },
           { path: '/volunteer/settings', label: 'הגדרות', icon: <HiCog size={20} /> },

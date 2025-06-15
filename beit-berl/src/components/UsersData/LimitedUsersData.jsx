@@ -5,9 +5,10 @@ import UserProfile from '../UserProfile/UserProfile';
 import FilterBar from '../FilterBar/FilterBar';
 import FeedbackPopup from '../PopUps/FeedbackPopup/FeedbackPopup';
 import NotAllowed from '../PopUps/NotAllowed/NotAllowed';
+import HoursData from '../HoursData/HoursData';
 
 import './UsersData.css';
-import { HiOutlineEye, HiOutlinePencil } from 'react-icons/hi';
+import { HiOutlineEye, HiOutlinePencil , HiOutlineClock} from 'react-icons/hi';
 
 const LimitedUsersData = () => {
     const {
@@ -34,6 +35,7 @@ const LimitedUsersData = () => {
     const [filterOrganization, setFilterOrganization] = useState('');
     const [showNotAllowedPopup, setShowNotAllowedPopup] = useState(false);
     const [notAllowedRole, setNotAllowedRole] = useState('');
+    const [showHoursModal, setShowHoursModal] = useState(false);
 
 
     // Background loading states - non-blocking
@@ -48,6 +50,22 @@ const LimitedUsersData = () => {
     // Feedback popup state
     const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
     const [feedbackTargetUser, setFeedbackTargetUser] = useState(null);
+
+    // Handle hours management - UPDATED
+    const handleHours = useCallback((user) => {
+        console.log('Opening hours management for user:', user.id);
+        setSelectedUser(user);
+        setShowHoursModal(true);
+        // Close other modals when opening hours
+        setShowProfile(false);
+        setShowEditModal(false);
+    }, []);
+
+    // Close hours modal
+    const closeHoursModal = useCallback(() => {
+        setShowHoursModal(false);
+        setSelectedUser(null);
+    }, []);
 
     // Track if we've attempted to fetch data
     const fetchAttempted = useRef(false);
@@ -511,6 +529,16 @@ const LimitedUsersData = () => {
                                                     >
                                                         <HiOutlinePencil />
                                                     </button>
+                                                    {/* UPDATED: Added onClick handler and conditional display */}
+                                                    {user.role === 'volunteer' && (
+                                                        <button
+                                                            className="btn btn-hours"
+                                                            onClick={() => handleHours(user)}
+                                                            title="Manage Hours"
+                                                        >
+                                                            <HiOutlineClock />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -536,6 +564,14 @@ const LimitedUsersData = () => {
                     user={selectedUser}
                     organizations={organizations}
                     onClose={closeProfile}
+                />
+            )}
+
+            {/* Hours Management Modal - NEW */}
+            {showHoursModal && selectedUser && (
+                <HoursData
+                    volunteer={selectedUser}
+                    onClose={closeHoursModal}
                 />
             )}
 

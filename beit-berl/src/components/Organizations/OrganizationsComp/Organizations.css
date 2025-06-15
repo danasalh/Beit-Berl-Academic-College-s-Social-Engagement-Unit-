@@ -1,8 +1,9 @@
 /* Main Page Styles */
 .organizations-page {
-  min-height: 100vh;
-  background-color: #f9fafb;
   direction: rtl;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header Styles */
@@ -12,8 +13,6 @@
   border-bottom: 1px solid #e5e7eb;
   padding: 24px 16px;
 }
-
-
 
 /* Search Section */
 .search-section {
@@ -86,14 +85,16 @@
   max-width: 72rem;
   margin: 0 auto;
   padding: 32px 16px;
-  /* אין כאן רקע לבן! */
 }
 
+/* Responsive Grid Layout */
 .org-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
-  /* אין כאן רקע לבן! */
+  width: 100%;
+  
+  /* Extra large screens (1440px+) */
+  grid-template-columns: repeat(4, 1fr);
 }
 
 /* Organization Card Styles */
@@ -107,6 +108,10 @@
     box-shadow 0.25s cubic-bezier(.4,2,.6,1),
     transform 0.25s cubic-bezier(.4,2,.6,1),
     border-color 0.2s;
+  width: 100%;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
 }
 
 .org-card:hover {
@@ -157,6 +162,7 @@
   margin-bottom: 16px;
   text-align: right;
   line-height: 1.5;
+  flex-grow: 1;
 }
 
 .org-description-continued {
@@ -175,6 +181,7 @@
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s;
+  margin-top: auto;
 }
 
 .details-button:hover {
@@ -213,9 +220,9 @@
   margin-bottom: 24px;
 }
 
-.close-button {
+.close-btn {
   color: #6b7280;
-  background: none;
+  background: rgb(241, 65, 65);
   border: none;
   cursor: pointer;
   transition: color 0.2s;
@@ -352,6 +359,29 @@
   margin-bottom: 8px;
 }
 
+.contact-field {
+  margin-bottom: 12px;
+  color: #374151;
+  font-size: 14px;
+}
+
+.coordinators-list,
+.volunteers-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.coordinator-name,
+.volunteer-name {
+  background-color: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #374151;
+}
+
 .modal-actions {
   display: flex;
   gap: 8px;
@@ -386,8 +416,47 @@
   background-color: #b91c1c;
 }
 
+.role-info-message p, .no-results {
+  text-align: center;
+}
+
 /* Responsive Design */
-@media (max-width: 768px) {
+/* Large screens (1200px to 1439px) */
+@media (max-width: 1439px) {
+  .org-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Medium-large screens (992px to 1199px) */
+@media (max-width: 1199px) {
+  .org-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .organizations-container {
+    padding: 24px 16px;
+  }
+}
+
+/* Medium screens (768px to 991px) */
+@media (max-width: 991px) {
+  .org-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .org-card {
+    min-height: 180px;
+  }
+  
+  .org-name {
+    font-size: 16px;
+  }
+}
+
+/* Small screens (576px to 767px) */
+@media (max-width: 767px) {
   .search-inputs {
     flex-direction: column;
     align-items: stretch;
@@ -399,9 +468,198 @@
   
   .org-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .organizations-container {
+    padding: 20px 12px;
+  }
+  
+  .page-header {
+    padding: 20px 12px;
   }
   
   .modal-content {
     margin: 16px;
+    max-width: calc(100% - 32px);
+  }
+  
+  .org-card {
+    min-height: 160px;
+  }
+  
+  .org-name {
+    font-size: 16px;
+  }
+  
+  .org-description {
+    font-size: 13px;
+  }
+}
+
+/* Extra small screens (up to 575px) */
+@media (max-width: 575px) {
+  .organizations-container {
+    padding: 16px 8px;
+  }
+  
+  .page-header {
+    padding: 16px 8px;
+  }
+  
+  .org-card {
+    padding: 12px;
+    min-height: 140px;
+  }
+  
+  .org-name {
+    font-size: 15px;
+  }
+  
+  .org-description {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .details-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  
+  .modal-content {
+    padding: 20px;
+    margin: 8px;
+    max-width: calc(100% - 16px);
+  }
+  
+  .search-inputs {
+    gap: 12px;
+  }
+  
+  .search-input {
+    padding: 10px 12px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+/* Loading and error states */
+.loading-container,
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.loading-message {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.retry-button {
+  background-color: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+  background-color: #1d4ed8;
+}
+
+/* VC Selection Styles */
+.vc-selection-container {
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: #f8f9fa;
+}
+
+.vc-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.vc-checkbox-label {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.vc-checkbox-label:hover {
+  background-color: #f1f3f4;
+  border-color: #d1d5db;
+}
+
+.vc-checkbox {
+  margin-right: 8px;
+  margin-left: 0;
+  accent-color: #007bff;
+}
+
+.vc-name {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.no-vcs-message {
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+.selected-vcs-preview {
+  border-top: 1px solid #e1e5e9;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.selected-vcs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.selected-vc-tag {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .vc-checkboxes {
+    max-height: 150px;
+  }
+  
+  .vc-checkbox-label {
+    padding: 6px 10px;
+  }
+  
+  .vc-name {
+    font-size: 13px;
   }
 }

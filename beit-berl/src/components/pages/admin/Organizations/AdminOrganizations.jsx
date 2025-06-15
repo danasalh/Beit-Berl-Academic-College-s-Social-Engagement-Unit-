@@ -2,7 +2,7 @@ import OrganizationsList from '../../../Organizations/OrganizationsComp/Organiza
 
 export default function AdminOrganizations() {
   return (
-    <div style={{ padding: '2rem' }}>
+    <div style={{ padding: '2rem'}}>
       <OrganizationsList />
     </div>
   );

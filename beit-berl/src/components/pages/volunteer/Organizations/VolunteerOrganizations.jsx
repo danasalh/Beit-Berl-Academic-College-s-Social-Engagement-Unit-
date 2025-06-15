@@ -3,7 +3,7 @@ import OrganizationsList from '../../../Organizations/OrganizationsComp/Organiza
 
 export default function Volunteerorganizations() {
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className='volunteer-organizations'>
       <OrganizationsList />
     </div>
   );
