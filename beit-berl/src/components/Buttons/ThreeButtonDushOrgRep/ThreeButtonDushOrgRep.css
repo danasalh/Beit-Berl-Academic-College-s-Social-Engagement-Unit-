@@ -1,15 +1,14 @@
 .three-button-dush {
   display: flex;
   justify-content: center;
-  gap: 24px;
+  gap: 35px;
   flex-direction: row-reverse;
   margin: 30px auto;
   flex-wrap: wrap;
 }
 
 .dush-button {
-  width: 160px;
-  height: 160px;
+  height: auto;
   font-size: 16px;
   font-weight: bold;
   border-radius: 16px;

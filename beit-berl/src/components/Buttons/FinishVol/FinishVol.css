@@ -12,7 +12,7 @@
 }
 
 .finish-vol-button:hover {
-  background-color: #e8f5e9; /* ירוק עדין */
+  background-color: #e8f5e9; 
   transform: scale(1.05);
   box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
 }

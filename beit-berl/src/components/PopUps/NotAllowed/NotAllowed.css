@@ -1,0 +1,68 @@
+/* src/components/PopUps/NotAllowed/NotAllowed.css */
+
+.not-allowed-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.not-allowed-modal {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.not-allowed-modal h3 {
+    margin-top: 0;
+    color: #333; /* Neutral heading */
+    font-size: 20px;
+    margin-bottom: 16px;
+}
+
+.not-allowed-modal p {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* Green rectangular OK button */
+.close-btn {
+    background-color: #a5d6a7; /* soft green background */
+    color: #1b5e20;            /* dark green text */
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-block;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    background-color: #81c784; /* slightly darker green */
+    color: #1b5e20;
+    outline: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

@@ -2,7 +2,6 @@ import React from "react";
 import { HiOutlineUser, HiOutlineCheckCircle } from "react-icons/hi";
 import "./VolButton.css";
 
-// הגדרה:
 function VolButton({ onClick, label = "מתנדבים", count }) {
   return (
     <button className="vol-button" onClick={onClick}>
@@ -25,6 +24,5 @@ function RequestsButton({ onClick, label = "בקשות לאישור שעות ה�
   );
 }
 
-// ייצוא:
 export default VolButton;
 export { RequestsButton };

@@ -4,8 +4,12 @@ import { useUsers } from '../../Contexts/UsersContext';
 import { useOrganizations } from '../../Contexts/OrganizationsContext';
 import UserProfile from '../UserProfile/UserProfile';
 import FilterBar from '../FilterBar/FilterBar';
+import FeedbackPopup from '../PopUps/FeedbackPopup/FeedbackPopup';
+import HoursData from '../HoursData/HoursData'; 
+import { exportUsersToExcel } from '../../utils/excelExport';
+import UserEdit from './UserEdit';
 import './UsersData.css';
-import { HiOutlineEye, HiOutlinePencil, HiX } from 'react-icons/hi';
+import { HiOutlineEye, HiOutlinePencil, HiOutlineClock } from 'react-icons/hi';
 
 const UsersData = () => {
   const {
@@ -32,9 +36,48 @@ const UsersData = () => {
   const [filterLastName, setFilterLastName] = useState('');
   const [filterRole, setFilterRole] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [filterOrganization, setFilterOrganization] = useState('');
   const [statusUpdating, setStatusUpdating] = useState(null);
   const [componentLoading, setComponentLoading] = useState(false);
-  
+  const [showHoursModal, setShowHoursModal] = useState(false);
+
+  //feedback states
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+  const [feedbackTargetUser, setFeedbackTargetUser] = useState(null);
+
+  // Handle feedback for volunteer users
+  const handleFeedback = useCallback((user) => {
+    console.log('Opening feedback popup for user:', user.id);
+    console.log('User data:', user);
+    setFeedbackTargetUser(user);
+    setShowFeedbackPopup(true);
+    // Close the profile modal when opening feedback
+    setShowProfile(false);
+    console.log('State should be updated - showFeedbackPopup: true');
+  }, []);
+
+  // Close feedback popup
+  const closeFeedbackPopup = useCallback(() => {
+    setShowFeedbackPopup(false);
+    setFeedbackTargetUser(null);
+  }, []);
+
+  // Handle hours management - UPDATED
+  const handleHours = useCallback((user) => {
+    console.log('Opening hours management for user:', user.id);
+    setSelectedUser(user);
+    setShowHoursModal(true);
+    // Close other modals when opening hours
+    setShowProfile(false);
+    setShowEditModal(false);
+  }, []);
+
+  // Close hours modal
+  const closeHoursModal = useCallback(() => {
+    setShowHoursModal(false);
+    setSelectedUser(null);
+  }, []);
+
   // Success notification state
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
@@ -55,13 +98,13 @@ const UsersData = () => {
       try {
         setComponentLoading(true);
         console.log('🚀 Fetching users and organizations on component mount...');
-        
+
         // Fetch both users and organizations
         await Promise.all([
           users.length === 0 ? getUsers() : Promise.resolve(),
           organizations.length === 0 ? getOrganizations() : Promise.resolve()
         ]);
-        
+
         console.log('✅ Data fetched successfully');
       } catch (error) {
         console.error('❌ Error fetching data:', error);
@@ -90,25 +133,25 @@ const UsersData = () => {
   // Helper function to get organization names from IDs
   const getOrganizationNames = useCallback((orgIds) => {
     if (!orgIds) return 'N/A';
-    
+
     // Handle single orgId (backward compatibility)
     if (typeof orgIds === 'string' || typeof orgIds === 'number') {
       const org = organizations.find(o => o.id === orgIds || o.id === parseInt(orgIds));
       return org ? org.name || `Org ${org.id}` : `Unknown Org (${orgIds})`;
     }
-    
+
     // Handle array of orgIds
     if (Array.isArray(orgIds)) {
       if (orgIds.length === 0) return 'N/A';
-      
+
       const orgNames = orgIds.map(orgId => {
         const org = organizations.find(o => o.id === orgId || o.id === parseInt(orgId));
         return org ? org.name || `Org ${org.id}` : `Unknown Org (${orgId})`;
       });
-      
+
       return orgNames.join(', ');
     }
-    
+
     return 'N/A';
   }, [organizations]);
 
@@ -137,20 +180,20 @@ const UsersData = () => {
 
     // Use docId instead of id for status updating
     setStatusUpdating(user.docId);
-    
+
     try {
       console.log(`Updating user ${user.docId} status from ${user.status} to ${statusAction.newStatus}`);
-      
+
       // Use docId for the update
       await updateUser(user.docId, { status: statusAction.newStatus });
-      
+
       // Refresh data after successful update
       await refreshData();
-      
+
       // Show success message
       const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User';
       showSuccess(`${userName} status updated to ${statusAction.newStatus} successfully!`);
-      
+
       console.log(`Successfully updated user ${user.docId} status to ${statusAction.newStatus}`);
     } catch (err) {
       console.error('Error updating user status:', err);
@@ -166,26 +209,26 @@ const UsersData = () => {
       console.error('No selected user document ID');
       return;
     }
-    
+
     try {
       console.log(`Updating user ${selectedUser.docId} status from ${selectedUser.status} to ${newStatus}`);
-      
+
       // Use docId for the update
       await updateUser(selectedUser.docId, { status: newStatus });
-      
+
       // Update selected user object locally
       setSelectedUser(prev => ({
         ...prev,
         status: newStatus
       }));
-      
+
       // Refresh data after successful update
       await refreshData();
-      
+
       // Show success message
       const userName = `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.email || 'User';
       showSuccess(`${userName} status updated to ${newStatus} successfully!`);
-      
+
       console.log(`Successfully updated user ${selectedUser.docId} status to ${newStatus}`);
     } catch (err) {
       console.error('Error updating user status:', err);
@@ -203,7 +246,7 @@ const UsersData = () => {
   // Handle edit user
   const handleEdit = useCallback((user) => {
     console.log('Editing user with ID:', user.id, 'Document ID:', user.docId);
-    
+
     // Get user's current organizations
     let userOrganizations = [];
     if (user.orgId) {
@@ -219,7 +262,7 @@ const UsersData = () => {
         }
       }
     }
-    
+
     setSelectedUser(user);
     setEditFormData({
       firstName: user.firstName || '',
@@ -284,9 +327,9 @@ const UsersData = () => {
         docId: selectedUser.docId,
         userId: selectedUser.id
       });
-      
+
       // Ensure orgIds is an array of numbers
-      const orgIds = selectedOrganizations.length > 0 
+      const orgIds = selectedOrganizations.length > 0
         ? selectedOrganizations.map(org => Number(org.id))
         : [];
 
@@ -311,20 +354,20 @@ const UsersData = () => {
 
       // Use the document ID instead of the user ID
       await updateUser(selectedUser.docId, updateData);
-      
+
       // Refresh data after successful update
       await refreshData();
-      
+
       // Show success message
       const userName = `${editFormData.firstName || ''} ${editFormData.lastName || ''}`.trim() || editFormData.email || 'User';
       showSuccess(`${userName} has been updated successfully!`);
-      
+
       // Clear form state after successful update
       setShowEditModal(false);
       setSelectedUser(null);
       setEditFormData({});
       setSelectedOrganizations([]);
-      
+
       console.log('✅ User updated successfully');
     } catch (err) {
       console.error('❌ Error updating user:', err);
@@ -348,7 +391,7 @@ const UsersData = () => {
   // Format date
   const formatDate = useCallback((timestamp) => {
     if (!timestamp) return 'N/A';
-    
+
     try {
       // Handle Firestore timestamp
       if (timestamp.toDate) {
@@ -373,6 +416,7 @@ const UsersData = () => {
     setFilterLastName('');
     setFilterRole('');
     setFilterStatus('');
+    setFilterOrganization(''); // Add this line
   }, []);
 
   // Retry function
@@ -393,36 +437,67 @@ const UsersData = () => {
   const filteredUsers = React.useMemo(() => {
     return users.filter(user => {
       const searchLower = searchTerm.toLowerCase();
-      
+
       // Search by email or phone
-      const matchesSearch = !searchTerm || 
+      const matchesSearch = !searchTerm ||
         (user.email && user.email.toLowerCase().includes(searchLower)) ||
         (user.phoneNumber && user.phoneNumber.toLowerCase().includes(searchLower));
-      
+
       // Separate first name and last name filters
-      const matchesFirstName = !filterFirstName || 
+      const matchesFirstName = !filterFirstName ||
         (user.firstName && user.firstName.toLowerCase().includes(filterFirstName.toLowerCase()));
-      
-      const matchesLastName = !filterLastName || 
+
+      const matchesLastName = !filterLastName ||
         (user.lastName && user.lastName.toLowerCase().includes(filterLastName.toLowerCase()));
-        
+
       const matchesRole = !filterRole || user.role === filterRole;
       const matchesStatus = !filterStatus || user.status === filterStatus;
-      
-      return matchesSearch && matchesFirstName && matchesLastName && matchesRole && matchesStatus;
+
+      // Organization filter
+      const matchesOrganization = !filterOrganization ||
+        getOrganizationNames(user.orgId).toLowerCase().includes(filterOrganization.toLowerCase());
+
+      return matchesSearch && matchesFirstName && matchesLastName && matchesRole && matchesStatus && matchesOrganization;
     });
-  }, [users, searchTerm, filterFirstName, filterLastName, filterRole, filterStatus]);
+  }, [users, searchTerm, filterFirstName, filterLastName, filterRole, filterStatus, filterOrganization, getOrganizationNames]);
 
   // Get unique roles, statuses for filter options
-  const { uniqueRoles, uniqueStatuses } = React.useMemo(() => {
+  const { uniqueRoles, uniqueStatuses, uniqueOrganizations } = React.useMemo(() => {
     const roles = [...new Set(users.map(user => user.role).filter(Boolean))];
     const statuses = [...new Set(users.map(user => user.status).filter(Boolean))];
-    return { uniqueRoles: roles, uniqueStatuses: statuses };
-  }, [users]);
+
+    // Get unique organizations
+    const orgSet = new Set();
+    users.forEach(user => {
+      if (user.orgId) {
+        if (Array.isArray(user.orgId)) {
+          user.orgId.forEach(orgId => {
+            const org = organizations.find(o => o.id === orgId || o.id === parseInt(orgId));
+            if (org && org.name) {
+              orgSet.add(JSON.stringify({ id: org.id, name: org.name }));
+            }
+          });
+        } else {
+          const org = organizations.find(o => o.id === user.orgId || o.id === parseInt(user.orgId));
+          if (org && org.name) {
+            orgSet.add(JSON.stringify({ id: org.id, name: org.name }));
+          }
+        }
+      }
+    });
+
+    const uniqueOrgs = Array.from(orgSet).map(orgStr => JSON.parse(orgStr));
+
+    return {
+      uniqueRoles: roles,
+      uniqueStatuses: statuses,
+      uniqueOrganizations: uniqueOrgs
+    };
+  }, [users, organizations]);
 
   // Get available organizations for dropdown (excluding already selected ones)
   const availableOrganizations = React.useMemo(() => {
-    return organizations.filter(org => 
+    return organizations.filter(org =>
       !selectedOrganizations.some(selected => selected.id === org.id)
     );
   }, [organizations, selectedOrganizations]);
@@ -435,7 +510,7 @@ const UsersData = () => {
       <div className="users-data-container">
         <div className="loading-spinner">
           <div className="spinner"></div>
-          <p>Loading users...</p>
+          <p>טוען את המידע...</p>
         </div>
       </div>
     );
@@ -455,6 +530,43 @@ const UsersData = () => {
     );
   }
 
+  const handleExportToExcel = useCallback(() => {
+    console.log('🔄 Initiating Excel export...');
+
+    try {
+      const exportOptions = {
+        isFiltered: filteredUsers.length !== users.length,
+        totalCount: users.length
+      };
+
+      const result = exportUsersToExcel(
+        filteredUsers,
+        getOrganizationNames,
+        formatDate,
+        exportOptions
+      );
+
+      if (result.success) {
+        showSuccess(result.message);
+
+        // Optional: Log export activity for analytics
+        console.log('📈 Export Analytics:', {
+          totalUsers: users.length,
+          exportedUsers: result.exportedCount,
+          hasFilters: exportOptions.isFiltered,
+          timestamp: new Date().toISOString(),
+          filename: result.filename
+        });
+      } else {
+        alert(result.message);
+      }
+
+    } catch (error) {
+      console.error('❌ Export handler error:', error);
+      alert(`שגיאה בייצוא הנתונים: ${error.message}`);
+    }
+  }, [filteredUsers, users, getOrganizationNames, formatDate, showSuccess]);
+
   return (
     <div className="users-data-container">
       {/* Success Popup */}
@@ -468,12 +580,12 @@ const UsersData = () => {
       )}
 
       <div className="users-header">
-        <h2>Users Management</h2>
+        <h2>ניהול משתמשים</h2>
         <div className="users-stats">
-          Total Users: <span className="stat-number">{users.length}</span>
+          כמות משתמשים במערכת: <span className="stat-number">{users.length}</span>
           {filteredUsers.length !== users.length && (
             <span className="filtered-count">
-              (Showing {filteredUsers.length})
+              (מציג {filteredUsers.length})
             </span>
           )}
         </div>
@@ -490,16 +602,36 @@ const UsersData = () => {
         setFilterRole={setFilterRole}
         filterStatus={filterStatus}
         setFilterStatus={setFilterStatus}
+        filterOrganization={filterOrganization}
+        setFilterOrganization={setFilterOrganization}
         uniqueRoles={uniqueRoles}
         uniqueStatuses={uniqueStatuses}
+        uniqueOrganizations={uniqueOrganizations}
         clearFilters={clearFilters}
       />
+
+      <div className="export-section">
+        <button
+          className="btn btn-export"
+          onClick={handleExportToExcel}
+          disabled={filteredUsers.length === 0}
+          title={filteredUsers.length === 0 ? "אין נתונים לייצוא" : "ייצא לאקסל"}
+        >
+          <span className="export-icon">📊</span>
+          ייצא לאקסל ({filteredUsers.length} רשומות)
+        </button>
+        {filteredUsers.length !== users.length && (
+          <small className="export-info">
+            יתווצאו רק הרשומות המוצגות לפי הסינון הנוכחי
+          </small>
+        )}
+      </div>
 
       {filteredUsers.length === 0 ? (
         <div className="no-users">
           <p>
-            {users.length === 0 
-              ? 'לא נמצאו משתמשים' 
+            {users.length === 0
+              ? 'לא נמצאו משתמשים'
               : 'לא נמצאו משתמשים התואמים לקריטריונים שנבחרו'
             }
           </p>
@@ -510,20 +642,20 @@ const UsersData = () => {
             <table className="users-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Organizations</th>
-                  <th>Status</th>
-                  <th>Created At</th>
-                  <th>Operations</th>
+                  <th>שם</th>
+                  <th>כתובת דוא"ל</th>
+                  <th>תפקיד</th>
+                  <th>ארגונים</th>
+                  <th>סטטוס</th>
+                  <th>תאריך יצירה</th>
+                  <th>פעולות</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((user) => {
                   const statusAction = getStatusAction(user.status);
                   const isUpdating = statusUpdating === user.docId;
-                  
+
                   return (
                     <tr key={user.docId || user.id}>
                       <td data-label="Name">
@@ -550,16 +682,6 @@ const UsersData = () => {
                           <span className={`status-badge ${user.status}`}>
                             {user.status}
                           </span>
-                          {statusAction && (
-                            <button
-                              className={`btn btn-status btn-${statusAction.variant}`}
-                              onClick={() => handleStatusUpdate(user)}
-                              disabled={isUpdating}
-                              title={`${statusAction.label} user`}
-                            >
-                              {isUpdating ? 'מעדכן...' : statusAction.label}
-                            </button>
-                          )}
                         </div>
                       </td>
                       <td data-label="Created At">{formatDate(user.createdAt)}</td>
@@ -570,7 +692,7 @@ const UsersData = () => {
                             onClick={() => handleWatch(user)}
                             title="View Profile"
                           >
-                            <HiOutlineEye/>
+                            <HiOutlineEye />
                           </button>
                           <button
                             className="btn btn-edit"
@@ -579,6 +701,16 @@ const UsersData = () => {
                           >
                             <HiOutlinePencil />
                           </button>
+                          {/* UPDATED: Added onClick handler and conditional display */}
+                          {user.role === 'volunteer' && (
+                            <button
+                              className="btn btn-hours"
+                              onClick={() => handleHours(user)}
+                              title="Manage Hours"
+                            >
+                              <HiOutlineClock />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -596,193 +728,40 @@ const UsersData = () => {
           user={selectedUser}
           organizations={organizations}
           onClose={closeProfile}
+          onFeedback={handleFeedback}
         />
       )}
 
       {/* Edit User Modal */}
       {showEditModal && selectedUser && (
-        <div className="modal-overlay" onClick={closeEditModal}>
-          <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Edit User</h3>
-              <button className="close-btn" onClick={closeEditModal}>×</button>
-            </div>
-            <div className="modal-body">
-              <form className="edit-form" onSubmit={(e) => e.preventDefault()}>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="firstName">First Name:</label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="firstName"
-                      value={editFormData.firstName || ''}
-                      onChange={handleInputChange}
-                      placeholder="Enter first name"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="lastName">Last Name:</label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      value={editFormData.lastName || ''}
-                      onChange={handleInputChange}
-                      placeholder="Enter last name"
-                      required
-                    />
-                  </div>
-                </div>
+        <UserEdit
+          editFormData={editFormData}
+          selectedUser={selectedUser}
+          selectedOrganizations={selectedOrganizations}
+          availableOrganizations={availableOrganizations}
+          closeEditModal={closeEditModal}
+          handleInputChange={handleInputChange}
+          handleOrganizationSelect={handleOrganizationSelect}
+          removeSelectedOrganization={removeSelectedOrganization}
+          handleStatusUpdateInModal={handleStatusUpdateInModal}
+          handleSaveEdit={handleSaveEdit}
+        />
+      )}
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="email">Email:</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={editFormData.email || ''}
-                      onChange={handleInputChange}
-                      placeholder="Enter email"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="phoneNumber">Phone Number:</label>
-                    <input
-                      type="tel"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={editFormData.phoneNumber || ''}
-                      onChange={handleInputChange}
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                </div>
+      {/* Hours Management Modal - NEW */}
+      {showHoursModal && selectedUser && (
+        <HoursData
+          volunteer={selectedUser}
+          onClose={closeHoursModal}
+        />
+      )}
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="role">Role:</label>
-                    <select
-                      id="role"
-                      name="role"
-                      value={editFormData.role}
-                      onChange={handleInputChange}
-                      required
-                    >
-                      <option value="">Select Role</option>
-                      <option value="admin">Admin</option>
-                      <option value="orgRep">orgRep</option>
-                      <option value="vc">vc</option>
-                      <option value="volunteer">volunteer</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Organizations Selection */}
-                <div className="form-group organizations-group">
-                  <label>Organizations (Max 3):</label>
-                  
-                  {/* Selected Organizations */}
-                  {selectedOrganizations.length > 0 && (
-                    <div className="selected-organizations">
-                      {selectedOrganizations.map(org => (
-                        <div key={org.id} className="selected-org-item">
-                          <span className="org-name">{org.name}</span>
-                          <button
-                            type="button"
-                            className="remove-org-btn"
-                            onClick={() => removeSelectedOrganization(org.id)}
-                            title="Remove organization"
-                          >
-                            <HiX />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Add Organization Dropdown */}
-                  {selectedOrganizations.length < 3 && (
-                    <div className="add-organization">
-                      <select
-                        onChange={handleOrganizationSelect}
-                        defaultValue=""
-                        disabled={availableOrganizations.length === 0}
-                      >
-                        <option value="">
-                          {availableOrganizations.length === 0 
-                            ? 'No more organizations available' 
-                            : 'Select an organization to add'
-                          }
-                        </option>
-                        {availableOrganizations.map(org => (
-                          <option key={org.id} value={org.id}>
-                            {org.name || `Organization ${org.id}`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  <small className="form-help">
-                    {selectedOrganizations.length}/3 organizations selected
-                  </small>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group status-group">
-                    <label>Status Management:</label>
-                    <div className="status-controls">
-                      <span className={`status-badge ${selectedUser.status}`}>
-                        Current: {selectedUser.status}
-                      </span>
-                      <div className="status-actions">
-                        {(selectedUser.status === 'pending' || selectedUser.status === 'waiting for approval') && (
-                          <button 
-                            type="button"
-                            className="btn btn-status btn-success"
-                            onClick={() => handleStatusUpdateInModal('approved')}
-                          >
-                            Approve User
-                          </button>
-                        )}
-                        {selectedUser.status === 'approved' && (
-                          <button 
-                            type="button"
-                            className="btn btn-status btn-warning"
-                            onClick={() => handleStatusUpdateInModal('inactive')}
-                          >
-                            Deactivate User
-                          </button>
-                        )}
-                        {selectedUser.status === 'inactive' && (
-                          <button 
-                            type="button"
-                            className="btn btn-status btn-success"
-                            onClick={() => handleStatusUpdateInModal('approved')}
-                          >
-                            Reactivate User
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={closeEditModal}>
-                Cancel
-              </button>
-              <button className="btn btn-primary" onClick={handleSaveEdit}>
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Feedback Popup - Moved outside and with highest z-index */}
+      {showFeedbackPopup && feedbackTargetUser && (
+        <FeedbackPopup
+          targetUser={feedbackTargetUser}
+          onClose={closeFeedbackPopup}
+        />
       )}
     </div>
   );

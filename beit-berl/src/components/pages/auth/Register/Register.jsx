@@ -10,12 +10,16 @@ import {
 import {
   getFirestore,
   doc,
-  setDoc
+  setDoc,
+  collection,
+  getDocs,
+  query,
+  where
 } from 'firebase/firestore';
-import { v4 as uuidv4 } from 'uuid'; // Import UUID generator
-import TermsDoc from '../../../PopUps/TermsDoc/TermsDoc'; // Import TermsDoc component
-import SuccessfulRegistration from '../../../PopUps/SuccessfulRegistration/SuccessfulRegistration'; // Import SuccessfulRegistration component
-import './register.css'; // Import the CSS file
+import { useNotifications } from '../../../../Contexts/NotificationsContext';  
+import TermsDoc from '../../../PopUps/TermsDoc/TermsDoc';
+import SuccessfulRegistration from '../../../PopUps/SuccessfulRegistration/SuccessfulRegistration';
+import './register.css';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -42,6 +46,8 @@ const Register = () => {
   const [termsApproved, setTermsApproved] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
+  // Get notifications context
+  const { createNotification } = useNotifications();
 
   // Check if user came from Google auth
   useEffect(() => {
@@ -68,11 +74,9 @@ const Register = () => {
   useEffect(() => {
     if (formData.role === 'volunteer') {
       setShowTerms(true);
-      // Reset terms approval when changing to volunteer role
       setTermsApproved(false);
     } else {
       setShowTerms(false);
-      // No terms needed for other roles
       setTermsApproved(true);
     }
   }, [formData.role]);
@@ -85,22 +89,17 @@ const Register = () => {
   }, [formData.password]);
 
   const checkPasswordStrength = (password) => {
-    // Simple password strength calculator
     let score = 0;
     let message = '';
     let color = 'red';
 
-    // Length check
     if (password.length >= 8) score += 1;
     if (password.length >= 12) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[a-z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
 
-    // Character variety checks
-    if (/[A-Z]/.test(password)) score += 1;  // Has uppercase
-    if (/[a-z]/.test(password)) score += 1;  // Has lowercase
-    if (/[0-9]/.test(password)) score += 1;  // Has number
-    if (/[^A-Za-z0-9]/.test(password)) score += 1;  // Has special char
-
-    // Set message based on score
     if (score < 3) {
       message = 'סיסמה חלשה';
       color = 'red';
@@ -115,12 +114,8 @@ const Register = () => {
     setPasswordStrength({ score, message, color });
   };
 
-  // Validate phone number format
   const validatePhoneNumber = (phoneNumber) => {
-    // Remove any non-digit characters for validation
     const digitsOnly = phoneNumber.replace(/\D/g, '');
-
-    // Basic check: must contain only digits and have a reasonable length (7-15 digits)
     const isValid = /^\d+$/.test(digitsOnly) && digitsOnly.length >= 7 && digitsOnly.length <= 15;
 
     if (!isValid) {
@@ -135,25 +130,19 @@ const Register = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // For phone number, validate as user types
     if (name === 'phoneNumber') {
-      // Allow only digits and some formatting characters as they type
       const formattedValue = value.replace(/[^\d\s\-+()]/g, '');
-
       setFormData(prev => ({
         ...prev,
         [name]: formattedValue
       }));
 
-      // Validate phone only if there's a value
       if (formattedValue) {
         validatePhoneNumber(formattedValue);
       } else {
         setPhoneError('');
       }
-    }
-    // Trim whitespace for all fields except password fields
-    else if (name !== 'password' && name !== 'confirmPassword') {
+    } else if (name !== 'password' && name !== 'confirmPassword') {
       setFormData(prev => ({
         ...prev,
         [name]: value.trim()
@@ -167,10 +156,8 @@ const Register = () => {
   };
 
   const validateForm = () => {
-    // Normalize email to lowercase first
     const normalizedEmail = formData.email.trim().toLowerCase();
 
-    // Update the formData with normalized email
     setFormData(prev => ({
       ...prev,
       email: normalizedEmail
@@ -180,13 +167,11 @@ const Register = () => {
     if (!formData.lastName.trim()) return 'יש להכניס שם משפחה';
     if (!normalizedEmail) return 'כתובת דוא"ל נדרשת';
 
-    // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(normalizedEmail)) return 'יש להכניס כתובת דוא"ל תקינה';
 
     if (!location.state?.isGoogleAuth) {
       const trimmedPassword = formData.password;
-      // Enhanced password validation
       if (!trimmedPassword) return 'סיסמה נדרשת';
       if (trimmedPassword.length < 6) return 'הסיסמה חייבת להיות באורך של לפחות 6 תווים';
       if (passwordStrength.score < 3) return 'הסיסמה חלשה מדי. יש להשתמש בסיסמה חזקה יותר';
@@ -197,13 +182,9 @@ const Register = () => {
     }
 
     if (!formData.phoneNumber.trim()) return 'מספר טלפון נדרש';
-
-    // Validate phone number before submission
     if (!validatePhoneNumber(formData.phoneNumber)) return 'יש להכניס מספר טלפון תקין (ספרות בלבד)';
-
     if (!formData.role) return 'Role is required';
 
-    // Check if terms are approved for volunteers
     if (formData.role === 'volunteer' && !termsApproved) {
       return 'יש לאשר את כל התנאים לפני ההרשמה';
     }
@@ -211,7 +192,6 @@ const Register = () => {
     return null;
   };
 
-  // Check if email already exists
   const checkEmailExists = async (email) => {
     try {
       const auth = getAuth();
@@ -220,6 +200,66 @@ const Register = () => {
     } catch (error) {
       console.error("Error checking email:", error);
       return false;
+    }
+  };
+
+  // Function to get all admin users
+  const getAdminUsers = async () => {
+    try {
+      const db = getFirestore();
+      const usersRef = collection(db, 'users');
+      const adminQuery = query(usersRef, where('role', '==', 'admin'));
+      const adminSnapshot = await getDocs(adminQuery);
+      
+      return adminSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('Error fetching admin users:', error);
+      return [];
+    }
+  };
+
+  // Function to create notifications for all admins
+  const createAdminNotifications = async (newUser) => {
+    try {
+      const adminUsers = await getAdminUsers();
+      console.log('Found admin users:', adminUsers.length);
+
+      if (adminUsers.length === 0) {
+        console.warn('No admin users found to notify');
+        return;
+      }
+
+      // Create notifications for each admin
+      const notificationPromises = adminUsers.map(async (admin) => {
+        const notificationData = {
+          type: 'approval-needed',
+          title: 'בקשת אישור משתמש חדש',
+          content: `משתמש חדש ${newUser.firstName} ${newUser.lastName} (${newUser.email}) נרשם למערכת בתפקיד ${newUser.role} וממתין לאישור.`,
+          receiverId: String(admin.id),
+          relatedUserId: String(newUser.id),
+          date: new Date(),
+          read: false
+        };
+
+        try {
+          const notificationId = await createNotification(notificationData);
+          console.log(`✅ Notification created for admin ${admin.id}:`, notificationId);
+          return notificationId;
+        } catch (error) {
+          console.error(`❌ Error creating notification for admin ${admin.id}:`, error);
+          throw error;
+        }
+      });
+
+      const results = await Promise.all(notificationPromises);
+      console.log(`✅ Successfully created ${results.length} notifications for admins`);
+      return results;
+    } catch (error) {
+      console.error('❌ Error creating admin notifications:', error);
+      throw error;
     }
   };
 
@@ -236,7 +276,6 @@ const Register = () => {
     setError('');
 
     try {
-      // Check if email already exists
       const normalizedEmail = formData.email.trim().toLowerCase();
       const emailExists = await checkEmailExists(normalizedEmail);
       if (emailExists && !location.state?.isGoogleAuth) {
@@ -249,27 +288,22 @@ const Register = () => {
       const db = getFirestore();
       let userId;
 
-      // If coming from Google auth, use the existing UID
       if (location.state?.isGoogleAuth) {
         userId = location.state.uid;
       } else {
         console.log("Creating user with email:", normalizedEmail);
         console.log("Password length:", formData.password.length);
 
-        // Regular email/password registration with error handling
         try {
-          // Create user with email and password
-          // NOTE: No trimming on password to ensure it matches exactly what user typed
           const userCredential = await createUserWithEmailAndPassword(
             auth,
             normalizedEmail,
-            formData.password // Using the password exactly as entered
+            formData.password
           );
 
           userId = userCredential.user.uid;
           console.log("User created successfully with ID:", userId);
 
-          // Update profile display name
           await updateProfile(auth.currentUser, {
             displayName: `${formData.firstName.trim()} ${formData.lastName.trim()}`
           });
@@ -291,27 +325,34 @@ const Register = () => {
         }
       }
 
-      // Generate unique ID using UUID
-      const uniqueId = uuidv4();
-
-      // Clean phone number to store only digits
       const cleanedPhoneNumber = formData.phoneNumber.replace(/\D/g, '');
 
-      // Store user data in Firestore
-      try {
-        await setDoc(doc(db, 'users', userId), {
-          id: uniqueId, // Use UUID instead of sequential ID
-          firstName: formData.firstName.trim(),
-          lastName: formData.lastName.trim(),
-          email: normalizedEmail, // Ensure email is lowercase in Firestore
-          phoneNumber: cleanedPhoneNumber, // Store clean phone number
-          role: formData.role,
-          orgId: formData.orgId.trim() || null,
-          status: 'waiting for approval',
-          createdAt: new Date()
-        });
+      // User data to be saved
+      const userData = {
+        id: userId,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: normalizedEmail,
+        phoneNumber: cleanedPhoneNumber,
+        role: formData.role,
+        orgId: formData.orgId.trim() || null,
+        status: 'waiting for approval',
+        createdAt: new Date()
+      };
 
-        console.log("User data saved to Firestore");
+      try {
+        await setDoc(doc(db, 'users', userId), userData);
+        console.log("User data saved to Firestore with ID:", userId);
+
+        // Create notifications for all admins about the new user registration
+        try {
+          await createAdminNotifications(userData);
+          console.log("✅ Admin notifications created successfully");
+        } catch (notificationError) {
+          console.error("❌ Error creating admin notifications:", notificationError);
+          // Don't fail the registration if notification creation fails
+        }
+
       } catch (firestoreError) {
         console.error("Firestore error:", firestoreError);
         setError(`Error saving user data: ${firestoreError.message}`);
@@ -319,23 +360,18 @@ const Register = () => {
         return;
       }
 
-      // Sign out user after successful registration since they need approval
       try {
         console.log("Signing out user after registration");
         await auth.signOut();
       } catch (signOutError) {
         console.error("Error signing out:", signOutError);
-        // We can continue even if sign out fails
       }
 
-      // Redirect to login with success message
-      setShowSuccessPopup(true);  // Show your popup
+      setShowSuccessPopup(true);
 
-      // Wait 3 seconds then navigate to login
       setTimeout(() => {
         navigate('/login');
       }, 8000);
-
 
     } catch (error) {
       console.error("Overall registration error:", error);
@@ -344,18 +380,15 @@ const Register = () => {
     }
   };
 
-  // Handler for when TermsDoc is approved
   const handleTermsApproved = () => {
     setTermsApproved(true);
-    setShowTerms(false); // Hide the terms popup after approval
+    setShowTerms(false);
   };
 
-  // Handler for when TermsDoc is closed without approval
   const handleTermsClose = () => {
     setShowTerms(false);
   };
 
-  // Determine if registration button should be disabled
   const isRegistrationDisabled = loading || 
                                (formData.phoneNumber && phoneError) || 
                                (formData.role === 'volunteer' && !termsApproved);
@@ -425,7 +458,6 @@ const Register = () => {
               />
             </div>
 
-            {/* Only show password fields for non-Google auth */}
             {!location.state?.isGoogleAuth && (
               <>
                 <div>
@@ -518,7 +550,6 @@ const Register = () => {
                 <option value="volunteer">Volunteer</option>
               </select>
 
-              {/* Show Terms Document for volunteer role */}
               {formData.role === 'volunteer' && !termsApproved && (
                 <div className="terms-status">
                   <a 
@@ -532,14 +563,12 @@ const Register = () => {
                 </div>
               )}
               
-              {/* Show Terms Approved message */}
               {formData.role === 'volunteer' && termsApproved && (
                 <div className="terms-approved">
                   ✓ תנאי השימוש אושרו
                 </div>
               )}
               
-              {/* Show Terms popup if needed */}
               {showTerms && (
                 <TermsDoc 
                   onClose={handleTermsClose} 
@@ -548,7 +577,6 @@ const Register = () => {
               )}
             </div>
 
-            {/* Optional Organization ID field when role is orgRep */}
             {formData.role === 'orgRep' && (
               <div>
                 <label htmlFor="orgId" className="sr-only"> (אופציונאלי)מספר מזהה של הארגון שלי</label>
@@ -574,7 +602,6 @@ const Register = () => {
               {loading ? 'מעדכן את הפרטים...' : 'הרשמה'}
             </button>
             
-            {/* Show message when button is disabled due to terms */}
             {(formData.role === 'volunteer') && !termsApproved && (
               <div className="registration-note">
                 {formData.role === 'volunteer' 
