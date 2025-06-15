@@ -220,9 +220,9 @@
   margin-bottom: 24px;
 }
 
-.close-button {
+.close-btn {
   color: #6b7280;
-  background: none;
+  background: rgb(241, 65, 65);
   border: none;
   cursor: pointer;
   transition: color 0.2s;
@@ -571,4 +571,95 @@
 
 .retry-button:hover {
   background-color: #1d4ed8;
+}
+
+/* VC Selection Styles */
+.vc-selection-container {
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: #f8f9fa;
+}
+
+.vc-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.vc-checkbox-label {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.vc-checkbox-label:hover {
+  background-color: #f1f3f4;
+  border-color: #d1d5db;
+}
+
+.vc-checkbox {
+  margin-right: 8px;
+  margin-left: 0;
+  accent-color: #007bff;
+}
+
+.vc-name {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.no-vcs-message {
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+.selected-vcs-preview {
+  border-top: 1px solid #e1e5e9;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.selected-vcs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.selected-vc-tag {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .vc-checkboxes {
+    max-height: 150px;
+  }
+  
+  .vc-checkbox-label {
+    padding: 6px 10px;
+  }
+  
+  .vc-name {
+    font-size: 13px;
+  }
 }
