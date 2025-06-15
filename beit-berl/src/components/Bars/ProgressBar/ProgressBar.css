@@ -35,7 +35,7 @@
   background-color: #43a047;
   transition: all 0.3s ease;
   border-radius: 12px;
-  position: relative;
+  position: relative; /* חשוב! */
   z-index: 2;
 }
 
@@ -58,51 +58,66 @@
 
 .progress-bar-fill-tooltip {
   position: absolute;
-  top: 28px;
-  left: 100%;
-  transform: translateX(-100%) translateY(-10px);
+  left: 0;
+  top: 100%; /* מתחת לקצה החלק הירוק */
+  transform: translateY(8px) translateX(-10%);
   font-size: 13px;
   font-weight: bold;
   color: #2196f3;
   white-space: nowrap;
   z-index: 11;
-  opacity: 0;
-  text-shadow: 0 0 2px rgba(33, 150, 243, 0.5);
+  opacity: 1;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  text-shadow: 0 1px 6px #fff, 0 0 2px #90caf9;
+  direction: rtl;
+  pointer-events: none;
+}
+
+.progress-bar-fill.glow .progress-bar-fill-tooltip,
+.progress-bar-fill:hover .progress-bar-fill-tooltip,
+.progress-bar-fill-tooltip.animate-tooltip,
+.progress-bar-fill-tooltip.celebrate-text {
+  opacity: 1;
+  color: #0d47a1;
+  text-shadow: 0 0 8px #90caf9, 0 0 2px #90caf9;
 }
 
 .animate-tooltip {
-  animation: fadeDown 0.4s ease forwards;
+  animation: fadeInFloat 0.3s;
 }
 
-@keyframes fadeDown {
-  0% {
+@keyframes fadeInFloat {
+  from {
     opacity: 0;
-    transform: translateX(-100%) translateY(-15px);
+    transform: translateY(-60%) translateX(0);
   }
-  100% {
+  to {
     opacity: 1;
-    transform: translateX(-100%) translateY(0);
+    transform: translateY(-50%) translateX(8px);
   }
 }
 
 .celebrate-text {
-  animation: bounceDance 1.2s ease-in-out infinite;
+  animation: bounceDanceLeft 1.2s ease-in-out infinite;
   opacity: 1 !important;
   color: #f50057;
 }
 
-@keyframes bounceDance {
+@keyframes bounceDanceLeft {
   0%, 100% {
-    transform: translateX(-100%) translateY(0);
+    transform: translateY(-50%) translateX(-10px);
   }
   25% {
-    transform: translateX(-100%) translateY(-5px) rotate(-2deg);
+    transform: translateY(-55%) translateX(-16px) rotate(-2deg);
   }
   50% {
-    transform: translateX(-100%) translateY(3px) rotate(2deg);
+    transform: translateY(-47%) translateX(-4px) rotate(2deg);
   }
   75% {
-    transform: translateX(-100%) translateY(-4px) rotate(-1deg);
+    transform: translateY(-53%) translateX(-13px) rotate(-1deg);
   }
 }
 

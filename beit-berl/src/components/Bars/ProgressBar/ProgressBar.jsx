@@ -137,15 +137,15 @@ const ProgressBar = ({
           onMouseEnter={() => setIsHoveringFill(true)}
           onMouseLeave={() => setIsHoveringFill(false)}
         >
-          {(isHoveringFill || isFull) && (
-            <div className={`progress-bar-fill-tooltip ${isFull ? "celebrate-text" : "animate-tooltip"}`}>
-              {displayHours} שעות
-            </div>
-          )}
+          <div className={`progress-bar-fill-tooltip ${isHoveringFill || isFull ? "glow" : ""}`}>
+            {displayHours} שעות
+          </div>
         </div>
 
-        {milestones.map((mark) =>
-          displayHours === mark ? null : (
+        {milestones.map((mark) => {
+          // אם אנחנו שעה אחת או פחות לפני ה-mark, לא להציג את ה-tick
+          if (displayHours >= mark - 1) return null;
+          return (
             <div
               key={mark}
               className="progress-bar-tick-wrapper"
@@ -154,8 +154,8 @@ const ProgressBar = ({
               <div className="progress-bar-tick" />
               <div className="progress-bar-tooltip">{mark} שעות</div>
             </div>
-          )
-        )}
+          );
+        })}
       </div>
 
       <div className="progress-bar-labels">
