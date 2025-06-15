@@ -231,7 +231,7 @@ const HoursList = () => {
           {pendingHoursData.map(({ volunteer, pendingRecords, totalPendingHours }) => (
             <div key={volunteer.id} className="pending-hours-row">
               <div className="volunteer-info">
-                <div className="volunteer-name">
+                <div className="volunteer-name-display">
                   {getVolunteerName(volunteer)}
                 </div>
                 <div className="volunteer-details">

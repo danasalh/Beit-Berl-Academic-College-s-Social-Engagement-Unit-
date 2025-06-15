@@ -247,7 +247,7 @@
   margin-right: 16px;
 }
 
-.volunteer-name {
+.volunteer-name-display {
   font-size: 16px;
   font-weight: 600;
   color: #1f2937;
@@ -346,7 +346,7 @@
     padding: 18px;
   }
   
-  .volunteer-name {
+  .volunteer-name-display {
     font-size: 15px;
   }
   
@@ -412,7 +412,7 @@
     margin-right: 0;
   }
   
-  .volunteer-name {
+  .volunteer-name-display {
     font-size: 16px;
     margin-bottom: 8px;
   }
@@ -498,7 +498,7 @@
     gap: 12px;
   }
   
-  .volunteer-name {
+  .volunteer-name-display {
     font-size: 15px;
   }
   
@@ -563,7 +563,7 @@
     padding: 10px;
   }
   
-  .volunteer-name {
+  .volunteer-name-display {
     font-size: 14px;
   }
   
