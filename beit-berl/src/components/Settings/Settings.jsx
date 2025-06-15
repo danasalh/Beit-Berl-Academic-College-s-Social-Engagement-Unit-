@@ -8,7 +8,7 @@ const Settings = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    phone: '',
+    phoneNumber: '',
     email: '',
     role: ''
   });
@@ -21,7 +21,7 @@ const Settings = () => {
       const userData = {
         firstName: currentUser.firstName || currentUser.name?.split(' ')[0] || '',
         lastName: currentUser.lastName || currentUser.name?.split(' ').slice(1).join(' ') || '',
-        phone: currentUser.phone || '',
+        phoneNumber: currentUser.phoneNumber || '',
         email: currentUser.email || '',
         role: currentUser.role || ''
       };
@@ -72,7 +72,7 @@ const Settings = () => {
       const updateData = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
-        phone: formData.phone.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
         // Combine first and last name for the name field
         name: `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim()
       };
@@ -159,11 +159,11 @@ const Settings = () => {
         <label>מספר טלפון:</label>
         <input 
           type="tel" 
-          name="phone"
-          value={formData.phone}
+          name="phoneNumber"
+          value={formData.phoneNumber}
           onChange={handleInputChange}
           readOnly={!isEditable} 
-          className={getInputClass('phone')} 
+          className={getInputClass('phoneNumber')} 
         />
       </div>
 
