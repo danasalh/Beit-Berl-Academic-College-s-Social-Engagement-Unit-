@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import OrgCard from './OrgCard';
 import OrgDetailsModal from './OrgDetailsModal';
 import { HiOutlineSearch } from "react-icons/hi";
@@ -30,120 +30,127 @@ const OrganizationsList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [cityFilter, setCityFilter] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const [filteredOrgs, setFilteredOrgs] = useState([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Check user roles
-  const isVolunteer = currentUserHasRole('volunteer') || currentUserHasRole('Volunteer');
-  const isOrgRep = currentUserHasRole('orgRep') || currentUserHasRole('OrgRep');
-  const isVc = currentUserHasRole('vc') || currentUserHasRole('Vc');
+  // Memoize user roles to prevent recalculation on every render
+  const userRoles = useMemo(() => ({
+    isVolunteer: currentUserHasRole('volunteer') || currentUserHasRole('Volunteer'),
+    isOrgRep: currentUserHasRole('orgRep') || currentUserHasRole('OrgRep'),
+    isVc: currentUserHasRole('vc') || currentUserHasRole('Vc')
+  }), [currentUserHasRole]);
 
-  // Helper function to get city value - handles different possible field names
-  const getCityValue = (org) => {
+  const { isVolunteer, isOrgRep, isVc } = userRoles;
+
+  // Memoize user's organization IDs
+  const userOrgIds = useMemo(() => {
+    if (!currentUser?.orgId) return [];
+    return Array.isArray(currentUser.orgId) ? currentUser.orgId : [currentUser.orgId];
+  }, [currentUser?.orgId]);
+
+  // Helper function to get city value - memoized
+  const getCityValue = useCallback((org) => {
     return org.City || org.city || org.CITY || org.location || org.Location || '';
-  };
+  }, []);
 
-  // Filter organizations for orgRep and VC users
-  const filterOrganizationsForUser = (orgs) => {
-    // If user is neither orgRep nor VC, return all orgs
+  // Memoize role-based filtering
+  const roleFilteredOrgs = useMemo(() => {
     if (!isOrgRep && !isVc) {
-      return orgs;
+      return organizations;
     }
 
-    if (!currentUser || !currentUser.orgId) {
+    if (userOrgIds.length === 0) {
       console.log('⚠️ No organizations assigned to user');
       return [];
     }
 
-    // Ensure orgId is an array
-    const userOrgIds = Array.isArray(currentUser.orgId) 
-      ? currentUser.orgId 
-      : [currentUser.orgId];
-
-    console.log('🔍 Filtering organizations for user:', {
+    const filtered = organizations.filter(org => userOrgIds.includes(org.id));
+    
+    console.log('🔍 Role-filtered organizations:', {
       role: isVc ? 'VC' : 'OrgRep',
       userOrgIds,
-      totalOrgs: orgs.length
+      totalOrgs: organizations.length,
+      filteredCount: filtered.length
     });
 
-    // Filter organizations where the organization ID is in the user's orgId array
-    const filteredOrgs = orgs.filter(org => {
-      const orgIdMatch = userOrgIds.includes(org.id);
-      console.log(`Org ${org.id} (${org.name}): ${orgIdMatch ? 'INCLUDED' : 'EXCLUDED'}`);
-      return orgIdMatch;
-    });
+    return filtered;
+  }, [organizations, isOrgRep, isVc, userOrgIds]);
 
-    console.log('✅ Filtered organizations:', filteredOrgs.length, 'organizations');
-    return filteredOrgs;
-  };
-
-  // Load organizations and users when component mounts
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        console.log('🔄 Loading organizations and users...');
-        
-        // Load organizations if we don't have them yet
-        if (organizations.length === 0 && !loading) {
-          await getOrganizations();
-        }
-        
-        // Load users if we don't have them yet
-        if (users.length === 0 && !usersLoading) {
-          await getUsers();
-        }
-      } catch (err) {
-        console.error('Failed to load data:', err);
-      }
-    };
-
-    loadData();
-  }, []); // Empty dependency array to run only once
-
-  // Debug effect to track state changes
-  useEffect(() => {
-    console.log('📊 Organizations state - loading:', loading, 'count:', organizations.length, 'error:', error);
-    console.log('👥 Users state - loading:', usersLoading, 'count:', users.length);
-    console.log('👤 Current user role check - isVolunteer:', isVolunteer, 'isOrgRep:', isOrgRep);
-    console.log('👤 Current user orgId:', currentUser?.orgId);
-  }, [loading, organizations, error, usersLoading, users, isVolunteer, isOrgRep, currentUser]);
-
-  // Filter organizations based on search, city filter, and user role
-  useEffect(() => {
-    let filtered = organizations;
-
-    // Apply role-based filtering for orgRep and VC users
-    if (isOrgRep || isVc) {
-      filtered = filterOrganizationsForUser(filtered);
-    }
+  // Memoize search and city filtering
+  const filteredOrgs = useMemo(() => {
+    let filtered = roleFilteredOrgs;
 
     // Only apply search and city filters if user is not a VC
     if (!isVc) {
-      if (searchTerm) {
+      if (searchTerm.trim()) {
+        const searchLower = searchTerm.toLowerCase();
         filtered = filtered.filter(org => 
-          org.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          org.description?.toLowerCase().includes(searchTerm.toLowerCase())
+          org.name?.toLowerCase().includes(searchLower) ||
+          org.description?.toLowerCase().includes(searchLower)
         );
       }
 
-      if (cityFilter) {
+      if (cityFilter.trim()) {
+        const cityLower = cityFilter.toLowerCase();
         filtered = filtered.filter(org => {
           const cityValue = getCityValue(org);
-          return cityValue?.toLowerCase().includes(cityFilter.toLowerCase());
+          return cityValue?.toLowerCase().includes(cityLower);
         });
       }
     }
 
     console.log('🔍 Final filtered organizations:', {
       original: organizations.length,
-      afterRoleFilter: filtered.length,
+      roleFiltered: roleFilteredOrgs.length,
+      final: filtered.length,
       userRole: currentUser?.role,
       isVc
     });
 
-    setFilteredOrgs(filtered);
-  }, [organizations, searchTerm, cityFilter, isOrgRep, isVc, currentUser]);
+    return filtered;
+  }, [roleFilteredOrgs, searchTerm, cityFilter, isVc, getCityValue, organizations.length, currentUser?.role]);
 
-  const handleDeleteOrg = async (orgId) => {
+  // Load organizations and users when component mounts - optimized
+  useEffect(() => {
+    const loadData = async () => {
+      if (dataLoaded) return; // Prevent multiple loads
+
+      try {
+        console.log('🔄 Loading organizations and users...');
+        
+        const promises = [];
+        
+        // Load organizations if we don't have them yet
+        if (organizations.length === 0 && !loading) {
+          promises.push(getOrganizations());
+        }
+        
+        // Load users if we don't have them yet
+        if (users.length === 0 && !usersLoading) {
+          promises.push(getUsers());
+        }
+
+        if (promises.length > 0) {
+          await Promise.all(promises);
+        }
+        
+        setDataLoaded(true);
+      } catch (err) {
+        console.error('Failed to load data:', err);
+      }
+    };
+
+    loadData();
+  }, []); // Keep empty dependency array
+
+  // Simplified debug effect - only log when loading states change
+  useEffect(() => {
+    if (loading || usersLoading) {
+      console.log('📊 Loading state - orgs:', loading, 'users:', usersLoading);
+    }
+  }, [loading, usersLoading]);
+
+  // Memoize handlers to prevent unnecessary re-renders
+  const handleDeleteOrg = useCallback(async (orgId) => {
     // Prevent volunteers and orgReps from deleting organizations
     if (isVolunteer || isOrgRep) {
       console.log('❌ Volunteer and orgRep users cannot delete organizations');
@@ -160,9 +167,9 @@ const OrganizationsList = () => {
         alert('שגיאה במחיקת הארגון');
       }
     }
-  };
+  }, [isVolunteer, isOrgRep, deleteOrganization]);
 
-  const handleSaveOrg = async (orgData) => {
+  const handleSaveOrg = useCallback(async (orgData) => {
     // Prevent volunteers and orgReps from saving organizations
     if (isVolunteer || isOrgRep) {
       console.log('❌ Volunteer and orgRep users cannot create/edit organizations');
@@ -188,9 +195,9 @@ const OrganizationsList = () => {
       console.error('Failed to save organization:', err);
       alert('שגיאה בשמירת הארגון');
     }
-  };
+  }, [isVolunteer, isOrgRep, organizations, updateOrganization, createOrganization]);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (cityFilter && !searchTerm) {
       // Search by city using the specific method
       try {
@@ -199,14 +206,22 @@ const OrganizationsList = () => {
         console.error('Failed to search by city:', err);
       }
     } else {
-      // For general search, we rely on the useEffect filtering
+      // For general search, we rely on the memoized filtering
       console.log('🔍 Performing client-side search with filters:', {
         searchTerm,
         cityFilter
       });
     }
-  };
+  }, [cityFilter, searchTerm, getOrganizationsByCity]);
 
+  const handleRefresh = useCallback(() => {
+    console.log('🔄 Manual refresh triggered');
+    setDataLoaded(false);
+    getOrganizations();
+    getUsers();
+  }, [getOrganizations, getUsers]);
+
+  // Early returns for loading and error states
   if (loading || usersLoading) {
     return (
       <div className="organizations-page" dir="rtl">
@@ -215,14 +230,7 @@ const OrganizationsList = () => {
             {loading && 'טוען ארגונים...'}
             {usersLoading && 'טוען משתמשים...'}
           </div>
-          <button 
-            onClick={() => {
-              console.log('🔄 Manual refresh triggered');
-              getOrganizations();
-              getUsers();
-            }}
-            className="retry-button"
-          >
+          <button onClick={handleRefresh} className="retry-button">
             רענן
           </button>
         </div>
@@ -234,10 +242,7 @@ const OrganizationsList = () => {
     return (
       <div className="organizations-page" dir="rtl">
         <div className="error-message">שגיאה בטעינת הארגונים: {error}</div>
-        <button onClick={() => {
-          getOrganizations();
-          getUsers();
-        }} className="retry-button">
+        <button onClick={handleRefresh} className="retry-button">
           נסה שוב
         </button>
       </div>
@@ -295,7 +300,7 @@ const OrganizationsList = () => {
         {filteredOrgs.length === 0 ? (
           <div className="no-results">
             {isOrgRep ? (
-              currentUser?.orgId && currentUser.orgId.length > 0 
+              userOrgIds.length > 0 
                 ? 'לא נמצאו סניפים המתאימים לחיפוש'
                 : 'לא הוגדרו ארגונים עבור המשתמש שלך'
             ) : (
