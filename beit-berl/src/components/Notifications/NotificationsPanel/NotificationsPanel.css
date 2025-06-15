@@ -203,11 +203,10 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
   min-width: 160px;
   overflow: hidden;
   animation: fadeIn 0.2s ease-out;
-  /* Prevent going off screen */
+  z-index: 1000;  
   max-width: calc(100vw - 32px);
   transform: translateX(0);
 }
