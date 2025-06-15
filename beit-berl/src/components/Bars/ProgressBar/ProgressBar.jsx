@@ -137,7 +137,7 @@ const ProgressBar = ({
           onMouseEnter={() => setIsHoveringFill(true)}
           onMouseLeave={() => setIsHoveringFill(false)}
         >
-          <div className={`progress-bar-fill-tooltip ${isHoveringFill || isFull ? "glow" : ""}`}>
+          <div className={`progress-bar-fill-tooltip${isFull ? " celebrate-text" : ""} ${isHoveringFill || isFull ? "glow" : ""}`}>
             {displayHours} שעות
           </div>
         </div>

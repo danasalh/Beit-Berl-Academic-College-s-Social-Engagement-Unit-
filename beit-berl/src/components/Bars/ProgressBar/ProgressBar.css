@@ -101,23 +101,34 @@
 }
 
 .celebrate-text {
-  animation: bounceDanceLeft 1.2s ease-in-out infinite;
-  opacity: 1 !important;
-  color: #f50057;
+  /* צבעוני: מעבר צבעים (gradient) עם background-clip */
+  background: linear-gradient(90deg, #ff4081, #ffd600, #00e676, #2196f3, #ff4081 90%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  animation: bounceDanceLeft 1.2s ease-in-out infinite, rainbowText 3s linear infinite;
+  font-weight: bold;
+  text-shadow: 0 0 12px #fff, 0 0 8px #90caf9;
+}
+
+@keyframes rainbowText {
+  0% { filter: hue-rotate(0deg);}
+  100% { filter: hue-rotate(360deg);}
 }
 
 @keyframes bounceDanceLeft {
   0%, 100% {
-    transform: translateY(-50%) translateX(-10px);
+    transform: translateY(8px) translateX(-10%);
   }
   25% {
-    transform: translateY(-55%) translateX(-16px) rotate(-2deg);
+    transform: translateY(2px) translateX(-16%) rotate(-2deg);
   }
   50% {
-    transform: translateY(-47%) translateX(-4px) rotate(2deg);
+    transform: translateY(14px) translateX(-4%) rotate(2deg);
   }
   75% {
-    transform: translateY(-53%) translateX(-13px) rotate(-1deg);
+    transform: translateY(6px) translateX(-13%) rotate(-1deg);
   }
 }
 
