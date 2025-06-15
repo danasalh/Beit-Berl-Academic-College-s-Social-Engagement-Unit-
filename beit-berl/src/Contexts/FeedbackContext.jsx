@@ -1,19 +1,20 @@
 // src/contexts/FeedbackContext.jsx - Enhanced with Admin Notifications
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { 
-  collection, 
-  doc, 
-  addDoc, 
-  getDocs, 
-  getDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  where, 
+import { createContext, useContext, useState, useCallback } from 'react';
+import {
+  collection,
+  doc,
+  addDoc,
+  getDocs,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
   orderBy,
-  Timestamp 
+  Timestamp
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { useUsers } from './UsersContext';
 
 const FeedbackContext = createContext();
 
@@ -26,6 +27,7 @@ export const useFeedback = () => {
 };
 
 export const FeedbackProvider = ({ children }) => {
+  const { getUserById } = useUsers();
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -56,18 +58,18 @@ export const FeedbackProvider = ({ children }) => {
       // Try to find organization by custom ID field
       const q = query(organizationsCollection, where('id', '==', orgId));
       const querySnapshot = await getDocs(q);
-      
+
       if (!querySnapshot.empty) {
         const orgDoc = querySnapshot.docs[0];
         return { firebaseId: orgDoc.id, ...orgDoc.data() };
       }
-      
+
       // Fallback: try Firebase document ID
       const orgDoc = await getDoc(doc(db, 'organizations', String(orgId)));
       if (orgDoc.exists()) {
         return { firebaseId: orgDoc.id, ...orgDoc.data() };
       }
-      
+
       return null;
     } catch (error) {
       console.error('Error fetching organization details:', error);
@@ -80,9 +82,9 @@ export const FeedbackProvider = ({ children }) => {
     try {
       const q = query(usersCollection, where('role', '==', 'admin'));
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
       }));
     } catch (error) {
       console.error('Error fetching admin users:', error);
@@ -94,47 +96,54 @@ export const FeedbackProvider = ({ children }) => {
   const createAdminNotifications = async (feedbackData, volunteerDetails, fromUserDetails, orgDetails) => {
     try {
       const adminUsers = await getAdminUsers();
-      
+
       if (adminUsers.length === 0) {
         console.log('No admin users found to notify');
         return;
       }
 
-      const volunteerName = volunteerDetails 
-        ? `${volunteerDetails.firstName || ''} ${volunteerDetails.lastName || ''}`.trim() || `User ${volunteerDetails.id}`
-        : `User ${feedbackData.volunteerId}`;
+      // Get user details if not provided
+      const [volunteer, fromUser] = await Promise.all([
+        volunteerDetails || getUserById(feedbackData.volunteerId),
+        fromUserDetails || getUserById(feedbackData.fromVCId)
+      ]);
 
-      const fromUserName = fromUserDetails 
-        ? `${fromUserDetails.firstName || ''} ${fromUserDetails.lastName || ''}`.trim() || `User ${fromUserDetails.id}`
-        : `User ${feedbackData.fromVCId}`;
+      // Get proper names with fallbacks
+      const getDisplayName = (user) => {
+        if (!user) return 'משתמש לא ידוע';
+        return `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || `משתמש ${user.id}`;
+      };
 
-      const orgName = orgDetails 
-        ? orgDetails.name || orgDetails.organizationName || `Organization ${orgDetails.id}`
-        : 'Unknown Organization';
+      const volunteerName = getDisplayName(volunteer);
+      const fromUserName = getDisplayName(fromUser);
+      const orgName = orgDetails?.name || 'ארגון לא ידוע';
 
-      // Move title to notification panel - use generic type-based approach
-      const notificationContent = `המשתמש ${fromUserName} מ ${orgName} הזין פידבק חדש עבור המתנדב ${volunteerName} at ${new Date().toLocaleString()}. ניתן לראות את הפידבק בפרופיל המתנדב.`;
+      // Create enhanced notification content
+      const notificationContent = {
+        text: `המשתמש ${fromUserName} הזין פידבק חדש עבור המתנדב ${volunteerName}`,
+        timestamp: new Date().toLocaleString('he-IL'),
+        details: 'ניתן לראות את הפידבק בפרופיל המתנדב.'
+      };
 
       // Create notifications for all admin users
       const notificationPromises = adminUsers.map(admin => {
         const notificationData = {
           receiverId: String(admin.id),
           relatedId: String(feedbackData.volunteerId),
-          type: 'feedback-notification', // This will be used in NotificationsPanel for styling and title
-          title: '', // Will be generated in NotificationsPanel based on type
-          content: notificationContent,
+          type: 'feedback-notification',
+          title: 'פידבק חדש במערכת',
+          content: `${notificationContent.text} בתאריך ${notificationContent.timestamp}. ${notificationContent.details}`,
           date: Timestamp.now(),
           read: false,
           createdAt: Timestamp.now(),
           updatedAt: Timestamp.now(),
-          // Additional metadata for better tracking
           metadata: {
             feedbackId: feedbackData.id,
             volunteerId: feedbackData.volunteerId,
-            fromUserId: feedbackData.fromVCId,
-            orgId: fromUserDetails?.orgId?.[0] || null,
             volunteerName,
+            fromUserId: feedbackData.fromVCId,
             fromUserName,
+            orgId: fromUser?.orgId?.[0] || null,
             orgName
           }
         };
@@ -143,10 +152,9 @@ export const FeedbackProvider = ({ children }) => {
       });
 
       await Promise.all(notificationPromises);
-      console.log(`✅ Created notifications for ${adminUsers.length} admin users`);
+      console.log(`✅ Created notifications with proper names for ${adminUsers.length} admin users`);
     } catch (error) {
       console.error('❌ Error creating admin notifications:', error);
-      // Don't throw here - we don't want notification failures to break feedback creation
     }
   };
 
@@ -155,7 +163,7 @@ export const FeedbackProvider = ({ children }) => {
     console.log('📋 Fetching all feedback...');
     setLoading(true);
     setError(null);
-    
+
     try {
       const q = query(feedbackCollection, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
@@ -166,7 +174,7 @@ export const FeedbackProvider = ({ children }) => {
         date: doc.data().date?.toDate ? doc.data().date.toDate() : doc.data().date,
         createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : doc.data().createdAt
       }));
-      
+
       setFeedback(feedbackData);
       console.log('✅ Feedback fetched successfully:', feedbackData.length, 'items');
       return feedbackData;
@@ -187,7 +195,7 @@ export const FeedbackProvider = ({ children }) => {
 
     try {
       const q = query(
-        feedbackCollection, 
+        feedbackCollection,
         where('volunteerId', '==', String(volunteerId)),
         orderBy('createdAt', 'desc')
       );
@@ -198,7 +206,7 @@ export const FeedbackProvider = ({ children }) => {
         date: doc.data().date?.toDate ? doc.data().date.toDate() : doc.data().date,
         createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : doc.data().createdAt
       }));
-      
+
       console.log(`✅ Found ${feedbackData.length} feedback items for volunteer: ${volunteerId}`);
       return feedbackData;
     } catch (err) {
@@ -218,7 +226,7 @@ export const FeedbackProvider = ({ children }) => {
 
     try {
       const q = query(
-        feedbackCollection, 
+        feedbackCollection,
         where('fromVCId', '==', String(fromVCId)),
         orderBy('createdAt', 'desc')
       );
@@ -229,7 +237,7 @@ export const FeedbackProvider = ({ children }) => {
         date: doc.data().date?.toDate ? doc.data().date.toDate() : doc.data().date,
         createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : doc.data().createdAt
       }));
-      
+
       console.log(`✅ Found ${feedbackData.length} feedback items from VC: ${fromVCId}`);
       return feedbackData;
     } catch (err) {
@@ -270,9 +278,9 @@ export const FeedbackProvider = ({ children }) => {
       };
 
       const docRef = await addDoc(feedbackCollection, dataToSave);
-      
-      const newFeedback = { 
-        id: docRef.id, 
+
+      const newFeedback = {
+        id: docRef.id,
         ...feedbackData,
         volunteerId: String(feedbackData.volunteerId),
         fromVCId: String(feedbackData.fromVCId),
@@ -283,22 +291,42 @@ export const FeedbackProvider = ({ children }) => {
 
       // Update local state
       setFeedback(prev => [newFeedback, ...prev]);
-      
+
       console.log('✅ Feedback created successfully with ID:', docRef.id);
 
-      // Get user details for notifications (run in parallel)
+      // ENHANCED: Get user details for notifications (run in parallel with better error handling)
       const [volunteerDetails, fromUserDetails] = await Promise.all([
-        getUserDetails(feedbackData.volunteerId),
-        getUserDetails(feedbackData.fromVCId)
+        getUserDetails(feedbackData.volunteerId).catch(err => {
+          console.warn('⚠️ Could not fetch volunteer details:', err);
+          return null;
+        }),
+        getUserDetails(feedbackData.fromVCId).catch(err => {
+          console.warn('⚠️ Could not fetch fromUser details:', err);
+          return null;
+        })
       ]);
 
-      // Get organization details if available
+      console.log('👤 Volunteer details:', volunteerDetails);
+      console.log('👨‍💼 FromUser details:', fromUserDetails);
+
+      // ENHANCED: Get organization details with better logic
       let orgDetails = null;
-      if (fromUserDetails?.orgId?.[0]) {
-        orgDetails = await getOrganizationDetails(fromUserDetails.orgId[0]);
+      if (fromUserDetails?.orgId) {
+        // Handle both array and single value orgId
+        const orgId = Array.isArray(fromUserDetails.orgId)
+          ? fromUserDetails.orgId[0]
+          : fromUserDetails.orgId;
+
+        if (orgId) {
+          orgDetails = await getOrganizationDetails(orgId).catch(err => {
+            console.warn('⚠️ Could not fetch organization details:', err);
+            return null;
+          });
+          console.log('🏢 Organization details:', orgDetails);
+        }
       }
 
-      // Create notifications for admin users (don't wait for it)
+      // Create notifications for admin users (don't wait for it to complete)
       createAdminNotifications({
         ...newFeedback,
         id: docRef.id
@@ -329,19 +357,19 @@ export const FeedbackProvider = ({ children }) => {
 
       const feedbackRef = doc(db, 'feedback', feedbackId);
       await updateDoc(feedbackRef, dataToUpdate);
-      
+
       // Update local state
-      setFeedback(prev => prev.map(item => 
-        item.id === feedbackId 
-          ? { 
-              ...item, 
-              ...feedbackData,
-              date: feedbackData.date instanceof Date ? feedbackData.date : item.date,
-              updatedAt: new Date() 
-            }
+      setFeedback(prev => prev.map(item =>
+        item.id === feedbackId
+          ? {
+            ...item,
+            ...feedbackData,
+            date: feedbackData.date instanceof Date ? feedbackData.date : item.date,
+            updatedAt: new Date()
+          }
           : item
       ));
-      
+
       console.log('✅ Feedback updated successfully');
       return true;
     } catch (err) {
@@ -361,10 +389,10 @@ export const FeedbackProvider = ({ children }) => {
 
     try {
       await deleteDoc(doc(db, 'feedback', feedbackId));
-      
+
       // Update local state
       setFeedback(prev => prev.filter(item => item.id !== feedbackId));
-      
+
       console.log('✅ Feedback deleted successfully');
       return true;
     } catch (err) {
@@ -384,7 +412,7 @@ export const FeedbackProvider = ({ children }) => {
 
     try {
       const feedbackDoc = await getDoc(doc(db, 'feedback', feedbackId));
-      
+
       if (feedbackDoc.exists()) {
         const feedbackData = {
           id: feedbackDoc.id,
