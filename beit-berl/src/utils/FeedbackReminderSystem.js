@@ -13,6 +13,15 @@ export const useFeedbackReminderSystem = () => {
   const { createNotification } = useNotifications();
 
   /**
+   * Helper function to get user display name
+   * @param {Object} user - User object
+   * @returns {string} Display name (name or firstName)
+   */
+  const getUserDisplayName = (user) => {
+    return user.name || user.firstName || 'Unknown User';
+  };
+
+  /**
    * Get the reminder tracking document for a volunteer
    * @param {string} volunteerId - The ID of the volunteer
    * @returns {Object} Tracking data with sent milestones
@@ -134,7 +143,8 @@ export const useFeedbackReminderSystem = () => {
         return 0;
       }
 
-      console.log('👤 Volunteer data:', { name: volunteer.name, orgId: volunteer.orgId });
+      const volunteerDisplayName = getUserDisplayName(volunteer);
+      console.log('👤 Volunteer data:', { name: volunteerDisplayName, orgId: volunteer.orgId });
 
       // Get all VCs and OrgReps
       const [vcs, orgReps] = await Promise.all([
@@ -168,7 +178,8 @@ export const useFeedbackReminderSystem = () => {
         );
 
         if (hasSharedOrg) {
-          console.log(`✅ Found matching recipient: ${recipient.name} (${recipient.role})`);
+          const recipientDisplayName = getUserDisplayName(recipient);
+          console.log(`✅ Found matching recipient: ${recipientDisplayName} (${recipient.role})`);
           
           // Create ONE notification per recipient that includes ALL milestones
           const milestonesText = milestonesToSend.length === 1 
@@ -179,7 +190,7 @@ export const useFeedbackReminderSystem = () => {
             receiverId: String(recipient.id),
             relatedId: String(volunteerId),
             title: 'תזכורת להוספת פידבק',
-            content: `זוהי תזכורת להוסיף פידבק עבור המתנדב ${volunteer.name} שהגיע ל-${milestonesText} התנדבות`,
+            content: `זוהי תזכורת להוסיף פידבק עבור המתנדב ${volunteerDisplayName} שהגיע ל-${milestonesText} התנדבות`,
             type: 'reminder',
             read: false,
             date: new Date()
@@ -345,6 +356,7 @@ export const useFeedbackReminderSystem = () => {
     const resetTracking = {
       volunteerId: volunteerId,
       sentMilestones: {
+        0: false,
         15: false,
         30: false,
         45: false,
