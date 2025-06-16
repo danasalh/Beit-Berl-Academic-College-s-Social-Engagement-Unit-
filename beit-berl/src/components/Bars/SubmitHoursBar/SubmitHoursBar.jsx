@@ -101,7 +101,7 @@ const SubmitHoursBar = ({
 
       {/* Hours Slider */}
       <div className="slider-wrapper">
-        <span className="slider-label">0</span>
+        <span className="slider-label">8</span>
         <input
           type="range"
           min="0"
@@ -114,7 +114,7 @@ const SubmitHoursBar = ({
           className="slider"
           disabled={loading}
         />
-        <span className="slider-label">8</span>
+        <span className="slider-label">0</span>
 
         {showLabel && (
           <div className="hours-tooltip animate-tooltip">

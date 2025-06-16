@@ -22,7 +22,11 @@ const ProgressBar = ({
   
   const maxHours = 60;
   const percentage = Math.min((displayHours / maxHours) * 100, 100);
-  const milestones = [15, 30, 45];
+  const milestones = [
+    { label: 15, pos: 45 },
+    { label: 30, pos: 30 },
+    { label: 45, pos: 15 }
+  ];
   const isFull = displayHours >= 60;
 
   // Fetch user's total hours only if hours prop is not provided
@@ -137,25 +141,24 @@ const ProgressBar = ({
           onMouseEnter={() => setIsHoveringFill(true)}
           onMouseLeave={() => setIsHoveringFill(false)}
         >
-          {(isHoveringFill || isFull) && (
-            <div className={`progress-bar-fill-tooltip ${isFull ? "celebrate-text" : "animate-tooltip"}`}>
-              {displayHours} שעות
-            </div>
-          )}
+          <div className={`progress-bar-fill-tooltip${isFull ? " celebrate-text" : ""} ${isHoveringFill || isFull ? "glow" : ""}`}>
+            {displayHours} שעות
+          </div>
         </div>
 
-        {milestones.map((mark) =>
-          displayHours === mark ? null : (
-            <div
-              key={mark}
-              className="progress-bar-tick-wrapper"
-              style={{ left: `${(mark / maxHours) * 100}%` }}
-            >
-              <div className="progress-bar-tick" />
-              <div className="progress-bar-tooltip">{mark} שעות</div>
-            </div>
-          )
-        )}
+        {milestones.map((mark) => {
+  if (displayHours >= mark.label - 1) return null;
+  return (
+    <div
+      key={mark.label}
+      className="progress-bar-tick-wrapper"
+      style={{ left: `${(mark.pos / maxHours) * 100}%` }}
+    >
+      <div className="progress-bar-tick" />
+      <div className="progress-bar-tooltip">{mark.label} שעות</div>
+    </div>
+  );
+})}
       </div>
 
       <div className="progress-bar-labels">

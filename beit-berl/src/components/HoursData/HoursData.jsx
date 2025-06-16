@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useVolunteerHours } from '../../Contexts/VolunteerHoursContext';
 import { useOrganizations } from '../../Contexts/OrganizationsContext';
 import { useUsers } from '../../Contexts/UsersContext';
-import { HiX, HiOutlineClock, HiOutlineCheck, HiOutlineExclamation } from 'react-icons/hi';
+import { HiX, HiOutlineClock, HiOutlineCheck, HiOutlineExclamation, HiOutlineX } from 'react-icons/hi';
 import './HoursData.css';
 
 const HoursData = ({ volunteer, onClose }) => {
@@ -10,6 +10,7 @@ const HoursData = ({ volunteer, onClose }) => {
     getVolunteerHoursByVolunteerId,
     getTotalHoursForVolunteer,
     updateHoursApprovalStatus,
+    updateHoursRejectionStatus,
     loading: hoursLoading
   } = useVolunteerHours();
 
@@ -22,6 +23,7 @@ const HoursData = ({ volunteer, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [approving, setApproving] = useState(null);
+  const [rejecting, setRejecting] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
 
   // Check if current user can approve hours for a specific organization
@@ -78,16 +80,16 @@ const HoursData = ({ volunteer, onClose }) => {
 
       console.log('🔍 Fetching hours for volunteer:', volunteer.id);
 
-      // Fetch all hours for this volunteer
+      // Fetch all hours for this volunteer (excluding rejected)
       const [allHours, totalHours] = await Promise.all([
-        getVolunteerHoursByVolunteerId(volunteer.id),
+        getVolunteerHoursByVolunteerId(volunteer.id, false), // Don't include rejected
         getTotalHoursForVolunteer(volunteer.id, true) // approved only
       ]);
 
       console.log('📊 Hours data:', { allHours, totalHours });
 
-      // Separate pending and approved hours
-      const pending = allHours.filter(record => !record.approved);
+      // Separate pending hours (not approved and not rejected)
+      const pending = allHours.filter(record => !record.approved && !record.rejected);
       
       setVolunteerHours(allHours);
       setTotalApprovedHours(totalHours);
@@ -134,6 +136,43 @@ const HoursData = ({ volunteer, onClose }) => {
     }
   }, [canApproveForOrg, updateHoursApprovalStatus, fetchVolunteerHours]);
 
+  // Handle reject hours
+  const handleRejectHours = useCallback(async (hoursRecord) => {
+    if (!hoursRecord?.id) return;
+
+    // Check if user can reject for this organization
+    if (!canApproveForOrg(hoursRecord.orgId)) {
+      alert('אין לך הרשאה לדחות שעות עבור ארגון זה');
+      return;
+    }
+
+    // Confirm rejection
+    if (!window.confirm(`האם אתה בטוח שברצונך לדחות ${hoursRecord.hours} שעות?`)) {
+      return;
+    }
+
+    try {
+      setRejecting(hoursRecord.id);
+      console.log('❌ Rejecting hours record:', hoursRecord.id);
+
+      await updateHoursRejectionStatus(hoursRecord.id, true);
+
+      // Show success message
+      setSuccessMessage(`${hoursRecord.hours} שעות נדחו בהצלחה`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+
+      // Refresh data
+      await fetchVolunteerHours();
+
+      console.log('❌ Hours rejected successfully');
+    } catch (err) {
+      console.error('❌ Error rejecting hours:', err);
+      alert(`שגיאה בדחיית השעות: ${err.message}`);
+    } finally {
+      setRejecting(null);
+    }
+  }, [canApproveForOrg, updateHoursRejectionStatus, fetchVolunteerHours]);
+
   // Load data on component mount
   useEffect(() => {
     fetchVolunteerHours();
@@ -171,7 +210,7 @@ const HoursData = ({ volunteer, onClose }) => {
 
         {/* Success Message */}
         {successMessage && (
-          <div className="success-message">
+          <div className={`success-message ${successMessage.includes('נדחו') ? 'reject-message' : ''}`}>
             <HiOutlineCheck className="success-icon" />
             {successMessage}
           </div>
@@ -223,6 +262,7 @@ const HoursData = ({ volunteer, onClose }) => {
                     {pendingHours.map((record) => {
                       const canApprove = canApproveForOrg(record.orgId);
                       const isApproving = approving === record.id;
+                      const isRejecting = rejecting === record.id;
 
                       return (
                         <div key={record.id} className="pending-hours-item">
@@ -248,12 +288,13 @@ const HoursData = ({ volunteer, onClose }) => {
                             </div>
                           </div>
 
-                          <div className="hours-actions">
-                            {canApprove ? (
+                          {/* Action Buttons */}
+                          {canApprove && (
+                            <div className="hours-actions">
                               <button
-                                className={`approve-btn ${isApproving ? 'approving' : ''}`}
+                                className={`approve-btn ${isApproving ? 'loading' : ''}`}
                                 onClick={() => handleApproveHours(record)}
-                                disabled={isApproving}
+                                disabled={isApproving || isRejecting}
                               >
                                 {isApproving ? (
                                   <>
@@ -263,31 +304,99 @@ const HoursData = ({ volunteer, onClose }) => {
                                 ) : (
                                   <>
                                     <HiOutlineCheck />
-                                    אשר
+                                    אישור
                                   </>
                                 )}
                               </button>
-                            ) : (
-                              <div className="no-permission">
-                                <span>אין הרשאה לאישור</span>
-                              </div>
-                            )}
-                          </div>
+
+                              <button
+                                className={`reject-btn ${isRejecting ? 'loading' : ''}`}
+                                onClick={() => handleRejectHours(record)}
+                                disabled={isApproving || isRejecting}
+                              >
+                                {isRejecting ? (
+                                  <>
+                                    <div className="btn-spinner"></div>
+                                    דוחה...
+                                  </>
+                                ) : (
+                                  <>
+                                    <HiOutlineX />
+                                    דחייה
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          )}
+
+                          {!canApprove && (
+                            <div className="no-permission">
+                              <p>אין הרשאה לאישור שעות עבור ארגון זה</p>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
                   </div>
                 )}
               </div>
+
+              {/* All Hours History */}
+              <div className="all-hours-section">
+                <h3 className="section-title">
+                  היסטוריית שעות ({volunteerHours.length})
+                </h3>
+
+                {volunteerHours.length === 0 ? (
+                  <div className="no-hours">
+                    <HiOutlineClock className="no-hours-icon" />
+                    <p>אין רשומות שעות</p>
+                  </div>
+                ) : (
+                  <div className="all-hours-list">
+                    {volunteerHours.map((record) => (
+                      <div key={record.id} className={`hours-history-item ${record.approved ? 'approved' : 'pending'}`}>
+                        <div className="history-details">
+                          <div className="history-main-info">
+                            <div className="history-amount">
+                              <span className="history-hours-number">{record.hours}</span>
+                              <span className="history-hours-label">שעות</span>
+                            </div>
+                            <div className="history-meta">
+                              <div className="history-org">
+                                <strong>ארגון:</strong> {getOrganizationName(record.orgId)}
+                              </div>
+                              <div className="history-date">
+                                <strong>תאריך:</strong> {formatDateTime(record.createdAt)}
+                              </div>
+                              {record.description && (
+                                <div className="history-description">
+                                  <strong>תיאור:</strong> {record.description}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="history-status">
+                            {record.approved ? (
+                              <span className="status-approved">
+                                <HiOutlineCheck />
+                                מאושר
+                              </span>
+                            ) : (
+                              <span className="status-pending">
+                                <HiOutlineClock />
+                                ממתין
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="hours-modal-footer">
-          <button className="close-footer-btn" onClick={onClose}>
-            סגור
-          </button>
         </div>
       </div>
     </div>
