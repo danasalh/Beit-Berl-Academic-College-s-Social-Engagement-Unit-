@@ -1,4 +1,3 @@
-/* App Container */
 .app-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f9fafb 0%, #dbeafe 100%);
@@ -10,7 +9,6 @@
   margin: 0 auto;
 }
 
-/* Organization Card */
 .organization-card {
   background: white;
   border-radius: 0.75rem;
@@ -25,7 +23,6 @@
   transform: translateY(-0.25rem);
 }
 
-/* Card Header */
 .card-header {
   display: flex;
   align-items: flex-start;
@@ -62,7 +59,7 @@
   font-size: 0.875rem;
 }
 
-/* Organization Avatar */
+
 .organization-avatar {
   width: 3rem;
   height: 3rem;
@@ -76,7 +73,6 @@
   font-size: 1.125rem;
 }
 
-/* Organization Description */
 .organization-description {
   color: #6b7280;
   font-size: 0.875rem;
@@ -88,7 +84,6 @@
   overflow: hidden;
 }
 
-/* Card Footer */
 .card-footer {
   display: flex;
   align-items: center;
