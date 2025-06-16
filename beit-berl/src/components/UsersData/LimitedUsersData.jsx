@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useUsers } from '../../Contexts/UsersContext';
 import { useOrganizations } from '../../Contexts/OrganizationsContext';
 import UserProfile from '../UserProfile/UserProfile';
+import { getRoleLabel } from '../../utils/roleTranslations';
 import FilterBar from '../FilterBar/FilterBar';
 import FeedbackPopup from '../PopUps/FeedbackPopup/FeedbackPopup';
 import NotAllowed from '../PopUps/NotAllowed/NotAllowed';
 import HoursData from '../HoursData/HoursData';
 
 import './UsersData.css';
-import { HiOutlineEye, HiOutlinePencil , HiOutlineClock} from 'react-icons/hi';
+import { HiOutlineEye, HiOutlinePencil, HiOutlineClock } from 'react-icons/hi';
 
 const LimitedUsersData = () => {
     const {
@@ -499,7 +500,7 @@ const LimitedUsersData = () => {
                                             <td data-label="Email">{user.email || 'N/A'}</td>
                                             <td data-label="Role">
                                                 <span className={`role-badge ${user.role || 'no-role'}`}>
-                                                    {user.role || 'N/A'}
+                                                    {getRoleLabel(user.role) || 'לא מוגדר'}
                                                 </span>
                                             </td>
                                             <td data-label="Status">
@@ -518,23 +519,23 @@ const LimitedUsersData = () => {
                                                     <button
                                                         className="btn btn-watch"
                                                         onClick={() => handleWatch(user)}
-                                                        title="View Profile"
+                                                        title="צפייה בפרופיל"
                                                     >
                                                         <HiOutlineEye />
                                                     </button>
                                                     <button
                                                         className="btn btn-edit"
                                                         onClick={() => handleEdit(user)}
-                                                        title="Add/Edit Feedback"
+                                                        title="הוספת פידבק"
                                                     >
-                                                        <HiOutlinePencil />
+                                                        <HiOutlinePencil /> 
                                                     </button>
                                                     {/* UPDATED: Added onClick handler and conditional display */}
                                                     {user.role === 'volunteer' && (
                                                         <button
                                                             className="btn btn-hours"
                                                             onClick={() => handleHours(user)}
-                                                            title="Manage Hours"
+                                                            title="אישור וצפייה בשעות"
                                                         >
                                                             <HiOutlineClock />
                                                         </button>

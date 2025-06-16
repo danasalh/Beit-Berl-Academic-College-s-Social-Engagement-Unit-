@@ -1,4 +1,4 @@
-import React from 'react';
+import { getRoleLabel } from '../../utils/roleTranslations';
 import { useUsers } from '../../Contexts/UsersContext'; // Import the useUsers hook
 import './UserProfile.css';
 
@@ -51,7 +51,7 @@ const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content profile-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>User Profile</h3>
+          <h3>פרופיל המשתמש</h3>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
         <div className="modal-body">
@@ -86,7 +86,7 @@ const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
             <div className="detail-group">
               <label>Role:</label>
               <span className={`role-badge ${user.role}`}>
-                {user.role || 'N/A'}
+                {getRoleLabel(user.role) || 'לא מוגדר'}
               </span>
             </div>
             <div className="detail-group">
@@ -110,17 +110,16 @@ const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
           {user.role === 'volunteer' && isAdmin && (
             <div className="form-row">
               <div className="form-group feedback-group">
-                <label>Volunteer Feedback:</label>
                 <div className="feedback-controls">
                   <p className="feedback-description">
-                    Add or update feedback for this volunteer to help track their performance and development.
+                    הוסף או צפה בפידבק של המתנדב:
                   </p>
                   <button
                     type="button"
                     className="btn btn-feedback"
                     onClick={() => onFeedback(user)}
                   >
-                    Manage Feedback
+                    צפייה והוספת פידבק
                   </button>
                 </div>
               </div>

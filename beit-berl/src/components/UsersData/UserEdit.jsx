@@ -1,5 +1,6 @@
 // src/components/UsesData/UserEdit.jsx
 import { HiX } from 'react-icons/hi';
+import { getRolesWithLabels } from '../../utils/roleTranslations';
 
 const UserEdit = ({
   editFormData,
@@ -19,14 +20,14 @@ const UserEdit = ({
     <div className="modal-overlay" onClick={closeEditModal}>
       <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>Edit User</h3>
+          <h3>עריכת פרופיל משתמש</h3>
           <button className="close-btn" onClick={closeEditModal}>×</button>
         </div>
         <div className="modal-body">
           <form className="edit-form" onSubmit={(e) => e.preventDefault()}>
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="firstName">First Name:</label>
+                <label htmlFor="firstName">שם פרטי:</label>
                 <input
                   type="text"
                   id="firstName"
@@ -37,7 +38,7 @@ const UserEdit = ({
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="lastName">Last Name:</label>
+                <label htmlFor="lastName">שם משפחה:</label>
                 <input
                   type="text"
                   id="lastName"
@@ -51,7 +52,7 @@ const UserEdit = ({
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="email">Email:</label>
+                <label htmlFor="email">כתובת דוא"ל:</label>
                 <input
                   type="email"
                   id="email"
@@ -62,7 +63,7 @@ const UserEdit = ({
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="phoneNumber">Phone Number:</label>
+                <label htmlFor="phoneNumber">מספר טלפון:</label>
                 <input
                   type="tel"
                   id="phoneNumber"
@@ -75,7 +76,7 @@ const UserEdit = ({
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="role">Role:</label>
+                <label htmlFor="role">תפקיד:</label>
                 <select
                   id="role"
                   name="role"
@@ -83,18 +84,17 @@ const UserEdit = ({
                   onChange={handleInputChange}
                   required
                 >
-                  <option value="">Select Role</option>
-                  <option value="admin">Admin</option>
-                  <option value="orgRep">orgRep</option>
-                  <option value="vc">vc</option>
-                  <option value="volunteer">volunteer</option>
+                  <option value="">בחר תפקיד</option>
+                  {getRolesWithLabels().map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
                 </select>
               </div>
             </div>
 
             {/* Organizations Section */}
             <div className="form-group organizations-group">
-              <label>Organizations (Max 3):</label>
+              <label>שיוך לארגונים (עד 3):</label>
               {selectedOrganizations.length > 0 && (
                 <div className="selected-organizations">
                   {selectedOrganizations.map(org => (
@@ -121,8 +121,8 @@ const UserEdit = ({
                   >
                     <option value="">
                       {availableOrganizations.length === 0
-                        ? 'No more organizations available'
-                        : 'Select an organization to add'}
+                        ? 'אין ארגונים זמינים'
+                        : 'בחר ארגון לשיוך'}
                     </option>
                     {availableOrganizations.map(org => (
                       <option key={org.id} value={org.id}>
@@ -133,17 +133,17 @@ const UserEdit = ({
                 </div>
               )}
               <small className="form-help">
-                {selectedOrganizations.length}/3 organizations selected
+                {selectedOrganizations.length}/3 ארגונים נבחרו לשיוך
               </small>
             </div>
 
             {/* Status Management */}
             <div className="form-row">
               <div className="form-group status-group">
-                <label>Status Management:</label>
+                <label>סטטוס המשתמש:</label>
                 <div className="status-controls">
                   <span className={`status-badge ${selectedUser.status}`}>
-                    Current: {selectedUser.status}
+                    נוכחי: {selectedUser.status}
                   </span>
                   <div className="status-actions">
                     {(selectedUser.status === 'pending' || selectedUser.status === 'waiting for approval') && (
@@ -152,7 +152,7 @@ const UserEdit = ({
                         className="btn btn-status btn-success"
                         onClick={() => handleStatusUpdateInModal('approved')}
                       >
-                        Approve User
+                        אישור משתמש
                       </button>
                     )}
                     {selectedUser.status === 'approved' && (
@@ -161,7 +161,7 @@ const UserEdit = ({
                         className="btn btn-status btn-warning"
                         onClick={() => handleStatusUpdateInModal('inactive')}
                       >
-                        Deactivate User
+                        הפיכת משתמש ללא פעיל
                       </button>
                     )}
                     {selectedUser.status === 'inactive' && (
@@ -170,7 +170,7 @@ const UserEdit = ({
                         className="btn btn-status btn-success"
                         onClick={() => handleStatusUpdateInModal('approved')}
                       >
-                        Reactivate User
+                        חזרה לסטטוס פעיל
                       </button>
                     )}
                   </div>
@@ -181,10 +181,10 @@ const UserEdit = ({
         </div>
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={closeEditModal}>
-            Cancel
+            ביטול
           </button>
           <button className="btn btn-primary" onClick={handleSaveEdit}>
-            Save Changes
+            שמירת שינויים
           </button>
         </div>
       </div>
