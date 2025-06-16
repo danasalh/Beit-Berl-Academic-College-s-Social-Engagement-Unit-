@@ -1,5 +1,6 @@
 import './FilterBar.css';
 import { HiOutlineSearch} from "react-icons/hi";
+import { getRoleLabel } from '../../utils/roleTranslations';
 
 const FilterBar = ({ 
   searchTerm = '', 
@@ -57,7 +58,7 @@ const FilterBar = ({
       >
         <option value="">כל התפקידים</option>
         {uniqueRoles.map(role => (
-          <option key={role} value={role}>{role}</option>
+          <option key={role} value={role}>{getRoleLabel(role)}</option>
         ))}
       </select>
       

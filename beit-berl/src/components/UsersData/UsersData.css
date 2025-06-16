@@ -1,4 +1,4 @@
-.users-data-container { width: 90%; max-width: 1280px; margin: 0 auto; padding: 1.5rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
+.users-data-container { width: 95%; max-width: 1280px; margin: 0 auto; padding: 1.5rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
 
 /* Header styles */ .users-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid 
 #eaeaea; }

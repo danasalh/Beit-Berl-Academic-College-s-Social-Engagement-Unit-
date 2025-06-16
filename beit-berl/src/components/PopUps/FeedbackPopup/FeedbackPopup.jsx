@@ -206,7 +206,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
 
   // Handle delete feedback
   const handleDelete = useCallback(async (feedbackId) => {
-    if (!window.confirm('Are you sure you want to delete this feedback?')) {
+    if (!window.confirm('האם אתה בטוח שברצונך למחוק את הפידבק הזה?')) {
       return;
     }
 
@@ -214,7 +214,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
       const success = await deleteFeedback(feedbackId);
       
       if (success) {
-        showSuccess('Feedback deleted successfully');
+        showSuccess('הפידבק נמחק בהצלחה');
         await refreshFeedback(); // Use refreshFeedback instead of fetchFeedback
       } else {
         showError('Failed to delete feedback');

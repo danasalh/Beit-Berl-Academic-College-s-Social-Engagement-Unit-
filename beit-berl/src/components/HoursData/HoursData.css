@@ -474,3 +474,36 @@
     font-size: 20px;
   }
 }
+
+.reject-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ef4444; /* red-500 */
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 100px;
+  justify-content: center;
+}
+
+.reject-btn:hover:not(:disabled) {
+  background: #dc2626; /* red-600 */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.reject-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reject-btn.loading {
+  background: #9ca3af; /* gray-400 */
+}

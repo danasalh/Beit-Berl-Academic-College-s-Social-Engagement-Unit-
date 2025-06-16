@@ -326,6 +326,10 @@
   background: #4caf50;
 }
 
+.type-badge.welcome{
+  background: #93b9d8;
+}
+
 /* == LOADING & ERROR STATES == */
 .notifications-loading,
 .notifications-error,
