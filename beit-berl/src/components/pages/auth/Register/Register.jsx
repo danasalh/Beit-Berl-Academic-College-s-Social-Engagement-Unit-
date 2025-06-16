@@ -21,6 +21,13 @@ import TermsDoc from '../../../PopUps/TermsDoc/TermsDoc';
 import SuccessfulRegistration from '../../../PopUps/SuccessfulRegistration/SuccessfulRegistration';
 import './register.css';
 
+const roleTranslations = {
+  admin: 'מנהל מערכת',
+  orgRep: 'נציג ארגון',
+  vc: 'רכז מתנדבים',
+  volunteer: 'מתנדב'
+};
+
 const Register = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -174,8 +181,6 @@ const Register = () => {
       const trimmedPassword = formData.password;
       if (!trimmedPassword) return 'סיסמה נדרשת';
       if (trimmedPassword.length < 6) return 'הסיסמה חייבת להיות באורך של לפחות 6 תווים';
-      if (passwordStrength.score < 3) return 'הסיסמה חלשה מדי. יש להשתמש בסיסמה חזקה יותר';
-      if (passwordStrength.score < 5) return 'הסיסמה בינונית. יש להשתמש בסיסמה חזקה יותר';
       if (passwordStrength.color !== 'green') return 'הסיסמה חלשה מדי. יש להשתמש בסיסמה חזקה יותר';
       if (trimmedPassword.length > 20) return 'הסיסמה חייבת להיות באורך של עד 20 תווים';
       if (trimmedPassword !== formData.confirmPassword) return 'הסיסמאות אינן תואמות';
@@ -544,10 +549,9 @@ const Register = () => {
                 className="input-field"
               >
                 <option value="">אפשרויות בחירה</option>
-                <option value="admin">admin</option>
-                <option value="orgRep">orgRep</option>
-                <option value="vc">VC</option>
-                <option value="volunteer">Volunteer</option>
+                {Object.entries(roleTranslations).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
               </select>
 
               {formData.role === 'volunteer' && !termsApproved && (
