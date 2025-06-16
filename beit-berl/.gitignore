@@ -2,6 +2,7 @@
 node_modules/
 dist/
 dist-ssr/
+.yarn/cache
 
 # Environment files
 .env
@@ -18,6 +19,7 @@ lerna-debug.log*
 
 # System files
 .DS_Store
+Thumbs.db
 
 # Editor directories and files
 .vscode/
@@ -38,4 +40,8 @@ coverage/
 # Firebase cache and config
 .firebase/
 .firebaserc
+
 firebase-debug.log
+
+firebase-debug.log
+
