@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUsers } from '../../Contexts/UsersContext';
 import { useOrganizations } from '../../Contexts/OrganizationsContext';
+import { getRoleLabel } from '../../utils/roleTranslations';
 import UserProfile from '../UserProfile/UserProfile';
 import FilterBar from '../FilterBar/FilterBar';
 import FeedbackPopup from '../PopUps/FeedbackPopup/FeedbackPopup';
@@ -669,7 +670,7 @@ const UsersData = () => {
                       <td data-label="Email">{user.email || 'N/A'}</td>
                       <td data-label="Role">
                         <span className={`role-badge ${user.role || 'no-role'}`}>
-                          {user.role || 'N/A'}
+                          {getRoleLabel(user.role) || 'לא מוגדר'}
                         </span>
                       </td>
                       <td data-label="Organizations">
@@ -690,14 +691,14 @@ const UsersData = () => {
                           <button
                             className="btn btn-watch"
                             onClick={() => handleWatch(user)}
-                            title="View Profile"
+                            title="צפייה בפרופיל"
                           >
                             <HiOutlineEye />
                           </button>
                           <button
                             className="btn btn-edit"
                             onClick={() => handleEdit(user)}
-                            title="Edit User"
+                            title="עריכת פרופיל משתמש"
                           >
                             <HiOutlinePencil />
                           </button>
@@ -706,7 +707,7 @@ const UsersData = () => {
                             <button
                               className="btn btn-hours"
                               onClick={() => handleHours(user)}
-                              title="Manage Hours"
+                              title="צפייה ואישור שעות"
                             >
                               <HiOutlineClock />
                             </button>
