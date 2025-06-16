@@ -11,8 +11,11 @@ import { exportUsersToExcel } from '../../utils/excelExport';
 import UserEdit from './UserEdit';
 import './UsersData.css';
 import { HiOutlineEye, HiOutlinePencil, HiOutlineClock } from 'react-icons/hi';
+import { db } from '../../firebase/config';
+import { useWelcomeNotifications } from '../../utils/welcomeNotificationHelpers';
 
 const UsersData = () => {
+  // Context hooks - always keep these at the top and in the same order
   const {
     users,
     loading,
@@ -26,6 +29,8 @@ const UsersData = () => {
     getOrganizations,
     loading: orgLoading
   } = useOrganizations();
+
+  const { sendWelcomeNotification } = useWelcomeNotifications();
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -204,7 +209,7 @@ const UsersData = () => {
     }
   }, [updateUser, getStatusAction, refreshData, showSuccess]);
 
-  // Status update in modal
+  // Handle status update in modal
   const handleStatusUpdateInModal = useCallback(async (newStatus) => {
     if (!selectedUser?.docId) {
       console.error('No selected user document ID');
@@ -223,6 +228,23 @@ const UsersData = () => {
         status: newStatus
       }));
 
+      // Send welcome notification if the user was approved
+      if (newStatus === 'approved') {
+        try {
+          const userForNotification = {
+            id: selectedUser.docId,
+            name: `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.email,
+            role: selectedUser.role
+          };
+          
+          await sendWelcomeNotification(userForNotification);
+          console.log('✅ Welcome notification sent successfully');
+        } catch (notificationError) {
+          console.error('Error sending welcome notification:', notificationError);
+          // Continue execution even if notification fails
+        }
+      }
+
       // Refresh data after successful update
       await refreshData();
 
@@ -235,7 +257,7 @@ const UsersData = () => {
       console.error('Error updating user status:', err);
       alert(`Failed to update user status: ${err.message}`);
     }
-  }, [selectedUser, updateUser, refreshData, showSuccess]);
+  }, [selectedUser, updateUser, refreshData, showSuccess, sendWelcomeNotification]);
 
   // Handle watch user profile
   const handleWatch = useCallback((user) => {

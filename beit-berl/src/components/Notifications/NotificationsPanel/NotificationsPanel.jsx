@@ -43,13 +43,19 @@ export default function NotificationsPanel() {
       displayName: 'פידבק חדש',
       color: '#4caf50',
       icon: '💬'
+    },
+    'welcome': {
+      title: 'ברוכים הבאים למערכת!',
+      displayName: 'ברוכים הבאים',
+      color: '#2196f3',
+      icon: '🎉'
     }
   }), []);
 
   // Helper function to get notification display properties
   const getNotificationDisplayProps = useCallback((notification) => {
     const config = notificationTypeConfig[notification.type] || {};
-    
+
     // For feedback-notification, prioritize the config title over notification.title
     let finalTitle;
     if (notification.type === 'feedback-notification') {
@@ -57,7 +63,7 @@ export default function NotificationsPanel() {
     } else {
       finalTitle = notification.title || config.title || 'הודעה חדשה';
     }
-    
+
     return {
       title: finalTitle,
       displayName: config.displayName || notification.type || 'הודעה',
@@ -108,7 +114,7 @@ export default function NotificationsPanel() {
       // Transform notifications to match the expected format
       const transformedNotifications = userNotifications.map(notif => {
         const displayProps = getNotificationDisplayProps(notif);
-        
+
         return {
           id: notif.id,
           title: displayProps.title,
@@ -371,7 +377,7 @@ export default function NotificationsPanel() {
                   </span>
                   <span className="title-text">{notif.title}</span>
                   {notif.type && (
-                    <span 
+                    <span
                       className={`type-indicator ${notif.type}`}
                       style={{ backgroundColor: notif.color }}
                     ></span>

@@ -216,7 +216,7 @@ export const NotificationsProvider = ({ children }) => {
 
     try {
       // Validate notification type
-      const validTypes = ['reminder', 'approval-needed', 'feedback-notification']; // Add feedback-notification
+      const validTypes = ['reminder', 'approval-needed', 'feedback-notification', 'welcome'];
       if (!validTypes.includes(notificationData.type)) {
         throw new Error(`Invalid notification type. Must be one of: ${validTypes.join(', ')}`);
       }
