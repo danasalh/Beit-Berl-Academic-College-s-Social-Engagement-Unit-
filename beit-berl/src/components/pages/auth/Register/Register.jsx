@@ -181,6 +181,7 @@ const Register = () => {
       const trimmedPassword = formData.password;
       if (!trimmedPassword) return 'סיסמה נדרשת';
       if (trimmedPassword.length < 6) return 'הסיסמה חייבת להיות באורך של לפחות 6 תווים';
+      if (passwordStrength.score < 3) return 'הסיסמה חלשה מדי. יש להשתמש בסיסמה חזקה יותר';
       if (passwordStrength.color !== 'green') return 'הסיסמה חלשה מדי. יש להשתמש בסיסמה חזקה יותר';
       if (trimmedPassword.length > 20) return 'הסיסמה חייבת להיות באורך של עד 20 תווים';
       if (trimmedPassword !== formData.confirmPassword) return 'הסיסמאות אינן תואמות';
@@ -242,7 +243,7 @@ const Register = () => {
         const notificationData = {
           type: 'approval-needed',
           title: 'בקשת אישור משתמש חדש',
-          content: `משתמש חדש ${newUser.firstName} ${newUser.lastName} (${newUser.email}) נרשם למערכת בתפקיד ${newUser.role} וממתין לאישור.`,
+          content: `משתמש חדש ${newUser.firstName} ${newUser.lastName} (${newUser.email}) נרשם למערכת בתפקיד ${roleTranslations[newUser.role]} וממתין לאישור.`,
           receiverId: String(admin.id),
           relatedUserId: String(newUser.id),
           date: new Date(),
