@@ -443,7 +443,7 @@
     margin-right: 0;
   }
 
-  .approve-btn {
+  .approve-btn , .reject-btn {
     width: 100%;
   }
 }
@@ -490,6 +490,7 @@
   transition: all 0.2s;
   min-width: 100px;
   justify-content: center;
+  margin-top: 0.1rem;
 }
 
 .reject-btn:hover:not(:disabled) {
