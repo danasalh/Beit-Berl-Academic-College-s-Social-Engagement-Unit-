@@ -1,5 +1,5 @@
-// src/contexts/UsersContext.jsx - Optimized Version
-import React, { createContext, useContext, useState, useCallback } from 'react';
+// src/contexts/UsersContext.jsx - Fixed Version to Prevent Infinite Loops
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import {
   collection,
   doc,
@@ -31,6 +31,10 @@ export const UsersProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Use ref to prevent multiple simultaneous requests
+  const loadingRef = useRef(false);
+  const usersLoadedRef = useRef(false);
+
   // Collection reference
   const usersCollection = collection(db, 'users');
 
@@ -61,12 +65,12 @@ export const UsersProvider = ({ children }) => {
     }
   };
 
-  // Set current user by ID - IMPROVED VERSION with useCallback
+  // Set current user by ID - STABLE VERSION
   const setCurrentUserById = useCallback(async (userId) => {
     if (!userId) {
       console.warn('⚠️ No user ID provided to setCurrentUserById');
       setCurrentUser(null);
-      return;
+      return null;
     }
 
     console.log('👤 Setting current user by ID:', userId);
@@ -79,7 +83,7 @@ export const UsersProvider = ({ children }) => {
       if (docSnap.exists()) {
         const userData = {
           docId: docSnap.id,
-          id: userId, // Ensure ID is set
+          id: userId,
           ...docSnap.data()
         };
 
@@ -104,27 +108,43 @@ export const UsersProvider = ({ children }) => {
       setCurrentUser(null);
       return null;
     }
-  }, []); // Empty dependency array since this function doesn't depend on any state or props
+  }, []);
 
-  // Clear current user (for logout) - with useCallback
+  // Clear current user (for logout)
   const clearCurrentUser = useCallback(() => {
     console.log('🚪 Clearing current user');
     setCurrentUser(null);
   }, []);
 
   // Get current user info (helper function)
-  const getCurrentUser = () => {
+  const getCurrentUser = useCallback(() => {
     return currentUser;
-  };
+  }, [currentUser]);
 
-  // Check if current user has specific role
-  const currentUserHasRole = (role) => {
-    return currentUser && currentUser.role === role;
-  };
+  // Check if current user has specific role - STABLE VERSION
+  const currentUserHasRole = useCallback((role) => {
+    if (!currentUser?.role) return false;
+    const userRole = currentUser.role.toLowerCase();
+    const checkRole = role.toLowerCase();
+    return userRole === checkRole;
+  }, [currentUser?.role]);
 
-  // Get all users
-  const getUsers = async () => {
-    console.log('📋 Fetching all users...');
+  // Get all users - PREVENT MULTIPLE CALLS
+  const getUsers = useCallback(async (forceRefresh = false) => {
+    // Prevent multiple simultaneous requests
+    if (loadingRef.current && !forceRefresh) {
+      console.log('⏳ Users already loading, skipping...');
+      return users;
+    }
+
+    // If users already loaded and not forcing refresh, return cached data
+    if (usersLoadedRef.current && users.length > 0 && !forceRefresh) {
+      console.log('✅ Users already loaded, returning cached data');
+      return users;
+    }
+
+    console.log('📋 Fetching all users...', { forceRefresh });
+    loadingRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -133,32 +153,33 @@ export const UsersProvider = ({ children }) => {
       const querySnapshot = await getDocs(q);
       const usersData = querySnapshot.docs.map(doc => ({
         docId: doc.id,
-        id: doc.id, // Use document ID as user ID if no id field exists
+        id: doc.id,
         ...doc.data()
       }));
 
       setUsers(usersData);
+      usersLoadedRef.current = true;
       console.log('✅ Users fetched successfully:', usersData.length, 'users');
       return usersData;
     } catch (err) {
       console.error('❌ Error fetching users:', err);
       setError(err.message);
+      usersLoadedRef.current = false;
       throw err;
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
-  };
+  }, [users]);
 
   // Get user by their ID (not document ID)
-  const getUserById = async (userId) => {
+  const getUserById = useCallback(async (userId) => {
     if (!userId) {
       console.warn('⚠️ No user ID provided');
       return null;
     }
 
     console.log('🔍 Fetching user by ID:', userId);
-    setLoading(true);
-    setError(null);
 
     try {
       const result = await findDocumentByUserId(userId);
@@ -166,7 +187,7 @@ export const UsersProvider = ({ children }) => {
       if (result) {
         const userData = {
           docId: result.docId,
-          id: userId, // Ensure ID is set
+          id: userId,
           ...result.data
         };
         console.log('✅ User found:', userData);
@@ -177,23 +198,18 @@ export const UsersProvider = ({ children }) => {
       }
     } catch (err) {
       console.error('❌ Error fetching user:', err);
-      setError(err.message);
       throw err;
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
   // Get users by role
-  const getUsersByRole = async (role) => {
+  const getUsersByRole = useCallback(async (role) => {
     if (!role) {
       console.warn('⚠️ No role provided');
       return [];
     }
 
     console.log('🎭 Fetching users by role:', role);
-    setLoading(true);
-    setError(null);
 
     try {
       const q = query(
@@ -204,7 +220,7 @@ export const UsersProvider = ({ children }) => {
       const querySnapshot = await getDocs(q);
       const usersData = querySnapshot.docs.map(doc => ({
         docId: doc.id,
-        id: doc.id, // Use document ID as user ID if no id field exists
+        id: doc.id,
         ...doc.data()
       }));
 
@@ -212,23 +228,18 @@ export const UsersProvider = ({ children }) => {
       return usersData;
     } catch (err) {
       console.error('❌ Error fetching users by role:', err);
-      setError(err.message);
       throw err;
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
   // Get users by organization
-  const getUsersByOrganization = async (orgId) => {
+  const getUsersByOrganization = useCallback(async (orgId) => {
     if (!orgId) {
       console.warn('⚠️ No organization ID provided');
       return [];
     }
 
     console.log('🏢 Fetching users by organization:', orgId);
-    setLoading(true);
-    setError(null);
 
     try {
       const q = query(
@@ -239,7 +250,7 @@ export const UsersProvider = ({ children }) => {
       const querySnapshot = await getDocs(q);
       const usersData = querySnapshot.docs.map(doc => ({
         docId: doc.id,
-        id: doc.id, // Use document ID as user ID if no id field exists
+        id: doc.id,
         ...doc.data()
       }));
 
@@ -247,15 +258,12 @@ export const UsersProvider = ({ children }) => {
       return usersData;
     } catch (err) {
       console.error('❌ Error fetching users by organization:', err);
-      setError(err.message);
       throw err;
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
   // Create new user
-  const createUser = async (userData) => {
+  const createUser = useCallback(async (userData) => {
     console.log('➕ Creating new user:', userData);
     setLoading(true);
     setError(null);
@@ -271,11 +279,12 @@ export const UsersProvider = ({ children }) => {
 
       const newUser = {
         docId: docRef.id,
-        id: docRef.id, // Use document ID as user ID
+        id: docRef.id,
         ...userDataWithTimestamps,
         createdAt: new Date(),
         updatedAt: new Date()
       };
+      
       setUsers(prev => [newUser, ...prev]);
 
       console.log('✅ User created successfully with doc ID:', docRef.id);
@@ -287,39 +296,32 @@ export const UsersProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Update user by their ID
-  const updateUser = async (userId, userData) => {
+  const updateUser = useCallback(async (userId, userData) => {
     if (!userId) {
       throw new Error('User ID is required');
     }
 
-    setLoading(true);
-    setError(null);
+    console.log('📝 Updating user:', { userId, userData });
 
     try {
-      console.log('📝 Updating user:', { userId, userData });
-
       // Prepare the update data
       const cleanedData = {
         ...userData,
         updatedAt: serverTimestamp()
       };
 
-      // ONLY process orgId if it's explicitly provided in userData
+      // Process orgId if provided
       if ('orgId' in userData) {
-        // Ensure orgId is an array of numbers when provided
         cleanedData.orgId = Array.isArray(userData.orgId)
           ? userData.orgId.map(Number)
           : userData.orgId ? [Number(userData.orgId)] : [];
       }
-      // If orgId is not in userData, don't touch the existing orgId field
 
       // Get document reference
       const userRef = doc(db, 'users', String(userId));
-
-      console.log('📝 Updating document with data:', cleanedData);
 
       // Update the document
       await updateDoc(userRef, cleanedData);
@@ -333,28 +335,31 @@ export const UsersProvider = ({ children }) => {
         )
       );
 
+      // Update current user if it's the same user
+      if (currentUser && (currentUser.id === Number(userId) || currentUser.id === String(userId))) {
+        setCurrentUser(prev => ({ ...prev, ...cleanedData, updatedAt: new Date() }));
+      }
+
       console.log('✅ User updated successfully');
       return true;
     } catch (err) {
       console.error('❌ Error updating user:', err);
       setError(err.message);
       throw err;
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [currentUser]);
 
   // Update current user (shorthand method)
-  const updateCurrentUser = async (userData) => {
+  const updateCurrentUser = useCallback(async (userData) => {
     if (!currentUser || !currentUser.id) {
       throw new Error('No current user to update');
     }
 
     return await updateUser(currentUser.id, userData);
-  };
+  }, [currentUser, updateUser]);
 
   // Delete user by their ID
-  const deleteUser = async (userId) => {
+  const deleteUser = useCallback(async (userId) => {
     if (!userId) {
       throw new Error('User ID is required');
     }
@@ -364,14 +369,12 @@ export const UsersProvider = ({ children }) => {
     setError(null);
 
     try {
-      // Try direct document reference first
       const docRef = doc(db, 'users', userId);
       const docSnap = await getDoc(docRef);
 
       let targetDocId = userId;
 
       if (!docSnap.exists()) {
-        // Fallback: find by ID field
         const result = await findDocumentByUserId(userId);
         if (!result) {
           throw new Error(`User with ID ${userId} not found`);
@@ -400,43 +403,20 @@ export const UsersProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser]);
 
   // Update user status
-  const updateUserStatus = async (userId, status) => {
+  const updateUserStatus = useCallback(async (userId, status) => {
     if (!userId || !status) {
       throw new Error('User ID and status are required');
     }
 
     console.log('🔄 Updating user status:', userId, status);
     return await updateUser(userId, { status });
-  };
-
-  // Bulk operations
-  const bulkUpdateUsers = async (userUpdates) => {
-    console.log('🔄 Bulk updating users:', userUpdates.length, 'users');
-    setLoading(true);
-    setError(null);
-
-    try {
-      const updatePromises = userUpdates.map(({ userId, userData }) =>
-        updateUser(userId, userData)
-      );
-
-      await Promise.all(updatePromises);
-      console.log('✅ Bulk update completed successfully');
-      return true;
-    } catch (err) {
-      console.error('❌ Error in bulk update:', err);
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [updateUser]);
 
   // Search users
-  const searchUsers = async (searchTerm) => {
+  const searchUsers = useCallback((searchTerm) => {
     if (!searchTerm) {
       return users;
     }
@@ -458,10 +438,10 @@ export const UsersProvider = ({ children }) => {
 
     console.log(`✅ Found ${filteredUsers.length} users matching: ${searchTerm}`);
     return filteredUsers;
-  };
+  }, [users]);
 
   // Check if user exists
-  const userExists = async (userId) => {
+  const userExists = useCallback(async (userId) => {
     if (!userId) return false;
 
     try {
@@ -471,10 +451,14 @@ export const UsersProvider = ({ children }) => {
       console.error('❌ Error checking user existence:', err);
       return false;
     }
-  };
+  }, []);
 
-  // REMOVED: useEffect that automatically fetches all users on mount
-  // This was causing performance issues and infinite loops
+  // Force refresh function
+  const refreshUsers = useCallback(() => {
+    console.log('🔄 Force refreshing users...');
+    usersLoadedRef.current = false;
+    return getUsers(true);
+  }, [getUsers]);
 
   const value = {
     // State
@@ -503,9 +487,9 @@ export const UsersProvider = ({ children }) => {
 
     // Utility functions
     updateUserStatus,
-    bulkUpdateUsers,
     searchUsers,
-    userExists
+    userExists,
+    refreshUsers
   };
 
   return (
