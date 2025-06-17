@@ -4,7 +4,7 @@ import OrgDetailsModal from './OrgDetailsModal';
 import { HiOutlineSearch } from "react-icons/hi";
 import { useOrganizations } from '../../../Contexts/OrganizationsContext';
 import { useUsers } from '../../../Contexts/UsersContext';
-import './Organizations.css';
+import './ORG2.css';
 
 const OrganizationsList = () => {
   const {

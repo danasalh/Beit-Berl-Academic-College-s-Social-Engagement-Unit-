@@ -67,3 +67,7 @@
     margin-bottom: 4px;
   }
 }
+.org-grid:has(.org-card:only-child) {
+  justify-content: center;
+  display: flex;
+}
