@@ -16,7 +16,7 @@ The Social Engagement Unit allows students to receive academic recognition
  organizations
  
 ### 🎯 **Project Goal** 
-he goal of this project is to develop a **digital system** that will streamline and enhance the management of student volunteer activities.  
+The goal of this project is to develop a **digital system** that will streamline and enhance the management of student volunteer activities.  
 
 
 ### 🚀 **The System Will:**  
