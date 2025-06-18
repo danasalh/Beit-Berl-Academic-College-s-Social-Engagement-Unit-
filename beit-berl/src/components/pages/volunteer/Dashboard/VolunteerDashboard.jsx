@@ -494,7 +494,7 @@ export default function VcDashboard() {
               loadingOrgs={loadingOrgs}
             />
             <button
-              className="close-btn"
+              className="close-btn-hours"
               onClick={() => setShowPopup(false)}
               disabled={submitting}
             >

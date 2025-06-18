@@ -179,12 +179,6 @@
 .modal-header h3 { margin: 0; font-size: 1.25rem; font-weight: 600; color: 
 #1e293b; }
 
-.close-btn { background: none; border: none; font-size: 1.5rem; line-height: 1; color: 
-#64748b; cursor: pointer; padding: 0.25rem; }
-
-.close-btn:hover { color: 
-#1e293b; }
-
 .modal-body { padding: 1.5rem; }
 
 .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; border-top: 1px solid 

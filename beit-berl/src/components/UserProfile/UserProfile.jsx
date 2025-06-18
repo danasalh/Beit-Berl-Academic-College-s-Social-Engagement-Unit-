@@ -1,6 +1,7 @@
 import { getRoleLabel } from '../../utils/roleTranslations';
 import { useUsers } from '../../Contexts/UsersContext'; // Import the useUsers hook
 import './UserProfile.css';
+import CloseButton from '../Buttons/CloseButton/CloseButton';
 
 const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
   const { currentUser } = useUsers(); // Get current logged-in user
@@ -52,7 +53,7 @@ const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
       <div className="modal-content profile-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>פרופיל המשתמש</h3>
-          <button className="close-btn" onClick={onClose}>×</button>
+          <CloseButton onClick={onClose} />
         </div>
         <div className="modal-body">
           <div className="profile-section">

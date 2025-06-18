@@ -1,6 +1,7 @@
 // src/components/UsesData/UserEdit.jsx
 import { HiX } from 'react-icons/hi';
 import { getRolesWithLabels } from '../../utils/roleTranslations';
+import CloseButton from '../Buttons/CloseButton/CloseButton';
 
 const UserEdit = ({
   editFormData,
@@ -21,7 +22,7 @@ const UserEdit = ({
       <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>עריכת פרופיל משתמש</h3>
-          <button className="close-btn" onClick={closeEditModal}>×</button>
+          <CloseButton onClick={closeEditModal} />
         </div>
         <div className="modal-body">
           <form className="edit-form" onSubmit={(e) => e.preventDefault()}>

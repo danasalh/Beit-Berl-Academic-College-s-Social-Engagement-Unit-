@@ -619,7 +619,7 @@ const OrgDetailsModal = ({
               <div className="modal-actions">
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="edit-button"
+                  className="edit-button-org"
                 >
                   <HiPencilAlt /> עריכה
                 </button>

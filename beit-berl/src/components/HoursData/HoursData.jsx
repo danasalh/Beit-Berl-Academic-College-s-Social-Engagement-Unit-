@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useVolunteerHours } from '../../Contexts/VolunteerHoursContext';
 import { useOrganizations } from '../../Contexts/OrganizationsContext';
 import { useUsers } from '../../Contexts/UsersContext';
-import { HiX, HiOutlineClock, HiOutlineCheck, HiOutlineExclamation, HiOutlineX } from 'react-icons/hi';
+import { HiOutlineClock, HiOutlineCheck, HiOutlineExclamation, HiOutlineX } from 'react-icons/hi';
+import CloseButton from '../Buttons/CloseButton/CloseButton';
 import './HoursData.css';
 
 const HoursData = ({ volunteer, onClose }) => {
@@ -203,9 +204,7 @@ const HoursData = ({ volunteer, onClose }) => {
               <p className="volunteer-name">{volunteerName}</p>
             </div>
           </div>
-          <button className="close-btn" onClick={onClose}>
-            <HiX />
-          </button>
+          <CloseButton onClick={onClose} />
         </div>
 
         {/* Success Message */}

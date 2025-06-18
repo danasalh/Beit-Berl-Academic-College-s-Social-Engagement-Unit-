@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useFeedback } from '../../../Contexts/FeedbackContext';
 import { useUsers } from '../../../Contexts/UsersContext';
-import { HiX, HiPencil, HiPlus, HiTrash } from 'react-icons/hi';
+import {HiPencil, HiPlus, HiTrash } from 'react-icons/hi';
+import CloseButton from '../../Buttons/CloseButton/CloseButton';
 import './FeedbackPopup.css';
 
 const FeedbackPopup = ({ targetUser, onClose }) => {
@@ -250,9 +251,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
           <h2>
             מציג פידבק עבור {targetUser.firstName} {targetUser.lastName}
           </h2>
-          <button className="close-btn" onClick={onClose}>
-            <HiX />
-          </button>
+          <CloseButton onClick={onClose}/>
         </div>
 
         {/* Success/Error Messages */}

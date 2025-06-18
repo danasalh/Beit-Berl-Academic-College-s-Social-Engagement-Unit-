@@ -35,27 +35,6 @@
     line-height: 1.5;
 }
 
-/* Green rectangular OK button */
-.close-btn {
-    background-color: #a5d6a7; /* soft green background */
-    color: #1b5e20;            /* dark green text */
-    padding: 10px 24px;
-    border: none;
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-block;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.close-btn:hover,
-.close-btn:focus {
-    background-color: #81c784; /* slightly darker green */
-    color: #1b5e20;
-    outline: none;
-}
-
 @keyframes fadeIn {
     from {
         opacity: 0;
