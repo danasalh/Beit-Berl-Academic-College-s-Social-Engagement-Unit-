@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import OrgCard from './OrgCard';
-import OrgDetailsModal from './OrgDetailsModal';
+import OrgDetailsModal from './OrganizationsComp/OrgDetailsModal';
 import { HiOutlineSearch } from "react-icons/hi";
-import { useOrganizations } from '../../../Contexts/OrganizationsContext';
-import { useUsers } from '../../../Contexts/UsersContext';
+import { useOrganizations } from '../../Contexts/OrganizationsContext';
+import { useUsers } from '../../Contexts/UsersContext';
 import './Organizations.css';
 
 const OrganizationsList = () => {
