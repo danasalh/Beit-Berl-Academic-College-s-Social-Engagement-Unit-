@@ -79,3 +79,38 @@
     background-color: #1565c0;
   }
   
+
+  .cancel-button {
+  background-color: #e53935; /* red background */
+  color: white;              /* white text and icon */
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.save-button {
+  background: #0a66c2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5em 1.2em;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+
+.save-button:hover,
+.save-button:focus {
+  background: #004182;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.cancel-button:hover {
+  background-color: #e53935; /* darker red on hover */
+  transform: scale(1.05);
+}
+

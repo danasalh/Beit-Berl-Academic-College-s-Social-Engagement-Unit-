@@ -4,16 +4,29 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #555;
+  /*color: inherit; */
+  color: #555; 
   padding: 4px;
   transition: color 0.2s ease, transform 0.1s ease;
 }
+/* Force la couleur grise sur l'icône */
+.close-btn svg {
+  color: #888 !important;
+  transition: none;
+}
 
 .close-btn:hover {
-  color: #e63946;
+   /*color: #e63946; */
+  color: #888;
   transform: scale(1.1);
 }
 
 .close-btn:focus {
+  color: #888;
   outline: none;
+}
+
+.close-btn:hover {
+  background: transparent;
+  box-shadow: none;
 }

@@ -211,14 +211,14 @@ const Settings = () => {
               className="save-button"
               disabled={updateLoading}
             >
-              {updateLoading ? '⏳ שומר...' : '✅ שמירה'}
+              {updateLoading ? '⏳ שומר...' : '✔ שמירה'}
             </button>
             <button 
               onClick={handleCancelClick} 
               className="cancel-button"
               disabled={updateLoading}
             >
-              ❌ ביטול
+              ✖ ביטול
             </button>
           </div>
         )}
