@@ -335,7 +335,7 @@ const OrgDetailsModal = ({
       return;
     }
 
-    if (window.confirm("האם את בטוחה שברצונך למחוק את הארגון?")) {
+    if (window.confirm("האם אתה בטוח שברצונך למחוק את הארגון?")) {
       try {
         await onDelete(org.id);
       } catch (err) {
@@ -411,6 +411,7 @@ const OrgDetailsModal = ({
 
             {/* Updated VC Selection Dropdown */}
             <div className="form-group">
+              <label className="form-label">הערה: שיוך נציג ארגון מתבצע דרך פרופיל הנציג <br/><br/> </label>
               <label className="form-label">רכזי מתנדבים</label>
               <div className="vc-dropdown-container" style={{ position: 'relative' }}>
                 <div
@@ -530,7 +531,7 @@ const OrgDetailsModal = ({
                     setEditedOrg(org); 
                   }
                 }}
-                className="cancel-button"
+                className="cancel-button-org"
                 disabled={isSaving}
               >
                 ביטול

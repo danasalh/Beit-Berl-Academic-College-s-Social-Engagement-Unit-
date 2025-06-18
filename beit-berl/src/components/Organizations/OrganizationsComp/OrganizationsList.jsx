@@ -157,7 +157,7 @@ const OrganizationsList = () => {
       return;
     }
 
-    if (window.confirm("האם את בטוחה שברצונך למחוק את הארגון?")) {
+    if (window.confirm("האם אתה בטוח שברצונך למחוק את הארגון?")) {
       try {
         await deleteOrganization(orgId);
         setSelectedOrg(null);
