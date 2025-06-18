@@ -134,7 +134,7 @@ const ForgotPassword = () => {
         {!isMobile && (
           <div className="desktop-footer">
             <p className="copyright-text">
-              © {new Date().getFullYear()} MyApp. כל הזכויות שמורות.
+              © {new Date().getFullYear()} Vtime. כל הזכויות שמורות.
             </p>
           </div>
         )}
