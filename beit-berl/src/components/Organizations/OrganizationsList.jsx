@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import OrgCard from './OrgCard';
 import OrgDetailsModal from './OrgDetailsModal';
 import { HiOutlineSearch } from "react-icons/hi";
-import { useOrganizations } from '../../../Contexts/OrganizationsContext';
-import { useUsers } from '../../../Contexts/UsersContext';
+import { useOrganizations } from '../../Contexts/OrganizationsContext';
+import { useUsers } from '../../Contexts/UsersContext';
 import './Organizations.css';
 
 const OrganizationsList = () => {
@@ -157,7 +157,7 @@ const OrganizationsList = () => {
       return;
     }
 
-    if (window.confirm("האם את בטוחה שברצונך למחוק את הארגון?")) {
+    if (window.confirm("האם אתה בטוח שברצונך למחוק את הארגון?")) {
       try {
         await deleteOrganization(orgId);
         setSelectedOrg(null);

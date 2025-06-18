@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useFeedback } from '../../../Contexts/FeedbackContext';
 import { useUsers } from '../../../Contexts/UsersContext';
-import { HiX, HiPencil, HiPlus, HiTrash } from 'react-icons/hi';
-import './FeedbackPopup.css'; 
+import {HiPencil, HiPlus, HiTrash } from 'react-icons/hi';
+import CloseButton from '../../Buttons/CloseButton/CloseButton';
+import './FeedbackPopup.css';
 
 const FeedbackPopup = ({ targetUser, onClose }) => {
-  const { 
-    createFeedback, 
-    updateFeedback, 
-    deleteFeedback, 
+  const {
+    createFeedback,
+    updateFeedback,
+    deleteFeedback,
     getFeedbackByVolunteerId,
     loading: feedbackLoading,
     error: feedbackError
   } = useFeedback();
-  
+
   const { currentUser } = useUsers();
 
   // State for feedback list and current editing
@@ -33,7 +34,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
   // Fetch existing feedback for the target user
   const fetchFeedback = useCallback(async () => {
     if (!targetUser?.id) return;
-    
+
     // Prevent multiple simultaneous fetches for the same user
     if (hasFetchedRef.current && targetUserIdRef.current === targetUser.id) {
       return;
@@ -43,7 +44,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
       setIsLoading(true);
       hasFetchedRef.current = true;
       targetUserIdRef.current = targetUser.id;
-      
+
       console.log('Fetching feedback for user:', targetUser.id);
       const feedback = await getFeedbackByVolunteerId(String(targetUser.id));
       setFeedbackList(feedback || []);
@@ -62,14 +63,14 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
     if (targetUserIdRef.current !== targetUser?.id) {
       hasFetchedRef.current = false;
     }
-    
+
     fetchFeedback();
   }, [targetUser?.id]); // Only depend on targetUser.id, not the entire fetchFeedback function
 
   // Format date for display
   const formatDate = useCallback((timestamp) => {
     if (!timestamp) return 'Unknown date';
-    
+
     try {
       let date;
       if (timestamp.toDate) {
@@ -79,7 +80,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
       } else {
         date = new Date(timestamp);
       }
-      
+
       return date.toLocaleString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -129,7 +130,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
   // Refresh feedback list after operations
   const refreshFeedback = useCallback(async () => {
     if (!targetUser?.id) return;
-    
+
     try {
       console.log('Refreshing feedback for user:', targetUser.id);
       const feedback = await getFeedbackByVolunteerId(String(targetUser.id));
@@ -158,39 +159,39 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
     }
 
     setIsSubmitting(true);
-    
+
     try {
       if (editingFeedback) {
-        // Update existing feedback
+        // Update existing feedback - ONLY pass the fields you want to update
         const updateData = {
-          content: feedbackContent.trim(),
-          updatedAt: new Date()
+          content: feedbackContent.trim()
+          // Remove updatedAt - let the context handle it
+          // Don't include date unless you specifically want to change it
         };
-        
+
         const success = await updateFeedback(editingFeedback.id, updateData);
-        
+
         if (success) {
-          showSuccess('Feedback updated successfully');
-          await refreshFeedback(); // Use refreshFeedback instead of fetchFeedback
+          showSuccess('הפידבק עודכן בהצלחה');
+          await refreshFeedback();
           handleCancel();
         } else {
-          showError('Failed to update feedback');
+          showError('עדכון הפידבק נכשל. יש לנסות שוב.');
         }
       } else {
-        // Create new feedback
+        // Create new feedback - include all required fields
         const feedbackData = {
           volunteerId: String(targetUser.id),
           fromVCId: String(currentUser.id),
           content: feedbackContent.trim(),
-          date: new Date(),
-          createdAt: new Date()
+          date: new Date() // Keep this for new feedback
         };
-        
+
         const newFeedback = await createFeedback(feedbackData);
-        
+
         if (newFeedback) {
           showSuccess('הפידבק נוסף בהצלחה');
-          await refreshFeedback(); // Use refreshFeedback instead of fetchFeedback
+          await refreshFeedback();
           handleCancel();
         } else {
           showError('Failed to create feedback');
@@ -212,7 +213,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
 
     try {
       const success = await deleteFeedback(feedbackId);
-      
+
       if (success) {
         showSuccess('הפידבק נמחק בהצלחה');
         await refreshFeedback(); // Use refreshFeedback instead of fetchFeedback
@@ -226,12 +227,12 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
   }, [deleteFeedback, refreshFeedback, showSuccess, showError]);
 
   // Filter feedback from current user (for editing/deleting)
-  const myFeedback = feedbackList.filter(feedback => 
+  const myFeedback = feedbackList.filter(feedback =>
     String(feedback.fromVCId) === String(currentUser?.id)
   );
 
   // Filter feedback from others (read-only)
-  const othersFeedback = feedbackList.filter(feedback => 
+  const othersFeedback = feedbackList.filter(feedback =>
     String(feedback.fromVCId) !== String(currentUser?.id)
   );
 
@@ -250,9 +251,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
           <h2>
             מציג פידבק עבור {targetUser.firstName} {targetUser.lastName}
           </h2>
-          <button className="close-btn" onClick={onClose}>
-            <HiX />
-          </button>
+          <CloseButton onClick={onClose}/>
         </div>
 
         {/* Success/Error Messages */}
@@ -261,7 +260,7 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
             {successMessage}
           </div>
         )}
-        
+
         {errorMessage && (
           <div className="error-message">
             {errorMessage}
@@ -296,17 +295,17 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
                     disabled={isSubmitting}
                   />
                 </div>
-                
+
                 <div className="form-actions">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="cancel-btn"
                     onClick={handleCancel}
                     disabled={isSubmitting}
                   >
                     ביטול
                   </button>
-                  <button 
+                  <button
                     type="button"
                     className="submit-btn"
                     onClick={handleSubmit}

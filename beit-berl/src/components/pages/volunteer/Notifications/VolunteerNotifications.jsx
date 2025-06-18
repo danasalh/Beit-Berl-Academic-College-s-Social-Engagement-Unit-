@@ -3,8 +3,7 @@ import NotificauonsPanel from '../../../Notifications/NotificationsPanel/Notific
 export default function VolunteerNotifications() {
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>volunteer notifications</h1>
-      <p>Welcome to the volunteer notifications.</p>
+      <h1 style={{fontSize: '2rem'}}>התראות</h1>
       <NotificauonsPanel />
     </div>
   );

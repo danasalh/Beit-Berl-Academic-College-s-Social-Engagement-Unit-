@@ -28,15 +28,15 @@ export const useWelcomeNotifications = () => {
         const messages = {
           volunteer: {
             title: '🎉 ברוכים הבאים למערכת!',
-            content: `שלום ${userName}! חשבון המתנדב שלך אושר. כעת תוכל/י לעיין ולהגיש מועמדות להזדמנויות התנדבות. תודה על הצטרפותך לקהילה שלנו!`
+            content: `שלום ${userName}! חשבון המתנדב שלך אושר. כעת תוכל/י לעיין ברשימת ארגוני ההתנדבות, ליצור קשר עם הארגון ולסמן שעות התנדבות. תודה על הצטרפותך לקהילה שלנו!`
           },
           orgRep: {
             title: '🎉 ברוכים הבאים למערכת!',
-            content: `שלום ${userName}! חשבון נציג הארגון שלך אושר. כעת תוכל/י ליצור ולנהל הזדמנויות התנדבות עבור הארגון שלך. ברוכים הבאים!`
+            content: `שלום ${userName}! חשבון נציג הארגון שלך אושר. כעת תוכל/י לנהל את הארגון שלך, הרכזים והמתנדבים. ברוכים הבאים!`
           },
           vc: {
             title: '🎉 ברוכים הבאים למערכת!',
-            content: `שלום ${userName}! חשבון רכז ההתנדבות שלך אושר. כעת תוכל/י לסייע בניהול פעילויות התנדבות ולתמוך ביוזמות הקהילה שלנו. ברוכים הבאים לצוות!`
+            content: `שלום ${userName}! חשבון רכז ההתנדבות שלך אושר. כעת תוכל/י לנהל את המתנדבים בארגון שלך, לאשר שעות ולהוסיף פידבקים. ברוכים הבאים לצוות!`
           },
           default: {
             title: '🎉 ברוכים הבאים למערכת!',

@@ -1,6 +1,6 @@
 // src/components/PopUps/NotAllowed/NotAllowed.jsx
-import React from 'react';
 import './NotAllowed.css';
+import CloseButton from '../../Buttons/CloseButton/CloseButton';
 
 const NotAllowed = ({ onClose, role }) => {
     return (
@@ -12,7 +12,7 @@ const NotAllowed = ({ onClose, role }) => {
                     <br />
                     רק משתמשים שתפקידם <strong>volunteer</strong> יכולים לקבל פידבק.
                 </p>
-                <button onClick={onClose} className="close-btn">סגירה</button>
+                <CloseButton onClick={onClose} />
             </div>
         </div>
     );

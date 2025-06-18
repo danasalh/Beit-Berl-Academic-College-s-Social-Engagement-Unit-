@@ -377,7 +377,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
         .map(h => h.volunteerId)
     ).size;
 
-    const totalOrgs = organizations.length;
+    const totalOrgs = filteredOrgs.length;
 
     const volunteersWithHours = new Set(
       filteredHours.map(h => h.volunteerId).filter(id => id)

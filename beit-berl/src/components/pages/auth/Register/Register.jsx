@@ -584,7 +584,7 @@ const Register = () => {
 
             {formData.role === 'orgRep' && (
               <div>
-                <label htmlFor="orgId" className="sr-only"> (אופציונאלי)מספר מזהה של הארגון שלי</label>
+                <label htmlFor="orgId" className="sr-only">מספר מזהה של הארגון שלי</label>
                 <input
                   id="orgId"
                   name="orgId"

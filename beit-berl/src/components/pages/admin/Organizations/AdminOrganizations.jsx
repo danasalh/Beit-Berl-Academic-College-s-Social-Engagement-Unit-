@@ -1,4 +1,4 @@
-import OrganizationsList from '../../../Organizations/OrganizationsComp/OrganizationsList';
+import OrganizationsList from '../../../Organizations/OrganizationsList';
 
 export default function AdminOrganizations() {
   return (

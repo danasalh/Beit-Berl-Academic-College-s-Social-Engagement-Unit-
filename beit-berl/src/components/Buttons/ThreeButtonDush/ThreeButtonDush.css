@@ -8,7 +8,7 @@
 .dush-button {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1.5rem;
   padding: 1.1rem 2.2rem;
   font-size: 1.08rem;
   font-weight: 600;
@@ -24,9 +24,9 @@
     color 0.18s;
   outline: none;
   min-width: 120px;
+  max-width: 240px;
   box-shadow: 0 4px 24px 0 rgba(33, 150, 243, 0.13), 0 1.5px 6px 0 #90caf9;
   flex: 1 1 180px;
-  max-width: 240px;
 }
 
 .dush-button:hover,
@@ -78,10 +78,28 @@
     flex-direction: column;
     gap: 18px;
     align-items: center;
+
   }
   .dush-button {
-    width: 90vw;
-    max-width: 98vw;
+    width: 80vw;
+    max-width: 80vw;
     min-width: unset;
   }
+}
+
+.duch-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dush-info h6{
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+.dush-info p{
+  text-align: right;
+  font-size: 0.7rem;
 }

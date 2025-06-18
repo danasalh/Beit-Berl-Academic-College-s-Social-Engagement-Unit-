@@ -126,7 +126,7 @@ const Sidebar = ({ userRole, userName }) => {
           
           {/* User greeting */}
           <div className="user-greeting">
-            שלום <span className="user-name">{userName}</span>
+            שלום <span className="user-name-sidebar">{userName}</span>
           </div>
           
           {/* Navigation links */}

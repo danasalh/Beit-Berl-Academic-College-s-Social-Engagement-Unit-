@@ -349,11 +349,30 @@ export const FeedbackProvider = ({ children }) => {
     setError(null);
 
     try {
+      // Only include fields that are actually being updated
       const dataToUpdate = {
         ...feedbackData,
-        date: feedbackData.date instanceof Date ? Timestamp.fromDate(feedbackData.date) : feedbackData.date,
         updatedAt: Timestamp.now()
       };
+
+      // Handle date field properly - only update if explicitly provided
+      if (feedbackData.date !== undefined) {
+        if (feedbackData.date instanceof Date) {
+          dataToUpdate.date = Timestamp.fromDate(feedbackData.date);
+        } else if (feedbackData.date && typeof feedbackData.date === 'object' && feedbackData.date.toDate) {
+          // Already a Firestore timestamp
+          dataToUpdate.date = feedbackData.date;
+        } else if (feedbackData.date) {
+          // Try to convert to date
+          dataToUpdate.date = Timestamp.fromDate(new Date(feedbackData.date));
+        } else {
+          // If date is null or invalid, remove it from update
+          delete dataToUpdate.date;
+        }
+      } else {
+        // If date is undefined, don't include it in the update
+        delete dataToUpdate.date;
+      }
 
       const feedbackRef = doc(db, 'feedback', feedbackId);
       await updateDoc(feedbackRef, dataToUpdate);
@@ -364,7 +383,10 @@ export const FeedbackProvider = ({ children }) => {
           ? {
             ...item,
             ...feedbackData,
-            date: feedbackData.date instanceof Date ? feedbackData.date : item.date,
+            // Only update date in local state if it was actually provided
+            ...(feedbackData.date !== undefined && {
+              date: feedbackData.date instanceof Date ? feedbackData.date : item.date
+            }),
             updatedAt: new Date()
           }
           : item
@@ -380,7 +402,7 @@ export const FeedbackProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
-
+  
   // Delete feedback
   const deleteFeedback = useCallback(async (feedbackId) => {
     console.log('🗑️ Deleting feedback:', feedbackId);

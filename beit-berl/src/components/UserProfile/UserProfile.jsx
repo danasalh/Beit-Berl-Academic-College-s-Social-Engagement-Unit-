@@ -1,6 +1,7 @@
 import { getRoleLabel } from '../../utils/roleTranslations';
 import { useUsers } from '../../Contexts/UsersContext'; // Import the useUsers hook
 import './UserProfile.css';
+import CloseButton from '../Buttons/CloseButton/CloseButton';
 
 const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
   const { currentUser } = useUsers(); // Get current logged-in user
@@ -52,7 +53,7 @@ const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
       <div className="modal-content profile-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>פרופיל המשתמש</h3>
-          <button className="close-btn" onClick={onClose}>×</button>
+          <CloseButton onClick={onClose} />
         </div>
         <div className="modal-body">
           <div className="profile-section">
@@ -64,45 +65,41 @@ const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
           </div>
           <div className="profile-details">
             <div className="detail-group">
-              <label>User ID:</label>
-              <span>{user.id || 'N/A'}</span>
-            </div>
-            <div className="detail-group">
-              <label>First Name:</label>
+              <label>שם פרטי:</label>
               <span>{user.firstName || 'N/A'}</span>
             </div>
             <div className="detail-group">
-              <label>Last Name:</label>
+              <label>שם משפחה:</label>
               <span>{user.lastName || 'N/A'}</span>
             </div>
             <div className="detail-group">
-              <label>Email:</label>
+              <label>כתובת דוא"ל:</label>
               <span>{user.email || 'N/A'}</span>
             </div>
             <div className="detail-group">
-              <label>Phone Number:</label>
+              <label>מספר טלפון:</label>
               <span>{user.phoneNumber || 'N/A'}</span>
             </div>
             <div className="detail-group">
-              <label>Role:</label>
+              <label>תפקיד:</label>
               <span className={`role-badge ${user.role}`}>
                 {getRoleLabel(user.role) || 'לא מוגדר'}
               </span>
             </div>
             <div className="detail-group">
-              <label>Organizations:</label>
+              <label>ארגונים משוייכים:</label>
               <span className="organizations-list">
                 {getOrganizationNames(user.orgId)}
               </span>
             </div>
             <div className="detail-group">
-              <label>Status:</label>
+              <label>סטטוס:</label>
               <span className={`status-badge ${user.status}`}>
                 {user.status}
               </span>
             </div>
             <div className="detail-group">
-              <label>Created At:</label>
+              <label>תאריך יצירה:</label>
               <span>{formatDate(user.createdAt)}</span>
             </div>
           </div>

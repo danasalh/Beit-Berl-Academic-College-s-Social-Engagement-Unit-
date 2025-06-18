@@ -1,7 +1,7 @@
 // src/components/pages/orgRep/Dashboard/OrgRepDashboard.jsx
 import { useRef } from 'react';
 import ThreeButtonDushOrgRep from '../../../Buttons/ThreeButtonDushOrgRep/ThreeButtonDushOrgRep';
-import OrganizationsList from '../../../Organizations/OrganizationsComp/OrganizationsList';
+import OrganizationsList from '../../../Organizations/OrganizationsList';
 import './OrgRepDashboard.css';
 
 export default function OrgRepDashboard() {

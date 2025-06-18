@@ -1,5 +1,5 @@
 // Enhanced VolunteerDashboard.jsx with comprehensive debug logging
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useUsers } from '../../../../Contexts/UsersContext';
 import { useVolunteerHours } from '../../../../Contexts/VolunteerHoursContext';
 import { useOrganizations } from '../../../../Contexts/OrganizationsContext';
@@ -494,7 +494,7 @@ export default function VcDashboard() {
               loadingOrgs={loadingOrgs}
             />
             <button
-              className="close-btn"
+              className="close-btn-hours"
               onClick={() => setShowPopup(false)}
               disabled={submitting}
             >

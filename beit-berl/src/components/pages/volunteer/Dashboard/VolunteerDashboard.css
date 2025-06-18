@@ -3,10 +3,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
 .welcome-title {
-  font-size: 2.2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
   color: #0077c2;
@@ -85,7 +86,7 @@
   }
 }
 
-.close-btn,
+.close-btn-hours,
 .submit-button {
   margin-top: 24px;
   padding: 8px 24px;
@@ -100,7 +101,7 @@
   display: inline-block;
 }
 
-.close-btn:hover {
+.close-btn-hours:hover {
   background: #e57373;
   color: #fff;
   box-shadow: 0 0 8px #ffcdd2;
