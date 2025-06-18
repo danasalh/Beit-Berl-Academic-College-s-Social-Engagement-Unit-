@@ -166,6 +166,7 @@ const Login = () => {
       )}
 
       <div className="login-form-container">
+        <img src="/logo.svg" alt="Logo" className="app-logo" />
         <div className="login-header">
           <h1 className="login-title">התחברות לחשבון</h1>
         </div>
