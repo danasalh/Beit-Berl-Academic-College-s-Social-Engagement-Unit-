@@ -681,7 +681,7 @@ const UsersData = () => {
 
                   return (
                     <tr key={user.docId || user.id}>
-                      <td data-label="Name">
+                      <td data-label="">
                         <div className="user-name">
                           <div className="user-avatar">
                             {(user.firstName || user.email || String(user.id)).charAt(0).toUpperCase()}
@@ -689,26 +689,26 @@ const UsersData = () => {
                           <span>{`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'N/A'}</span>
                         </div>
                       </td>
-                      <td data-label="Email">{user.email || 'N/A'}</td>
-                      <td data-label="Role">
+                      <td data-label="">{user.email || 'N/A'}</td>
+                      <td data-label="">
                         <span className={`role-badge ${user.role || 'no-role'}`}>
                           {getRoleLabel(user.role) || 'לא מוגדר'}
                         </span>
                       </td>
-                      <td data-label="Organizations">
+                      <td data-label="">
                         <div className="organizations-cell">
                           {getOrganizationNames(user.orgId)}
                         </div>
                       </td>
-                      <td data-label="Status">
+                      <td data-label="">
                         <div className="status-management">
                           <span className={`status-badge ${user.status}`}>
                             {user.status}
                           </span>
                         </div>
                       </td>
-                      <td data-label="Created At">{formatDate(user.createdAt)}</td>
-                      <td data-label="Operations">
+                      <td data-label="">{formatDate(user.createdAt)}</td>
+                      <td data-label="">
                         <div className="operations-buttons">
                           <button
                             className="btn btn-watch"
