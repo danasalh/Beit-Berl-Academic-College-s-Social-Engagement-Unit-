@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { HiLocationMarker, HiPencilAlt, HiOutlineX, HiChevronDown } from 'react-icons/hi';
-import { useUsers } from '../../../Contexts/UsersContext';
+import { useUsers } from '../../Contexts/UsersContext';
 
 const OrgDetailsModal = ({
   org,

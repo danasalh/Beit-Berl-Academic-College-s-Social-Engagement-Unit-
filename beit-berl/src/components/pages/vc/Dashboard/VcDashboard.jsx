@@ -1,6 +1,6 @@
 import './VcDashboard.css';
 import HoursList from '../../../HoursList/HoursList';
-import OrganizationsList from '../../../Organizations/OrganizationsComp/OrganizationsList';
+import OrganizationsList from '../../../Organizations/OrganizationsList';
 export default function VcDashboard() {
   return (
     <div className="vc-dashboard">
