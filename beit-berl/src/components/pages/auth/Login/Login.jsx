@@ -245,7 +245,7 @@ const Login = () => {
       </div>
 
       <div className="login-footer">
-        <p>© 2025 Your Company. All rights reserved.</p>
+        <p>© 2025 Vtime. All rights reserved.</p>
       </div>
     </div>
   );
