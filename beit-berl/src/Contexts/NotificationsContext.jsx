@@ -145,7 +145,7 @@ export const NotificationsProvider = ({ children }) => {
     }
   }, [convertDocToNotification]);
 
-  // Get notifications by type (reminder, approval-needed)
+  // Get notifications by type (reminder, approval-needed, hours-status, etc.)
   const getNotificationsByType = useCallback(async (type, receiverId = null) => {
     console.log('🏷️ Fetching notifications by type:', type, 'for receiver:', receiverId);
     setLoading(true);
@@ -215,8 +215,8 @@ export const NotificationsProvider = ({ children }) => {
     setError(null);
 
     try {
-      // Validate notification type
-      const validTypes = ['reminder', 'approval-needed', 'feedback-notification', 'welcome'];
+      // Updated valid notification types to include hours-status
+      const validTypes = ['reminder', 'approval-needed', 'feedback-notification', 'welcome', 'hours-status'];
       if (!validTypes.includes(notificationData.type)) {
         throw new Error(`Invalid notification type. Must be one of: ${validTypes.join(', ')}`);
       }
@@ -509,6 +509,40 @@ export const NotificationsProvider = ({ children }) => {
     }
   }, [getNotificationsByReceiver, getNotifications]);
 
+  // NEW: Get hours-status notifications for a receiver
+  const getHoursStatusNotifications = useCallback(async (receiverId) => {
+    console.log('⏰ Fetching hours-status notifications for receiver:', receiverId);
+    return await getNotificationsByType('hours-status', receiverId);
+  }, [getNotificationsByType]);
+
+  // NEW: Get unread hours-status notifications for a receiver
+  const getUnreadHoursStatusNotifications = useCallback(async (receiverId) => {
+    console.log('📩⏰ Fetching unread hours-status notifications for receiver:', receiverId);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const q = query(
+        notificationsCollection,
+        where('receiverId', '==', receiverId),
+        where('type', '==', 'hours-status'),
+        where('read', '==', false),
+        orderBy('date', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      const notificationsData = querySnapshot.docs.map(convertDocToNotification);
+      
+      console.log(`✅ Found ${notificationsData.length} unread hours-status notifications for receiver: ${receiverId}`);
+      return notificationsData;
+    } catch (err) {
+      console.error('❌ Error fetching unread hours-status notifications:', err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [convertDocToNotification]);
+
   const value = {
     notifications,
     loading,
@@ -527,7 +561,10 @@ export const NotificationsProvider = ({ children }) => {
     deleteAllReadNotifications,
     getNotificationCount,
     searchNotifications,
-    subscribeToNotificationsByReceiver // Add this new function
+    subscribeToNotificationsByReceiver,
+    // NEW: Hours-status specific methods
+    getHoursStatusNotifications,
+    getUnreadHoursStatusNotifications
   };
 
   return (
