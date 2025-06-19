@@ -4,98 +4,180 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.3);
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.25) 100%),
+    linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.35) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   direction: rtl;
   z-index: 999;
+  backdrop-filter: blur(3px);
 }
 
 .termsdoc-box {
-  background: white;
-  padding: 30px 25px;
-  border-radius: 12px;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  padding: 40px 35px;
+  border-radius: 20px;
   width: 90%;
-  max-width: 500px;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
-  font-family: sans-serif;
-  animation: fadeIn 0.3s ease;
+  max-width: 520px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .termsdoc-title {
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 24px;
-  font-weight: bold;
-  color: #000;
-  line-height: 1.4;
+  margin-bottom: 35px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .termsdoc-questions {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .termsdoc-question {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: all 0.3s ease;
+  align-items: flex-start;
+  gap: 18px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 12px 8px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.termsdoc-question::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 12px;
+}
+
+.termsdoc-question:hover::before {
+  opacity: 1;
 }
 
 .termsdoc-question.small {
   opacity: 0;
-  transform: scale(0.95);
+  transform: scale(0.96) translateY(8px);
   pointer-events: none;
 }
 
 .termsdoc-question.small.active {
   opacity: 1;
-  transform: scale(1);
+  transform: scale(1) translateY(0);
   pointer-events: auto;
 }
 
 .question-text {
   font-size: 16px;
   color: #333;
-  line-height: 1.4;
+  line-height: 1.6; /* הגדלת גובה השורה */
+  flex: 1; /* גמישות בטקסט */
+  word-wrap: break-word; /* שבירת מילים ארוכות */
 }
 
 .question-text.small {
-  font-size: 13px;
-  color: #000; /* 💡 טקסט שחור ברור */
+  font-size: 14px; /* הגדלה קלה של הפונט הקטן */
+  color: #222;
+  line-height: 1.5;
 }
 
 .circle-button {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  border: 1.5px solid #888;
-  background-color: #f9f9f9;
+  border: 2px solid #888;
+  background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  margin-top: 3px;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+  z-index: 1;
+}
+
+.circle-button::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.circle-button:hover {
+  border-color: #4caf50;
+  background: linear-gradient(145deg, #f8fff8 0%, #f0f8f0 100%);
+  transform: scale(1.08);
+  box-shadow: 
+    0 4px 8px rgba(76, 175, 80, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.circle-button:hover::before {
+  opacity: 0.1;
 }
 
 .circle-button:disabled {
   cursor: default;
   opacity: 0.6;
+  transform: none;
 }
 
 .circle-button.checked {
   border-color: #4caf50;
-  background-color: #e8f5e9;
+  background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%);
+  box-shadow: 
+    0 4px 8px rgba(76, 175, 80, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.circle-button.checked::before {
+  opacity: 0.15;
+}
+
+.circle-button.checked:hover {
+  background: linear-gradient(145deg, #d4f2d4 0%, #b8e6b8 100%);
+  transform: scale(1.08);
 }
 
 .checkmark {
   color: #4caf50;
-  font-size: 12px;
+  font-size: 14px; /* הגדלה קלה של הסימון */
+  font-weight: bold;
   animation: checkFadeIn 0.2s ease;
+  line-height: 1;
 }
 
 @keyframes checkFadeIn {
@@ -110,27 +192,65 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from { 
+    opacity: 0; 
+    transform: scale(0.9) translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
 }
 
 .approve-button {
-  margin-top: 30px;
-  padding: 12px 24px;
-  background-color: #4caf50;
+  margin-top: 35px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
   color: white;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 600;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  text-align: center;
+  box-shadow: 
+    0 6px 16px rgba(76, 175, 80, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.approve-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.approve-button:hover::before {
+  left: 100%;
 }
 
 .approve-button:hover:enabled {
-  background-color: #66bb6a;
-  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #66bb6a 0%, #81c784 100%);
+  box-shadow: 
+    0 8px 20px rgba(76, 175, 80, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+}
+
+.approve-button:active:enabled {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 12px rgba(76, 175, 80, 0.35),
+    0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 .approve-button:disabled {
@@ -139,4 +259,40 @@
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
+}
+
+/* תיקונים נוספים לעברית */
+.termsdoc-box * {
+  box-sizing: border-box;
+}
+
+/* שיפור התצוגה במובייל */
+@media (max-width: 480px) {
+  .termsdoc-box {
+    width: 95%;
+    padding: 30px 20px;
+    border-radius: 16px;
+  }
+  
+  .termsdoc-title {
+    font-size: 22px;
+    margin-bottom: 25px;
+  }
+  
+  .question-text {
+    font-size: 15px;
+  }
+  
+  .question-text.small {
+    font-size: 13px;
+  }
+  
+  .termsdoc-questions {
+    gap: 20px;
+  }
+  
+  .circle-button {
+    width: 20px;
+    height: 20px;
+  }
 }
