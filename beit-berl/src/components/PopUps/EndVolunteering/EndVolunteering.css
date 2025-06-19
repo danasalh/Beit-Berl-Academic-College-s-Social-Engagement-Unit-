@@ -48,7 +48,7 @@
 }
 
 /* Button */
-.confirm-button {
+.confirm-btn {
   background-color: #3b82f6;
   color: white;
   border: none;
@@ -59,7 +59,7 @@
   transition: background-color 0.2s ease-in-out;
 }
 
-.confirm-button:hover {
+.confirm-btn:hover {
   background-color: #2563eb;
 }
 
@@ -81,7 +81,7 @@
     font-size: 0.85rem;
   }
 
-  .confirm-button {
+  .confirm-btn {
     font-size: 1rem;
     padding: 0.7rem 1.2rem;
   }
