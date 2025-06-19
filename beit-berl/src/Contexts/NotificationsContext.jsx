@@ -11,7 +11,7 @@ import {
   query, 
   where, 
   orderBy,
-  onSnapshot, // Add this import
+  onSnapshot,
   Timestamp 
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -44,7 +44,7 @@ export const NotificationsProvider = ({ children }) => {
     title: doc.data().title || 'Notification'
   }), []);
 
-  // NEW: Real-time listener for notifications by receiver
+  // Real-time listener for notifications by receiver
   const subscribeToNotificationsByReceiver = useCallback((receiverId, callback) => {
     console.log('🔔 Setting up real-time listener for receiver:', receiverId);
     
@@ -145,7 +145,7 @@ export const NotificationsProvider = ({ children }) => {
     }
   }, [convertDocToNotification]);
 
-  // Get notifications by type (reminder, approval-needed)
+  // Get notifications by type (reminder, approval-needed, hours-status, volunteer-completed, etc.)
   const getNotificationsByType = useCallback(async (type, receiverId = null) => {
     console.log('🏷️ Fetching notifications by type:', type, 'for receiver:', receiverId);
     setLoading(true);
@@ -215,8 +215,16 @@ export const NotificationsProvider = ({ children }) => {
     setError(null);
 
     try {
-      // Validate notification type
-      const validTypes = ['reminder', 'approval-needed', 'feedback-notification', 'welcome'];
+      // Updated valid notification types to include volunteer-completed
+      const validTypes = [
+        'reminder', 
+        'approval-needed', 
+        'feedback-notification', 
+        'welcome', 
+        'hours-status',
+        'volunteer-completed'
+      ];
+      
       if (!validTypes.includes(notificationData.type)) {
         throw new Error(`Invalid notification type. Must be one of: ${validTypes.join(', ')}`);
       }
@@ -509,6 +517,74 @@ export const NotificationsProvider = ({ children }) => {
     }
   }, [getNotificationsByReceiver, getNotifications]);
 
+  // Get hours-status notifications for a receiver
+  const getHoursStatusNotifications = useCallback(async (receiverId) => {
+    console.log('⏰ Fetching hours-status notifications for receiver:', receiverId);
+    return await getNotificationsByType('hours-status', receiverId);
+  }, [getNotificationsByType]);
+
+  // Get unread hours-status notifications for a receiver
+  const getUnreadHoursStatusNotifications = useCallback(async (receiverId) => {
+    console.log('📩⏰ Fetching unread hours-status notifications for receiver:', receiverId);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const q = query(
+        notificationsCollection,
+        where('receiverId', '==', receiverId),
+        where('type', '==', 'hours-status'),
+        where('read', '==', false),
+        orderBy('date', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      const notificationsData = querySnapshot.docs.map(convertDocToNotification);
+      
+      console.log(`✅ Found ${notificationsData.length} unread hours-status notifications for receiver: ${receiverId}`);
+      return notificationsData;
+    } catch (err) {
+      console.error('❌ Error fetching unread hours-status notifications:', err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [convertDocToNotification]);
+
+  // NEW: Get volunteer-completed notifications for a receiver (typically admins)
+  const getVolunteerCompletedNotifications = useCallback(async (receiverId) => {
+    console.log('🎓 Fetching volunteer-completed notifications for receiver:', receiverId);
+    return await getNotificationsByType('volunteer-completed', receiverId);
+  }, [getNotificationsByType]);
+
+  // NEW: Get unread volunteer-completed notifications for a receiver
+  const getUnreadVolunteerCompletedNotifications = useCallback(async (receiverId) => {
+    console.log('📩🎓 Fetching unread volunteer-completed notifications for receiver:', receiverId);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const q = query(
+        notificationsCollection,
+        where('receiverId', '==', receiverId),
+        where('type', '==', 'volunteer-completed'),
+        where('read', '==', false),
+        orderBy('date', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      const notificationsData = querySnapshot.docs.map(convertDocToNotification);
+      
+      console.log(`✅ Found ${notificationsData.length} unread volunteer-completed notifications for receiver: ${receiverId}`);
+      return notificationsData;
+    } catch (err) {
+      console.error('❌ Error fetching unread volunteer-completed notifications:', err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [convertDocToNotification]);
+
   const value = {
     notifications,
     loading,
@@ -527,7 +603,13 @@ export const NotificationsProvider = ({ children }) => {
     deleteAllReadNotifications,
     getNotificationCount,
     searchNotifications,
-    subscribeToNotificationsByReceiver // Add this new function
+    subscribeToNotificationsByReceiver,
+    // Hours-status specific methods
+    getHoursStatusNotifications,
+    getUnreadHoursStatusNotifications,
+    // NEW: Volunteer-completed specific methods
+    getVolunteerCompletedNotifications,
+    getUnreadVolunteerCompletedNotifications
   };
 
   return (

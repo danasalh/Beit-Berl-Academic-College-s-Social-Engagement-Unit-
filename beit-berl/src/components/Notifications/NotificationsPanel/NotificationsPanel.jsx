@@ -49,6 +49,18 @@ export default function NotificationsPanel() {
       displayName: 'ברוכים הבאים',
       color: '#2196f3',
       icon: '🎉'
+    },
+    'hours-status': {
+      title: 'עדכון על שעות התנדבות',
+      displayName: 'סטטוס שעות',
+      color: '#d1e725',
+      icon: '⏰'
+    },
+    'volunteer-completed': {
+      title: 'מתנדב השלים 60 שעות התנדבות',
+      displayName: 'השלמת התנדבות',
+      color: '#9c27b0',
+      icon: '🎓'
     }
   }), []);
 
@@ -60,6 +72,9 @@ export default function NotificationsPanel() {
     let finalTitle;
     if (notification.type === 'feedback-notification') {
       finalTitle = config.title || notification.title || 'הוזן פידבק חדש במערכת';
+    } else if (notification.type === 'volunteer-completed') {
+      // For volunteer-completed, use the dynamic title from the notification if available
+      finalTitle = notification.title || config.title || 'מתנדב השלים 60 שעות התנדבות';
     } else {
       finalTitle = notification.title || config.title || 'הודעה חדשה';
     }
@@ -126,7 +141,9 @@ export default function NotificationsPanel() {
           originalDate: notif.date,
           displayName: displayProps.displayName,
           color: displayProps.color,
-          icon: displayProps.icon
+          icon: displayProps.icon,
+          // Include metadata for volunteer-completed notifications
+          metadata: notif.metadata || null
         };
       });
 
@@ -235,6 +252,47 @@ export default function NotificationsPanel() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [openMenuId]);
 
+  // Helper function to render notification content based on type
+  const renderNotificationContent = useCallback((notification) => {
+    const baseContent = (
+      <>
+        <p className="notifications-message">{notification.message}</p>
+        {notification.type && (
+          <div className="notifications-type">
+            <span className={`type-badge ${notification.type}`}>
+              {notification.icon} {notification.displayName}
+            </span>
+          </div>
+        )}
+      </>
+    );
+
+    // Add extra details for volunteer-completed notifications
+    if (notification.type === 'volunteer-completed' && notification.metadata) {
+      const { volunteerName, volunteerEmail, completionDate } = notification.metadata;
+      
+      return (
+        <>
+          {baseContent}
+          <div className="notification-details volunteer-completed-details">
+            <h4>פרטי המתנדב:</h4>
+            <div className="detail-item">
+              <strong>שם:</strong> {volunteerName || 'לא צוין'}
+            </div>
+            <div className="detail-item">
+              <strong>אימייל:</strong> {volunteerEmail || 'לא צוין'}
+            </div>
+            <div className="detail-item">
+              <strong>תאריך השלמה:</strong> {completionDate ? new Date(completionDate).toLocaleDateString('he-IL') : 'לא צוין'}
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    return baseContent;
+  }, []);
+
   // Loading state - only show on initial load
   if (loading && !hasInitialized) {
     return (
@@ -324,14 +382,7 @@ export default function NotificationsPanel() {
               {selectedNotification.time} | {selectedNotification.date}
             </div>
             <div className="notifications-content">
-              <p className="notifications-message">{selectedNotification.message}</p>
-              {selectedNotification.type && (
-                <div className="notifications-type">
-                  <span className={`type-badge ${selectedNotification.type}`}>
-                    {selectedNotification.icon} {selectedNotification.displayName}
-                  </span>
-                </div>
-              )}
+              {renderNotificationContent(selectedNotification)}
             </div>
           </>
         )}
@@ -365,7 +416,7 @@ export default function NotificationsPanel() {
             <div
               key={notif.id}
               className={`notifications-item ${selectedNotification?.id === notif.id ? "selected" : ""
-                } ${!notif.read ? "unread" : ""}`}
+                } ${!notif.read ? "unread" : ""} ${notif.type === 'volunteer-completed' ? 'volunteer-completed-item' : ''}`}
             >
               <div onClick={() => handleNotificationSelect(notif)}>
                 <div className="notifications-item-time">
@@ -421,14 +472,7 @@ export default function NotificationsPanel() {
               {/* Show expanded content on mobile under item */}
               {selectedNotification?.id === notif.id && (
                 <div className="notifications-item-expanded-content">
-                  <p>{notif.message}</p>
-                  {notif.type && (
-                    <div className="notifications-type">
-                      <span className={`type-badge ${notif.type}`}>
-                        {notif.icon} {notif.displayName}
-                      </span>
-                    </div>
-                  )}
+                  {renderNotificationContent(notif)}
                 </div>
               )}
             </div>

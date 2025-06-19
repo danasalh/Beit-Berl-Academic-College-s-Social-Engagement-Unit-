@@ -409,111 +409,6 @@ const OrgDetailsModal = ({
               />
             </div>
 
-            {/* Updated VC Selection Dropdown */}
-            <div className="form-group">
-              <label className="form-label">הערה: שיוך נציג ארגון מתבצע דרך פרופיל הנציג <br/><br/> </label>
-              <label className="form-label">רכזי מתנדבים</label>
-              <div className="vc-dropdown-container" style={{ position: 'relative' }}>
-                <div
-                  className="form-input vc-selector"
-                  onClick={() => setVcDropdownOpen(!vcDropdownOpen)}
-                  style={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    minHeight: '40px',
-                    padding: '8px 12px'
-                  }}
-                >
-                  <span style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    color: getSelectedVcNames() === 'בחר רכזי מתנדבים' ? '#999' : 'inherit'
-                  }}>
-                    {getSelectedVcNames()}
-                  </span>
-                  <HiChevronDown
-                    style={{
-                      transform: vcDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                      transition: 'transform 0.2s ease'
-                    }}
-                  />
-                </div>
-
-                {vcDropdownOpen && (
-                  <div
-                    className="vc-dropdown-menu"
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      right: 0,
-                      backgroundColor: 'white',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                      zIndex: 1000,
-                      maxHeight: '200px',
-                      overflowY: 'auto'
-                    }}
-                  >
-                    {volunteerCoordinators.length === 0 ? (
-                      <div style={{ padding: '12px', color: '#666', textAlign: 'center' }}>
-                        אין רכזי מתנדבים זמינים
-                      </div>
-                    ) : (
-                      volunteerCoordinators.map((vc) => {
-                        const isSelected = Array.isArray(editedOrg.vcId) &&
-                          editedOrg.vcId.some(selectedId => String(selectedId) === String(vc.id));
-
-                        return (
-                          <div
-                            key={vc.id}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleVcSelection(vc.id);
-                            }}
-                            style={{
-                              padding: '12px',
-                              cursor: 'pointer',
-                              backgroundColor: isSelected ? '#e3f2fd' : 'transparent',
-                              borderBottom: '1px solid #eee',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected) {
-                                e.target.style.backgroundColor = '#f5f5f5';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSelected) {
-                                e.target.style.backgroundColor = 'transparent';
-                              }
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              readOnly // Changed from onChange={() => {}} and removed pointerEvents: 'none'
-                            />
-                            <span>{vc.name}</span>
-                            <span style={{ fontSize: '12px', color: '#666' }}>
-                              (מזהה: {vc.id})
-                            </span>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
             <div className="form-actions">
               <button
                 onClick={handleSave}
@@ -528,7 +423,7 @@ const OrgDetailsModal = ({
                     onClose();
                   } else {
                     setIsEditing(false);
-                    setEditedOrg(org); 
+                    setEditedOrg(org);
                   }
                 }}
                 className="cancel-button-org"
@@ -548,11 +443,6 @@ const OrgDetailsModal = ({
                 <HiLocationMarker className="location-icon" />
                 <span>עיר: {getCityValue(org) || 'לא צוין'}</span>
               </div>
-              {org.id && (
-                <div className="org-id-info">
-                  <span><strong>מזהה ארגון:</strong> {org.id}</span>
-                </div>
-              )}
             </div>
 
             <div className="org-description-modal">

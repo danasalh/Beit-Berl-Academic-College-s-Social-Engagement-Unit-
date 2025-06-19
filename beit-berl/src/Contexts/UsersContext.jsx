@@ -1,5 +1,5 @@
 // src/contexts/UsersContext.jsx - Fixed Version to Prevent Infinite Loops
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useRef } from 'react';
 import {
   collection,
   doc,

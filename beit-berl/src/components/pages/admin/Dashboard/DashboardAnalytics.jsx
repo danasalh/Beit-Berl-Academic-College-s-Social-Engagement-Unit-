@@ -795,18 +795,11 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
                     isAnimationActive={false}
                   >
                     {roleDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={`url(#gradient${index})`} />                    ))}
+                      <Cell key={`cell-${index}`} fill={`url(#gradient${index})`} />))}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
-              <div style={{
-                width: '30%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                gap: '8px',
-                paddingRight: '16px'
-              }}>
+              <div className="legend-container">
                 {roleDistribution.map((role, index) => (
                   <div key={index} style={{
                     display: 'flex',
@@ -826,7 +819,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
                 ))}
               </div>
             </div>
-          </div>          
+          </div>
           <div className="chart-card">
             <div className="chart-header">
               <div className="chart-icon-container chart-icon-red">
