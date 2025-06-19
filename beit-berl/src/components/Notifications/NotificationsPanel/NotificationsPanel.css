@@ -9,7 +9,7 @@
   border-radius: 8px;
   border: 1px solid #ddd;
   box-shadow: 0 2px 8px #0001;
-  overflow: visible;
+  overflow: hidden;
   direction: rtl;
 }
 
@@ -65,7 +65,8 @@
   flex-direction: column;
   gap: 10px;
   max-height: 400px;
-  overflow-y: visible;
+  overflow-y: auto;
+  overflow-x: auto;
   padding-right: 4px;
   scrollbar-width: thin;
   scrollbar-color: #ccc #f8f9fa;
@@ -180,7 +181,8 @@
   line-height: 1;
   transition: all 0.2s ease;
   user-select: none;
-  margin-right: 8px;
+  margin-right: 0px;
+  margin-left: 8px;
   flex-shrink: 0;
   z-index: 10;
 }
@@ -197,15 +199,14 @@
 
 .menu-dropdown {
   position: absolute;
-  z-index: 9999;
   top: 100%;
-  right: 0;
+  left: 0;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   min-width: 160px;
-  overflow: visible;
+  overflow: auto;
   animation: fadeIn 0.2s ease-out;
   z-index: 1000;  
   max-width: calc(100vw - 32px);
@@ -216,7 +217,7 @@
 @media (max-width: 480px) {
   .menu-dropdown {
     right: -8px;
-    left: auto;
+    left: 0;
     min-width: 140px;
   }
   
