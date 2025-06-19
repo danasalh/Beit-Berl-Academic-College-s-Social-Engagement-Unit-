@@ -8,7 +8,9 @@ import ProgressBar from '../../../Bars/ProgressBar/ProgressBar';
 import ThreeButtonDush from '../../../Buttons/ThreeButtonDush/ThreeButtonDush';
 import SubmitHoursBar from '../../../Bars/SubmitHoursBar/SubmitHoursBar';
 import FinishVol from '../../../Buttons/FinishVol/FinishVol';
-import './VolunteerDashboard.css';
+import './VolunteerDashboard.css'
+import EndVolunteering from '../../../PopUps/EndVolunteering/EndVolunteering';
+import CloseButton from '../../../Buttons/CloseButton/CloseButton';
 
 export default function VcDashboard() {
   const { currentUser, getUsersByRole, getUsersByOrganization } = useUsers();
@@ -23,6 +25,7 @@ export default function VcDashboard() {
   const [userOrganizations, setUserOrganizations] = useState([]);
   const [loadingOrgs, setLoadingOrgs] = useState(false);
   const [orgsLoaded, setOrgsLoaded] = useState(false);
+  const [showEndPopup, setShowEndPopup] = useState(false);
 
   // Updated helper function to get the correct user ID - prioritize id over docId
   const getUserId = (user) => {
@@ -182,7 +185,7 @@ export default function VcDashboard() {
                 title: 'שעות חדשות הוזנו וממתינות לאישורך',
                 content: `המשתמש ${userName} הזין ${hoursSubmitted} שעות חדשות במערכת. השעות ממתינות לאישורך.`,
                 date: new Date(),
-                orgId: selectedOrgId // Add orgId to help with filtering
+                orgId: selectedOrgId
               });
               console.log('✅ Added notification for admin:', adminId);
             }
@@ -455,8 +458,7 @@ export default function VcDashboard() {
   };
 
   const handleFinishVol = () => {
-    alert("כל הכבוד! סיימת 60 שעות התנדבות 🎉");
-    // Add additional logic here (send to server, navigate, etc.)
+    setShowEndPopup(true);
   };
 
   const displayName = getUserName(currentUser);
@@ -471,15 +473,15 @@ export default function VcDashboard() {
         <ProgressBar key={progressKey} approvedOnly={true} />
       </div>
 
-      <div className="dashboard-buttons-wrapper">
-        <ThreeButtonDush onMarkHoursClick={handleMarkHoursClick} />
-      </div>
-
       {userTotalHours >= 60 && (
         <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "center" }}>
           <FinishVol onClick={handleFinishVol} />
         </div>
       )}
+
+      <div className="dashboard-buttons-wrapper">
+        <ThreeButtonDush onMarkHoursClick={handleMarkHoursClick} />
+      </div>
 
       {showPopup && (
         <div className="popup-overlay" onClick={() => !submitting && setShowPopup(false)}>
@@ -503,6 +505,18 @@ export default function VcDashboard() {
           </div>
         </div>
       )}
+      {showEndPopup && (
+        <div className="popup-overlay" onClick={() => setShowEndPopup(false)}>
+          <div
+            className="popup-content popup-animate"
+            onClick={e => e.stopPropagation()}
+          >
+            <CloseButton onClick={() => setShowEndPopup(false)} className="close"/>
+            <EndVolunteering />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

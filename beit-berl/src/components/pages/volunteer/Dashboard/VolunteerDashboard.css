@@ -106,3 +106,16 @@
   color: #fff;
   box-shadow: 0 0 8px #ffcdd2;
 }
+
+.popup-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: right;
+  margin: 2rem;
+}
+
+.close {
+  display: flex;
+  justify-content: right;
+  padding-right: 3rem;
+}
