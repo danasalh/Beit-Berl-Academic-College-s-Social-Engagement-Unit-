@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useVolunteerHours } from '../../Contexts/VolunteerHoursContext';
 import { useOrganizations } from '../../Contexts/OrganizationsContext';
 import { useUsers } from '../../Contexts/UsersContext';
+import { useNotifications } from '../../Contexts/NotificationsContext'; // Add this import
 import { HiOutlineClock, HiOutlineCheck, HiOutlineExclamation, HiOutlineX } from 'react-icons/hi';
 import CloseButton from '../Buttons/CloseButton/CloseButton';
 import './HoursData.css';
@@ -17,6 +18,7 @@ const HoursData = ({ volunteer, onClose }) => {
 
   const { organizations } = useOrganizations();
   const { currentUser } = useUsers();
+  const { createNotification } = useNotifications(); // Add this line
 
   const [volunteerHours, setVolunteerHours] = useState([]);
   const [totalApprovedHours, setTotalApprovedHours] = useState(0);
@@ -71,6 +73,33 @@ const HoursData = ({ volunteer, onClose }) => {
     }
   }, []);
 
+  // Helper function to create notification for volunteer
+  const createVolunteerNotification = useCallback(async (hoursRecord, isApproved) => {
+    try {
+      const orgName = getOrganizationName(hoursRecord.orgId);
+      const volunteerName = `${volunteer?.firstName || ''} ${volunteer?.lastName || ''}`.trim() || volunteer?.email || 'מתנדב';
+      const approverName = `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || currentUser?.email || 'מנהל';
+      
+      const notificationData = {
+        receiverId: String(volunteer.id), // Make sure to convert to string
+        relatedId: String(hoursRecord.id), // Reference to the hours record
+        type: 'hours-status', // New notification type
+        title: isApproved ? 'שעות התנדבות אושרו' : 'שעות התנדבות נדחו',
+        content: isApproved 
+          ? `שלום ${volunteerName}, ${hoursRecord.hours} שעות ההתנדבות שלך בארגון "${orgName}" אושרו על ידי ${approverName}.`
+          : `שלום ${volunteerName}, ${hoursRecord.hours} שעות ההתנדבות שלך בארגון "${orgName}" נדחו על ידי ${approverName}.`,
+        date: new Date(),
+        read: false
+      };
+
+      await createNotification(notificationData);
+      console.log(`✅ Notification sent to volunteer for ${isApproved ? 'approved' : 'rejected'} hours`);
+    } catch (error) {
+      console.error('❌ Error creating volunteer notification:', error);
+      // Don't throw error here - notification failure shouldn't block the main operation
+    }
+  }, [volunteer, currentUser, getOrganizationName, createNotification]);
+
   // Fetch volunteer hours data
   const fetchVolunteerHours = useCallback(async () => {
     if (!volunteer?.id) return;
@@ -121,6 +150,9 @@ const HoursData = ({ volunteer, onClose }) => {
 
       await updateHoursApprovalStatus(hoursRecord.id, true);
 
+      // Create notification for volunteer
+      await createVolunteerNotification(hoursRecord, true);
+
       // Show success message
       setSuccessMessage(`${hoursRecord.hours} שעות אושרו בהצלחה!`);
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -135,7 +167,7 @@ const HoursData = ({ volunteer, onClose }) => {
     } finally {
       setApproving(null);
     }
-  }, [canApproveForOrg, updateHoursApprovalStatus, fetchVolunteerHours]);
+  }, [canApproveForOrg, updateHoursApprovalStatus, createVolunteerNotification, fetchVolunteerHours]);
 
   // Handle reject hours
   const handleRejectHours = useCallback(async (hoursRecord) => {
@@ -158,6 +190,9 @@ const HoursData = ({ volunteer, onClose }) => {
 
       await updateHoursRejectionStatus(hoursRecord.id, true);
 
+      // Create notification for volunteer
+      await createVolunteerNotification(hoursRecord, false);
+
       // Show success message
       setSuccessMessage(`${hoursRecord.hours} שעות נדחו בהצלחה`);
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -172,7 +207,7 @@ const HoursData = ({ volunteer, onClose }) => {
     } finally {
       setRejecting(null);
     }
-  }, [canApproveForOrg, updateHoursRejectionStatus, fetchVolunteerHours]);
+  }, [canApproveForOrg, updateHoursRejectionStatus, createVolunteerNotification, fetchVolunteerHours]);
 
   // Load data on component mount
   useEffect(() => {
