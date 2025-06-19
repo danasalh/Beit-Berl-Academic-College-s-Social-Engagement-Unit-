@@ -334,6 +334,10 @@
   background: #d1e725;
 }
 
+.type-badge.volunteer-completed {
+  background: #9c27b0;
+}
+
 /* == LOADING & ERROR STATES == */
 .notifications-loading,
 .notifications-error,
