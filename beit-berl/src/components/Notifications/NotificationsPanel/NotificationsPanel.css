@@ -11,6 +11,13 @@
   box-shadow: 0 2px 8px #0001;
   overflow: hidden;
   direction: rtl;
+  min-width: 320px;
+  min-height: 400px;
+  position: fixed;
+   top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
 }
 
 /* Hide main content on mobile */
@@ -208,7 +215,7 @@
   min-width: 160px;
   overflow: auto;
   animation: fadeIn 0.2s ease-out;
-  z-index: 1000;  
+  z-index: 9999;  
   max-width: calc(100vw - 32px);
   transform: translateX(0);
 }
@@ -424,4 +431,3 @@
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }
-
