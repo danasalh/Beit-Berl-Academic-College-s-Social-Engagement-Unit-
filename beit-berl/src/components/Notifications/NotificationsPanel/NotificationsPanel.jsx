@@ -49,6 +49,12 @@ export default function NotificationsPanel() {
       displayName: 'ברוכים הבאים',
       color: '#2196f3',
       icon: '🎉'
+    },
+    'hours-status': {
+      title: 'עדכון על שעות התנדבות',
+      displayName: 'סטטוס שעות',
+      color: '#d1e725',
+      icon: '⏰'
     }
   }), []);
 

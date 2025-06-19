@@ -9,7 +9,7 @@
   border-radius: 8px;
   border: 1px solid #ddd;
   box-shadow: 0 2px 8px #0001;
-  overflow: visible;
+  overflow: hidden;
   direction: rtl;
 }
 
@@ -65,7 +65,7 @@
   flex-direction: column;
   gap: 10px;
   max-height: 400px;
-  overflow-y: visible;
+  overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: thin;
   scrollbar-color: #ccc #f8f9fa;
@@ -197,7 +197,6 @@
 
 .menu-dropdown {
   position: absolute;
-  z-index: 9999;
   top: 100%;
   right: 0;
   background: #fff;
@@ -205,7 +204,7 @@
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   min-width: 160px;
-  overflow: visible;
+  overflow: hidden;
   animation: fadeIn 0.2s ease-out;
   z-index: 1000;  
   max-width: calc(100vw - 32px);
@@ -329,6 +328,10 @@
 
 .type-badge.welcome{
   background: #93b9d8;
+}
+
+.type-badge.hours-status {
+  background: #d1e725;
 }
 
 /* == LOADING & ERROR STATES == */
