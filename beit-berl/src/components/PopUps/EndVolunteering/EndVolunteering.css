@@ -1,0 +1,49 @@
+/* src/components/pages/PopUps/EndVolunteering/EndVolunteering.css */
+
+.end-volunteering-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 500px;
+  margin: 3rem auto;
+  text-align: right;
+  direction: rtl;
+  font-family: 'Assistant', sans-serif;
+}
+
+.title {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #1f2937; /* gris foncé */
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  cursor: pointer;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #3b82f6; /* bleu */
+}
+
+.confirm-button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.confirm-button:hover {
+  background-color: #2563eb; /* bleu foncé */
+}

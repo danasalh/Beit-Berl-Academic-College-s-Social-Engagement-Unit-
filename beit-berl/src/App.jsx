@@ -39,6 +39,10 @@ import Register from './components/pages/auth/Register/Register';
 // Password Reset Pages
 import ForgotPassword from './components/pages/auth/ForgotPassword/ForgotPassword';
 
+
+import EndVolunteering from './components/PopUps/EndVolunteering/EndVolunteering';
+
+
 // Create a separate component to handle the app logic that needs access to context
 const AppContent = () => {
   const [user, setUser] = useState(null);
