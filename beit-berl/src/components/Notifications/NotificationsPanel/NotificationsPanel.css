@@ -1,4 +1,22 @@
 /* == MOBILE-FIRST BASE == */
+
+.notifications-sidebar {
+  position: absolute; /* Pour qu'elle flotte */
+  top: 0;
+  right: 0;
+  width: 280px;
+  height: 100%;
+  z-index: 10; /* Plus haut que le main */
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 10px;
+  gap: 12px;
+  border-right: 1px solid #eee;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .notifications-panel-container {
   display: flex;
   flex-direction: column;
@@ -9,7 +27,7 @@
   border-radius: 8px;
   border: 1px solid #ddd;
   box-shadow: 0 2px 8px #0001;
-  overflow: hidden;
+  overflow: visible;
   direction: rtl;
   min-width: 320px;
   min-height: 400px;
@@ -17,7 +35,7 @@
    top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 9999;
+  z-index: 1;
 }
 
 /* Hide main content on mobile */
