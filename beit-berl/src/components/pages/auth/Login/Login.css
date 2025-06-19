@@ -458,3 +458,8 @@ body {
     overflow: hidden;
   }
 }
+
+.forgot-password a , .signup-link{
+  justify-content: center;
+  display: flex;
+}
