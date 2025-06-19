@@ -40,4 +40,4 @@ coverage/
 # Firebase cache and config
 .firebase/
 .firebaserc
-firebase-debug.log
+firebase-debug.log.DS_Store
