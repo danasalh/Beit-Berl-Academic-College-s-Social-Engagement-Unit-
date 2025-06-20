@@ -11,6 +11,8 @@
   box-shadow: 0 2px 8px #0001;
   overflow: hidden;
   direction: rtl;
+  /* Ensure container doesn't interfere with dropdown positioning */
+  position: relative;
 }
 
 /* Hide main content on mobile */
@@ -26,6 +28,9 @@
   gap: 12px;
   width: 100%;
   border-top: 1px solid #eee;
+  /* Ensure sidebar doesn't create stacking context issues */
+  position: relative;
+  z-index: 1;
 }
 
 .notifications-filters {
@@ -69,6 +74,10 @@
   padding-right: 4px;
   scrollbar-width: thin;
   scrollbar-color: #ccc #f8f9fa;
+  /* FIXED: Remove overflow-x visible which was causing issues */
+  overflow-x: hidden;
+  /* Ensure list doesn't interfere with dropdown */
+  position: relative;
 }
 
 /* Custom scrollbar for webkit browsers */
@@ -100,6 +109,15 @@
   justify-content: space-between;
   align-items: flex-start;
   cursor: pointer;
+  /* FIXED: Ensure item doesn't interfere with dropdown positioning */
+  overflow: visible;
+  /* FIXED: Add proper z-index management */
+  z-index: 1;
+}
+
+/* FIXED: When dropdown is open, increase z-index of the parent item */
+.notifications-item:has(.menu-dropdown) {
+  z-index: 1001;
 }
 
 .notifications-item:hover {
@@ -168,7 +186,7 @@
   width: 100%;
 }
 
-/* == DROPDOWN MENU STYLES == */
+/* == DROPDOWN MENU STYLES - FIXED == */
 .notifications-item-menu {
   position: relative;
   cursor: pointer;
@@ -182,6 +200,7 @@
   user-select: none;
   margin-right: 8px;
   flex-shrink: 0;
+  /* FIXED: Ensure menu button has proper z-index */
   z-index: 10;
 }
 
@@ -196,9 +215,7 @@
 }
 
 .menu-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
+  position: fixed;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -206,24 +223,27 @@
   min-width: 160px;
   overflow: hidden;
   animation: fadeIn 0.2s ease-out;
-  z-index: 1000;  
+  /* FIXED: Significantly increase z-index to ensure it appears above everything */
+  z-index: 9999;
   max-width: calc(100vw - 32px);
-  transform: translateX(0);
+  
+  /* FIXED: Add backdrop filter for better visibility */
+  backdrop-filter: blur(2px);
+  
+  /* FIXED: Ensure dropdown has proper positioning context */
+  transform: translateZ(0);
+}
+
+/* For items near the bottom, show dropdown above */
+.notifications-item:nth-last-child(1) .menu-dropdown,
+.notifications-item:nth-last-child(2) .menu-dropdown {
+  transform: translateY(-100%);
 }
 
 /* Adjust position if near screen edge */
 @media (max-width: 480px) {
   .menu-dropdown {
-    right: -8px;
-    left: auto;
     min-width: 140px;
-  }
-  
-  /* If still going off screen, position from left */
-  .notifications-item:last-child .menu-dropdown,
-  .notifications-item:nth-last-child(2) .menu-dropdown {
-    right: auto;
-    left: 0;
   }
 }
 
@@ -238,6 +258,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  background: #fff;
+  /* FIXED: Ensure menu items have proper z-index */
+  position: relative;
+  z-index: inherit;
 }
 
 .menu-item:last-child {
