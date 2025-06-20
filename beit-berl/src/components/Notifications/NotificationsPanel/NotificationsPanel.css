@@ -309,6 +309,7 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 8px;
+  padding-right: 300px;
 }
 
 .notifications-time {
@@ -319,6 +320,7 @@
 
 .notifications-content {
   line-height: 1.6;
+  padding-right: 300px;
 }
 
 .notifications-message {
