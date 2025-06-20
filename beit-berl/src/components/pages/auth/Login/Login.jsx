@@ -103,11 +103,11 @@ const Login = () => {
       console.error('Login error:', error);
 
       if (error.code === 'auth/invalid-credential') {
-        setError('Invalid email or password');
+        setError('כתובת דוא"ל או סיסמה לא נכונים');
       } else if (error.code === 'auth/user-not-found') {
-        setError('No account found with this email');
+        setError('אין חשבון קיים עם כתובת הדוא"ל הזו ');
       } else {
-        setError('Error logging in: ' + error.message);
+        setError('נתקלנו בתקלה. יש לוודא את תקינות הפרטים ולנסות שוב.');
       }
     } finally {
       setLoading(false);
@@ -150,7 +150,7 @@ const Login = () => {
 
     } catch (error) {
       console.error('Google Sign In error:', error);
-      setError('Error signing in with Google: ' + error.message);
+      setError('תקלה בניסיון ההתחברות עם חשבון גוגל');
     } finally {
       setLoading(false);
     }
