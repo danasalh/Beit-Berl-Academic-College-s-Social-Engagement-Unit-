@@ -24,6 +24,8 @@ export default function NotificationsPanel() {
   const [loading, setLoading] = useState(true);
   const [hasInitialized, setHasInitialized] = useState(false);
 
+  const [dropdownPosition, setDropdownPosition] = useState({});
+
   // Notification type configurations - contains titles and display info
   const notificationTypeConfig = useMemo(() => ({
     'reminder': {
@@ -191,6 +193,8 @@ export default function NotificationsPanel() {
 
   // Handle read/unread status toggle
   const toggleReadStatus = useCallback(async (id, readStatus) => {
+    console.log('toggleReadStatus called:', { id, readStatus });
+
     try {
       if (readStatus) {
         await markNotificationAsRead(id);
@@ -199,18 +203,23 @@ export default function NotificationsPanel() {
       }
 
       // Update local state
-      setNotifications(prev =>
-        prev.map(notif =>
+      setNotifications(prev => {
+        const updated = prev.map(notif =>
           notif.id === id ? { ...notif, read: readStatus } : notif
-        )
-      );
+        );
+        console.log('Updated notifications state:', updated);
+        return updated;
+      });
 
       // Update selected notification if it's the one being changed
       if (selectedNotification && selectedNotification.id === id) {
         setSelectedNotification(prev => ({ ...prev, read: readStatus }));
       }
 
+      // Close the dropdown
       setOpenMenuId(null);
+
+      console.log('Successfully updated notification status');
     } catch (error) {
       console.error('Error updating notification status:', error);
     }
@@ -243,13 +252,37 @@ export default function NotificationsPanel() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (openMenuId && !event.target.closest('.notifications-item-menu')) {
+      // Check if click is outside both the menu button and dropdown
+      if (openMenuId &&
+        !event.target.closest('.notifications-item-menu') &&
+        !event.target.closest('.menu-dropdown')) {
         setOpenMenuId(null);
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    const handleScroll = () => {
+      if (openMenuId) {
+        setOpenMenuId(null);
+      }
+    };
+
+    const handleResize = () => {
+      if (openMenuId) {
+        setOpenMenuId(null);
+      }
+    };
+
+    if (openMenuId) {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
   }, [openMenuId]);
 
   // Helper function to render notification content based on type
@@ -270,7 +303,7 @@ export default function NotificationsPanel() {
     // Add extra details for volunteer-completed notifications
     if (notification.type === 'volunteer-completed' && notification.metadata) {
       const { volunteerName, volunteerEmail, completionDate } = notification.metadata;
-      
+
       return (
         <>
           {baseContent}
@@ -441,33 +474,61 @@ export default function NotificationsPanel() {
                 className="notifications-item-menu"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setOpenMenuId(openMenuId === notif.id ? null : notif.id);
+
+                  if (openMenuId === notif.id) {
+                    setOpenMenuId(null);
+                  } else {
+                    // Calculate position for fixed positioning
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                    setDropdownPosition({
+                      top: rect.bottom + scrollTop,
+                      right: window.innerWidth - rect.right,
+                    });
+
+                    setOpenMenuId(notif.id);
+                  }
                 }}
               >
                 ⋮
-                {openMenuId === notif.id && (
-                  <div className="menu-dropdown">
-                    <div
-                      className="menu-item"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleReadStatus(notif.id, true);
-                      }}
-                    >
-                      סמן כנקרא
-                    </div>
-                    <div
-                      className="menu-item"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleReadStatus(notif.id, false);
-                      }}
-                    >
-                      סמן כלא נקרא
-                    </div>
-                  </div>
-                )}
               </div>
+
+              {/* Render dropdown outside of the menu button but still inside the item */}
+              {openMenuId === notif.id && (
+                <div
+                  className="menu-dropdown"
+                  style={{
+                    position: 'fixed',
+                    top: `${dropdownPosition.top}px`,
+                    right: `${dropdownPosition.right}px`,
+                    zIndex: 1000
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    className="menu-item"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      console.log('Mark as read clicked for notification:', notif.id);
+                      await toggleReadStatus(notif.id, true);
+                    }}
+                  >
+                    סמן כנקרא
+                  </div>
+                  <div
+                    className="menu-item"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      console.log('Mark as unread clicked for notification:', notif.id);
+                      await toggleReadStatus(notif.id, false);
+                    }}
+                  >
+                    סמן כלא נקרא
+                  </div>
+                </div>
+              )}
+
 
               {/* Show expanded content on mobile under item */}
               {selectedNotification?.id === notif.id && (
