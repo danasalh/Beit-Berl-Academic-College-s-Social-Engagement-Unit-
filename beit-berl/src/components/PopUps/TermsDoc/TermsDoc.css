@@ -65,21 +65,24 @@
 
 .question-text.small {
   font-size: 13px;
-  color: #000; /* 💡 טקסט שחור ברור */
+  color: #000; 
 }
 
 .circle-button {
-  width: 18px;
-  height: 18px;
+ width: 24px;
+  height: 24px;
   border-radius: 50%;
-  border: 1.5px solid #888;
+  border: 2px solid #888;
   background-color: #f9f9f9;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
   padding: 0;
+  flex-shrink: 0;
+    position: relative;
 }
 
 .circle-button:disabled {
@@ -88,15 +91,25 @@
 }
 
 .circle-button.checked {
-  border-color: #4caf50;
   background-color: #e8f5e9;
+  border-color: #4caf50;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.25);
 }
 
+
 .checkmark {
+   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   color: #4caf50;
-  font-size: 12px;
-  animation: checkFadeIn 0.2s ease;
+  font-weight: bold;
+  font-size: 14px !important;     
+  line-height: 1 !important;      
+  pointer-events: none;
+  animation: checkFadeIn 0.3s ease;
 }
+
 
 @keyframes checkFadeIn {
   from {
