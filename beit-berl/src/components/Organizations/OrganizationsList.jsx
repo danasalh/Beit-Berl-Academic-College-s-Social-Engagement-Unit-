@@ -79,8 +79,8 @@ const OrganizationsList = () => {
   const filteredOrgs = useMemo(() => {
     let filtered = roleFilteredOrgs;
 
-    // Only apply search and city filters if user is not a VC
-    if (!isVc) {
+    // Only apply search and city filters if user is not a VC or OrgRep
+    if (!isVc && !isOrgRep) {
       if (searchTerm.trim()) {
         const searchLower = searchTerm.toLowerCase();
         filtered = filtered.filter(org => 
@@ -103,11 +103,12 @@ const OrganizationsList = () => {
       roleFiltered: roleFilteredOrgs.length,
       final: filtered.length,
       userRole: currentUser?.role,
-      isVc
+      isVc,
+      isOrgRep
     });
 
     return filtered;
-  }, [roleFilteredOrgs, searchTerm, cityFilter, isVc, getCityValue, organizations.length, currentUser?.role]);
+  }, [roleFilteredOrgs, searchTerm, cityFilter, isVc, isOrgRep, getCityValue, organizations.length, currentUser?.role]);
 
   // Load organizations and users when component mounts - optimized
   useEffect(() => {
@@ -251,8 +252,8 @@ const OrganizationsList = () => {
 
   return (
     <div className="organizations-page" dir="rtl">
-      {/* Only show header for non-VC users */}
-      {!isVc && (
+      {/* Only show header for admin and volunteer users (not VC or OrgRep) */}
+      {!isVc && !isOrgRep && (
         <div className="page-header">
           <div className="search-section">
             <div className="search-inputs">
@@ -276,7 +277,7 @@ const OrganizationsList = () => {
             </div>
 
             {/* Only show "Add Organization" button if user is admin */}
-            {!isVolunteer && !isOrgRep && !isVc && (
+            {!isVolunteer && (
               <button
                 className="add-org-button"
                 onClick={() => setIsAdding(true)}
@@ -285,13 +286,6 @@ const OrganizationsList = () => {
               </button>
             )}
           </div>
-
-          {/* Only show OrgRep info message if user is OrgRep */}
-          {isOrgRep && (
-            <div className="role-info-message">
-              <p>מציג את רשימת הסניפים של הארגון שלך</p>
-            </div>
-          )}
         </div>
       )}
 
