@@ -6,15 +6,15 @@
   align-items: center;
   justify-content: flex-start;
   min-height: 100vh;
-  padding: 2rem 1rem;
+  padding: 1rem 1rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   direction: rtl;
 }
 
 .orgrep-welcome-title {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: #0077c2;
   text-align: center;
   width: 100%;
@@ -26,16 +26,16 @@
 
 @keyframes glow {
   from {
-    text-shadow: 0 0 4px #90caf9, 0 0 2px #90caf9;
+    text-shadow: 0 0 2px #90caf9, 0 0 1px #90caf9;
   }
   to {
-    text-shadow: 0 0 24px #42a5f5, 0 0 12px #42a5f5;
+    text-shadow: 0 0 12px #42a5f5, 0 0 6px #42a5f5;
   }
 }
 
-/* Button container styling */
+/* Button container styling - reduced spacing */
 .orgrep-dashboard-center > *:nth-child(3) {
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
   transition: all 0.3s ease;
 }
 
@@ -43,7 +43,7 @@
 .orgrep-dashboard-center > *:last-child {
   width: 100%;
   max-width: 1200px;
-  margin-top: 2rem;
+  margin-top: 1rem;
   scroll-margin-top: 100px; /* Offset for smooth scrolling */
 }
 
@@ -70,21 +70,21 @@ html {
 /* Tablet styles */
 @media screen and (max-width: 768px) {
   .orgrep-dashboard-center {
-    padding: 1.5rem 0.75rem;
+    padding: 1rem 0.75rem;
   }
   
   .orgrep-welcome-title {
-    font-size: 1.8rem;
+    font-size: 2rem;
     margin-bottom: 1.2rem;
     max-width: 500px;
   }
   
   .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
   }
   
   .orgrep-dashboard-center > *:last-child {
-    margin-top: 1.5rem;
+    margin-top: 0.75rem;
     scroll-margin-top: 80px;
   }
 }
@@ -97,20 +97,20 @@ html {
   }
   
   .orgrep-welcome-title {
-    font-size: 1.5rem;
+    font-size: 2rem;
     margin-bottom: 1rem;
     max-width: 350px;
     line-height: 1.3;
   }
   
   .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
     width: 100%;
     max-width: 350px;
   }
   
   .orgrep-dashboard-center > *:last-child {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     scroll-margin-top: 60px;
     padding: 0 0.5rem;
   }
@@ -119,32 +119,40 @@ html {
 /* Extra small mobile devices */
 @media screen and (max-width: 320px) {
   .orgrep-welcome-title {
-    font-size: 1.3rem;
+    font-size: 2rem;
     max-width: 280px;
   }
   
   .orgrep-dashboard-center {
     padding: 0.75rem 0.25rem;
   }
+  
+  .orgrep-dashboard-center > *:nth-child(3) {
+    margin-bottom: 0.5rem;
+  }
+  
+  .orgrep-dashboard-center > *:last-child {
+    margin-top: 0.25rem;
+  }
 }
 
 /* Large desktop styles */
 @media screen and (min-width: 1200px) {
   .orgrep-dashboard-center {
-    padding: 3rem 2rem;
+    padding: 1rem 2rem;
   }
   
   .orgrep-welcome-title {
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
   }
   
   .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
   }
   
   .orgrep-dashboard-center > *:last-child {
-    margin-top: 3rem;
+    margin-top: 2rem;
     scroll-margin-top: 120px;
   }
 }
