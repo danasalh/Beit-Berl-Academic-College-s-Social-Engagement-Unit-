@@ -22,7 +22,7 @@ export default function OrgRepDashboard() {
         ברוך הבא
       </div>
       <ThreeButtonDushOrgRep onSectionsClick={scrollToOrganizations} />
-      <div className="organizations-list" ref={organizationsListRef}>
+      <div className="organizations-list-orgRep" ref={organizationsListRef}>
         <OrganizationsList/>
       </div>
     </div>

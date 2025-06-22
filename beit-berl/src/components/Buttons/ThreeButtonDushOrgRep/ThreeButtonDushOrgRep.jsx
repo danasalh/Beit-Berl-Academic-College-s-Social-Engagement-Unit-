@@ -114,15 +114,15 @@ const ThreeButtonDushOrgRep = ({ onSectionsClick }) => {
     <div className="three-button-dush">
       <button className="dush-button" onClick={handleSectionsClick}>
         <HiLocationMarker className="dush-icon" />
-        <span>סניפים {branchesCount}</span>
+        <span>סניפים: {branchesCount}</span>
       </button>
       <button className="dush-button" onClick={handleClick}>
         <HiOutlineUserGroup className="dush-icon" />
-        <span>רכזים {coordinatorsCount}</span>
+        <span>רכזים: {coordinatorsCount}</span>
       </button>
       <button className="dush-button" onClick={handleClick}>
         <HiOutlineUser className="dush-icon"/>
-        <span>מתנדבים {volunteersCount}</span>
+        <span>מתנדבים:  {volunteersCount}</span>
       </button>
     </div>
   );

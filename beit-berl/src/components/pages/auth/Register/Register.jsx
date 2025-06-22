@@ -123,7 +123,7 @@ const Register = () => {
 
   const validatePhoneNumber = (phoneNumber) => {
     const digitsOnly = phoneNumber.replace(/\D/g, '');
-    const isValid = /^\d+$/.test(digitsOnly) && digitsOnly.length >= 7 && digitsOnly.length <= 15;
+    const isValid = /^\d+$/.test(digitsOnly) && digitsOnly.length >= 10 && digitsOnly.length <= 15;
 
     if (!isValid) {
       setPhoneError('בבקשה להכניס מספר טלפון תקין (ספרות בלבד)');
