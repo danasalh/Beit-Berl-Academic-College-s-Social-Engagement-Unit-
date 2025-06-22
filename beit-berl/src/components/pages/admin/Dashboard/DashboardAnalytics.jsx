@@ -37,13 +37,14 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = [], isLoading = false }) => {
-  const [timeRange, setTimeRange] = useState('all');
+  const [selectedYear, setSelectedYear] = useState('all');
+  const [selectedMonth, setSelectedMonth] = useState('all');
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedOrg, setSelectedOrg] = useState('all');
   const [selectedCity, setSelectedCity] = useState('הכל');
-  const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [dataReady, setDataReady] = useState(false);
+  const [expandedChart, setExpandedChart] = useState(null);
 
   // Check data readiness
   useEffect(() => {
@@ -51,6 +52,29 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
       setDataReady(true);
     }
   }, [users.length, organizations.length]);
+
+  // Memoize date conversion function - MOVED TO TOP
+  const convertToDate = useCallback((timestamp) => {
+    if (!timestamp) return null;
+
+    if (timestamp?.toDate && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate();
+    }
+
+    if (timestamp?.seconds) {
+      return new Date(timestamp.seconds * 1000);
+    }
+
+    if (timestamp instanceof Date) {
+      return timestamp;
+    }
+
+    if (typeof timestamp === 'string') {
+      return new Date(timestamp);
+    }
+
+    return null;
+  }, []);
 
   // Memoize static data to prevent recalculation
   const staticData = useMemo(() => ({
@@ -62,7 +86,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
       )
     ).length,
     lastUpdateDate: new Date()
-  }), [users.length, hoursTracking.length]); // Only recalculate when data length changes
+  }), [users.length, hoursTracking.length]);
 
   const [monthlyGoal, setMonthlyGoal] = useState(() => {
     const defaultGoal = Math.max(staticData.activeVolunteersCount * 10, 10);
@@ -87,63 +111,65 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
     { value: 'vc', label: 'רכז מתנדבים' }
   ], []);
 
-  const timeRanges = useMemo(() => [
-    { value: 'all', label: 'הכל' },
-    { value: '7days', label: '7 ימים' },
-    { value: '30days', label: '30 ימים' },
-    { value: '3months', label: '3 חודשים' },
-    { value: '6months', label: '6 חודשים' },
-    { value: '1year', label: 'שנה' }
+  const months = useMemo(() => [
+    { value: 'all', label: 'כל החודשים' },
+    { value: '1', label: 'ינואר' },
+    { value: '2', label: 'פברואר' },
+    { value: '3', label: 'מרץ' },
+    { value: '4', label: 'אפריל' },
+    { value: '5', label: 'מאי' },
+    { value: '6', label: 'יוני' },
+    { value: '7', label: 'יולי' },
+    { value: '8', label: 'אוגוסט' },
+    { value: '9', label: 'ספטמבר' },
+    { value: '10', label: 'אוקטובר' },
+    { value: '11', label: 'נובמבר' },
+    { value: '12', label: 'דצמבר' }
   ], []);
 
-  // Memoize date conversion function
-  const convertToDate = useCallback((timestamp) => {
-    if (!timestamp) return null;
+  // Get available years from data - NOW convertToDate is available
+  const availableYears = useMemo(() => {
+    const years = new Set();
+    const allDates = [
+      ...users.map(u => u.createdAt),
+      ...organizations.map(o => o.createdAt),
+      ...hoursTracking.map(h => h.createdAt || h.date || h.volDate)
+    ].filter(Boolean);
 
-    if (timestamp?.toDate && typeof timestamp.toDate === 'function') {
-      return timestamp.toDate();
-    }
+    allDates.forEach(date => {
+      const convertedDate = convertToDate(date);
+      if (convertedDate) {
+        years.add(convertedDate.getFullYear());
+      }
+    });
 
-    if (timestamp?.seconds) {
-      return new Date(timestamp.seconds * 1000);
-    }
+    const yearsList = Array.from(years).sort((a, b) => b - a);
+    return [
+      { value: 'all', label: 'כל השנים' },
+      ...yearsList.map(year => ({ value: year.toString(), label: year.toString() }))
+    ];
+  }, [users, organizations, hoursTracking, convertToDate]);
 
-    if (timestamp instanceof Date) {
-      return timestamp;
-    }
-
-    if (typeof timestamp === 'string') {
-      return new Date(timestamp);
-    }
-
-    return null;
-  }, []);
-
-  // Memoize time range checking
-  const isWithinTimeRange = useCallback((date, range) => {
+  // Updated time range checking for year/month filtering
+  const isWithinTimeRange = useCallback((date, year, month) => {
     if (!date) return false;
-    const now = new Date();
-    const itemDate = date instanceof Date ? date :
-      date?.toDate ? date.toDate() :
-        new Date(date);
+    const itemDate = convertToDate(date);
+    if (!itemDate) return false;
 
-    if (range === 'custom' && customDateRange.start && customDateRange.end) {
-      return itemDate >= new Date(customDateRange.start) &&
-        itemDate <= new Date(customDateRange.end);
+    let matches = true;
+
+    if (year !== 'all') {
+      matches = matches && itemDate.getFullYear() === parseInt(year);
     }
 
-    const ranges = {
-      '7days': 7 * 86400000,
-      '30days': 30 * 86400000,
-      '3months': 90 * 86400000,
-      '6months': 180 * 86400000,
-      '1year': 365 * 86400000,
-      'all': Infinity
-    };
-    return now - itemDate <= ranges[range];
-  }, [customDateRange.start, customDateRange.end]);
+    if (month !== 'all') {
+      matches = matches && (itemDate.getMonth() + 1) === parseInt(month);
+    }
 
-  // Get unique cities from organizations (memoized properly)
+    return matches;
+  }, [convertToDate]);
+
+  // Get unique cities from organizations
   const cities = useMemo(() => {
     const uniqueCities = [...new Set(organizations
       .map(org => org.city || org.City)
@@ -152,7 +178,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
     return ['הכל', ...uniqueCities];
   }, [organizations]);
 
-  // Get organization options (memoized properly)
+  // Get organization options
   const orgOptions = useMemo(() => {
     return [
       { id: 'all', name: 'כל הארגונים' },
@@ -163,10 +189,11 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
     ];
   }, [organizations]);
 
-  // Filter data with proper dependencies
+  // Filter data with new year/month filtering
   const filteredHours = useMemo(() => {
     const isDefaultFilters =
-      timeRange === 'all' &&
+      selectedYear === 'all' &&
+      selectedMonth === 'all' &&
       selectedRole === 'all' &&
       selectedOrg === 'all' &&
       selectedCity === 'הכל';
@@ -177,8 +204,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
 
     return hoursTracking.filter(hour => {
       const dateToCheck = hour.volDate || hour.date || hour.createdAt;
-      const withinTime = timeRange === 'all' ? true :
-        isWithinTimeRange(convertToDate(dateToCheck), timeRange);
+      const withinTime = isWithinTimeRange(dateToCheck, selectedYear, selectedMonth);
 
       const volunteer = users.find(u =>
         String(u.docId) === String(hour.volunteerId) ||
@@ -199,11 +225,12 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
 
       return withinTime && roleMatches && orgMatches && cityMatches;
     });
-  }, [hoursTracking, timeRange, selectedRole, selectedOrg, selectedCity, users, organizations, isWithinTimeRange, convertToDate]);
+  }, [hoursTracking, selectedYear, selectedMonth, selectedRole, selectedOrg, selectedCity, users, organizations, isWithinTimeRange]);
 
   const filteredUsers = useMemo(() => {
     const isDefaultFilters =
-      timeRange === 'all' &&
+      selectedYear === 'all' &&
+      selectedMonth === 'all' &&
       selectedRole === 'all' &&
       selectedOrg === 'all';
 
@@ -212,33 +239,75 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
     }
 
     return users.filter(user => {
-      const withinTime = timeRange === 'all' ? true :
-        isWithinTimeRange(user.createdAt, timeRange);
+      const withinTime = isWithinTimeRange(user.createdAt, selectedYear, selectedMonth);
       const matchesRole = selectedRole === 'all' ? true :
         user.role === selectedRole;
+
+      // FIXED: Better organization matching for users
       const matchesOrg = selectedOrg === 'all' ? true :
-        (user.orgId && user.orgId.toString() === selectedOrg);
+        (user.orgId && (
+          String(user.orgId) === String(selectedOrg) ||
+          String(user.orgId) === selectedOrg
+        ));
+
       return withinTime && matchesRole && matchesOrg;
     });
-  }, [users, timeRange, selectedRole, selectedOrg, isWithinTimeRange]);
+  }, [users, selectedYear, selectedMonth, selectedRole, selectedOrg, isWithinTimeRange]);
 
   const filteredOrgs = useMemo(() => {
     const isDefaultFilters =
-      timeRange === 'all' &&
-      selectedCity === 'הכל';
+      selectedYear === 'all' &&
+      selectedMonth === 'all' &&
+      selectedCity === 'הכל' &&
+      selectedOrg === 'all'; // ADDED: Include org filter
 
     if (isDefaultFilters) {
       return organizations;
     }
 
     return organizations.filter(org => {
-      const withinTime = timeRange === 'all' ? true :
-        isWithinTimeRange(org.createdAt, timeRange);
+      const withinTime = isWithinTimeRange(org.createdAt, selectedYear, selectedMonth);
       const matchesCity = selectedCity === 'הכל' ? true :
         org.City === selectedCity || org.city === selectedCity;
-      return withinTime && matchesCity;
+
+      // ADDED: Organization-specific filtering
+      const matchesOrg = selectedOrg === 'all' ? true :
+        String(org.docId || org.id) === String(selectedOrg);
+
+      return withinTime && matchesCity && matchesOrg;
     });
-  }, [organizations, timeRange, selectedCity, isWithinTimeRange]);
+  }, [organizations, selectedYear, selectedMonth, selectedCity, selectedOrg, isWithinTimeRange]);
+
+  // IMPROVED: Helper function to generate dynamic titles and context
+  const getFilterContext = useCallback(() => {
+    const parts = [];
+
+    if (selectedYear !== 'all' && selectedMonth !== 'all') {
+      const monthName = months.find(m => m.value === selectedMonth)?.label;
+      parts.push(`${monthName} ${selectedYear}`);
+    } else if (selectedYear !== 'all') {
+      parts.push(`שנת ${selectedYear}`);
+    } else if (selectedMonth !== 'all') {
+      const monthName = months.find(m => m.value === selectedMonth)?.label;
+      parts.push(`חודש ${monthName}`);
+    }
+
+    if (selectedRole !== 'all') {
+      const roleName = roles.find(r => r.value === selectedRole)?.label;
+      parts.push(roleName);
+    }
+
+    if (selectedOrg !== 'all') {
+      const orgName = orgOptions.find(o => o.id === selectedOrg)?.name;
+      parts.push(orgName);
+    }
+
+    if (selectedCity !== 'הכל') {
+      parts.push(`עיר ${selectedCity}`);
+    }
+
+    return parts.length > 0 ? ` - ${parts.join(', ')}` : '';
+  }, [selectedYear, selectedMonth, selectedRole, selectedOrg, selectedCity, months, roles, orgOptions]);
 
   // Memoize chart data processing
   const processChartData = useCallback((data, dateField = 'createdAt') => {
@@ -259,13 +328,13 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
 
   // Chart data with proper dependencies
   const userGrowthData = useMemo(() =>
-    processChartData(users.filter(u => isWithinTimeRange(u.createdAt, timeRange))),
-    [users, timeRange, processChartData, isWithinTimeRange]
+    processChartData(filteredUsers),
+    [filteredUsers, processChartData]
   );
 
   const orgGrowthData = useMemo(() =>
-    processChartData(organizations.filter(o => isWithinTimeRange(o.createdAt, timeRange))),
-    [organizations, timeRange, processChartData, isWithinTimeRange]
+    processChartData(filteredOrgs),
+    [filteredOrgs, processChartData]
   );
 
   const hoursData = useMemo(() => {
@@ -291,9 +360,9 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
 
   const roleDistribution = useMemo(() => {
     const roleCount = {};
-    const total = users.length;
+    const total = filteredUsers.length;
 
-    users.forEach(user => {
+    filteredUsers.forEach(user => {
       const role = user.role || 'unknown';
       roleCount[role] = (roleCount[role] || 0) + 1;
     });
@@ -301,9 +370,9 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
     return Object.entries(roleCount).map(([role, count]) => ({
       name: roleLabels[role] || role,
       value: count,
-      percent: (count / total)
+      percent: total > 0 ? (count / total) : 0
     }));
-  }, [users, roleLabels]);
+  }, [filteredUsers, roleLabels]);
 
   const topOrgsByHours = useMemo(() => {
     const orgHours = {};
@@ -329,6 +398,10 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
         hours: parseFloat(hours.toFixed(2))
       }));
   }, [filteredHours, organizations]);
+
+  const toggleChart = (chartId) => {
+    setExpandedChart(expandedChart === chartId ? null : chartId);
+  };
 
   const topVolunteers = useMemo(() => {
     const volunteerHours = {};
@@ -359,7 +432,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
       }));
   }, [filteredHours, users]);
 
-  // Calculate overview metrics with proper dependencies
+  // FIXED: Calculate overview metrics with proper filtering dependencies
   const overviewMetrics = useMemo(() => {
     const totalHours = filteredHours.reduce((sum, hour) =>
       sum + (parseFloat(hour.hours) || 0), 0);
@@ -367,6 +440,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    // FIXED: Use filteredHours for active volunteers calculation
     const activeVolunteers = new Set(
       filteredHours
         .filter(h => {
@@ -377,6 +451,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
         .map(h => h.volunteerId)
     ).size;
 
+    // FIXED: Use filteredOrgs.length for total orgs
     const totalOrgs = filteredOrgs.length;
 
     const volunteersWithHours = new Set(
@@ -388,66 +463,94 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
 
     return {
       totalUsers: filteredUsers.length,
-      totalOrgs,
+      totalOrgs, // This now reflects filtered organizations
       totalHours,
       activeVolunteers,
       avgHoursPerVolunteer: avgHoursPerVolunteer.toFixed(1)
     };
-  }, [filteredUsers.length, organizations.length, filteredHours, convertToDate]);
+  }, [filteredUsers.length, filteredOrgs.length, filteredHours, convertToDate]);
 
   const activeVolunteersPercentage = useMemo(() => {
-    const totalVolunteers = users.filter(u => u.role === 'volunteer').length;
+    const totalVolunteers = filteredUsers.filter(u => u.role === 'volunteer').length;
     if (totalVolunteers === 0) return 0;
     return Math.round((overviewMetrics.activeVolunteers / totalVolunteers) * 100);
-  }, [users, overviewMetrics.activeVolunteers]);
+  }, [filteredUsers, overviewMetrics.activeVolunteers]);
 
-  // Memoize getCurrentMonthHours function
+  // Get current month hours with filtering context
   const getCurrentMonthHours = useCallback((hoursData) => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    if (selectedYear !== 'all' && selectedMonth !== 'all') {
+      // If specific month/year selected, use that data
+      return hoursData.reduce((sum, hour) => sum + (parseFloat(hour.hours) || 0), 0);
+    } else {
+      // Otherwise use actual current month
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
 
-    return hoursData.reduce((sum, hour) => {
-      const hourDate = convertToDate(hour.volDate || hour.date || hour.createdAt);
-      if (hourDate &&
-        hourDate.getMonth() === currentMonth &&
-        hourDate.getFullYear() === currentYear) {
-        return sum + (parseFloat(hour.hours) || 0);
-      }
-      return sum;
-    }, 0);
-  }, [convertToDate]);
+      return hoursData.reduce((sum, hour) => {
+        const hourDate = convertToDate(hour.volDate || hour.date || hour.createdAt);
+        if (hourDate &&
+          hourDate.getMonth() === currentMonth &&
+          hourDate.getFullYear() === currentYear) {
+          return sum + (parseFloat(hour.hours) || 0);
+        }
+        return sum;
+      }, 0);
+    }
+  }, [convertToDate, selectedYear, selectedMonth]);
 
   const calculateGrowthMetrics = useMemo(() => {
     const now = new Date();
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+    let currentMonth, currentYear, lastMonth, lastYear;
 
-    const thisMonthUsers = users.filter(user => {
+    if (selectedYear !== 'all' && selectedMonth !== 'all') {
+      currentYear = parseInt(selectedYear);
+      currentMonth = parseInt(selectedMonth) - 1; // JS months are 0-based
+      lastMonth = currentMonth - 1;
+      lastYear = currentYear;
+      if (lastMonth < 0) {
+        lastMonth = 11;
+        lastYear = currentYear - 1;
+      }
+    } else {
+      currentMonth = now.getMonth();
+      currentYear = now.getFullYear();
+      lastMonth = currentMonth - 1;
+      lastYear = currentYear;
+      if (lastMonth < 0) {
+        lastMonth = 11;
+        lastYear = currentYear - 1;
+      }
+    }
+
+    // FIXED: Use filtered users instead of all users
+    const thisMonthUsers = filteredUsers.filter(user => {
       const date = convertToDate(user.createdAt);
-      return date && date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear();
+      return date && date.getMonth() === currentMonth &&
+        date.getFullYear() === currentYear;
     }).length;
 
-    const lastMonthUsers = users.filter(user => {
+    const lastMonthUsers = filteredUsers.filter(user => {
       const date = convertToDate(user.createdAt);
-      return date && date.getMonth() === lastMonth.getMonth() &&
-        date.getFullYear() === lastMonth.getFullYear();
+      return date && date.getMonth() === lastMonth &&
+        date.getFullYear() === lastYear;
     }).length;
 
     const userGrowth = lastMonthUsers ?
       ((thisMonthUsers - lastMonthUsers) / lastMonthUsers) * 100 : 0;
 
-    const newOrgs = organizations.filter(org => {
+    // FIXED: Use filtered organizations
+    const newOrgs = filteredOrgs.filter(org => {
       const date = convertToDate(org.createdAt);
-      return date && date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear();
+      return date && date.getMonth() === currentMonth &&
+        date.getFullYear() === currentYear;
     }).length;
 
     const thisMonthHours = getCurrentMonthHours(filteredHours);
     const lastMonthHours = filteredHours.reduce((sum, hour) => {
       const date = convertToDate(hour.volDate || hour.date || hour.createdAt);
-      if (date && date.getMonth() === lastMonth.getMonth() &&
-        date.getFullYear() === lastMonth.getFullYear()) {
+      if (date && date.getMonth() === lastMonth &&
+        date.getFullYear() === lastYear) {
         return sum + (parseFloat(hour.hours) || 0);
       }
       return sum;
@@ -459,11 +562,11 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
     return {
       userGrowth: Math.round(userGrowth),
       newOrgs,
-      activityGrowth: Math.round(activityGrowth)
+      activityGrowth: Math.round(activityGrowth),
+      currentMonth: months.find(m => m.value === (currentMonth + 1).toString())?.label || 'נוכחי',
+      lastMonth: months.find(m => m.value === (lastMonth + 1).toString())?.label || 'קודם'
     };
-
-    // Replace Tailwind classes with our custom classes
-  }, [users, filteredHours, convertToDate]);
+  }, [filteredUsers, filteredHours, filteredOrgs, convertToDate, selectedYear, selectedMonth, getCurrentMonthHours, months]);
 
   const lastUpdateDate = useMemo(() => new Date(), []);
 
@@ -485,7 +588,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
         {/* Header */}
         <div className="dashboard-header">
           <h1 className="dashboard-title">
-            לוח הבקרה לניתוח נתונים
+            לוח הבקרה לניתוח נתונים{getFilterContext()}
           </h1>
           <p className="dashboard-subtitle">
             מעקב אחר ביצועי פלטפורמת ניהול המתנדבים שלך
@@ -500,14 +603,26 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
           </div>
           <div className="filters-grid">
             <div className="filter-group">
-              <label className="filter-label">טווח זמן</label>
+              <label className="filter-label">שנה</label>
               <select
-                value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value)}
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
                 className="filter-select"
               >
-                {timeRanges.map(range => (
-                  <option key={range.value} value={range.value}>{range.label}</option>
+                {availableYears.map(year => (
+                  <option key={year.value} value={year.value}>{year.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="filter-group">
+              <label className="filter-label">חודש</label>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="filter-select"
+              >
+                {months.map(month => (
+                  <option key={month.value} value={month.value}>{month.label}</option>
                 ))}
               </select>
             </div>
@@ -553,11 +668,11 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
         {/* Overview Cards */}
         <div className="overview-grid">
           {[
-            { label: 'סך המשתמשים', value: overviewMetrics.totalUsers, Icon: Users, cardClass: 'card-bg-blue', iconClass: 'icon-gradient-blue' },
-            { label: 'ארגונים', value: overviewMetrics.totalOrgs, Icon: Building2, cardClass: 'card-bg-green', iconClass: 'icon-gradient-green' },
-            { label: 'סך כל השעות', value: overviewMetrics.totalHours.toFixed(1), Icon: Clock, cardClass: 'card-bg-amber', iconClass: 'icon-gradient-amber' },
-            { label: 'מתנדבים פעילים', value: overviewMetrics.activeVolunteers, Icon: TrendingUp, cardClass: 'card-bg-red', iconClass: 'icon-gradient-red' },
-            { label: 'ממוצע שעות למתנדב', value: overviewMetrics.avgHoursPerVolunteer, Icon: BarChart3, cardClass: 'card-bg-purple', iconClass: 'icon-gradient-purple' }
+            { label: `סך המשתמשים${getFilterContext()}`, value: overviewMetrics.totalUsers, Icon: Users, cardClass: 'card-bg-blue', iconClass: 'icon-gradient-blue' },
+            { label: `ארגונים${getFilterContext()}`, value: overviewMetrics.totalOrgs, Icon: Building2, cardClass: 'card-bg-green', iconClass: 'icon-gradient-green' },
+            { label: `סך כל השעות${getFilterContext()}`, value: overviewMetrics.totalHours.toFixed(1), Icon: Clock, cardClass: 'card-bg-amber', iconClass: 'icon-gradient-amber' },
+            { label: `מתנדבים פעילים${getFilterContext()}`, value: overviewMetrics.activeVolunteers, Icon: TrendingUp, cardClass: 'card-bg-red', iconClass: 'icon-gradient-red' },
+            { label: `ממוצע שעות למתנדב${getFilterContext()}`, value: overviewMetrics.avgHoursPerVolunteer, Icon: BarChart3, cardClass: 'card-bg-purple', iconClass: 'icon-gradient-purple' }
           ].map((item, idx) => (
             <div key={idx} className={`overview-card ${item.cardClass}`}>
               <div className="overview-card-content">
@@ -581,7 +696,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
               <div className="stat-icon-wrapper">
                 <Eye className="stat-icon" />
               </div>
-              <h3 className="stat-title">סטטיסטיקות מהירות</h3>
+              <h3 className="stat-title">סטטיסטיקות {getFilterContext()}</h3>
             </div>
             <div className="stat-content">
               <div className="stat-row">
@@ -591,11 +706,15 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
               <div className="stat-row">
                 <span className="stat-label">ממוצע ארגונים לעיר</span>
                 <span className="stat-value">
-                  {cities.length > 1 ? Math.round(organizations.length / (cities.length - 1)) : 0}
+                  {cities.length > 1 ? Math.round(overviewMetrics.totalOrgs / (cities.length - 1)) : 0}
                 </span>
               </div>
               <div className="stat-row">
-                <span className="stat-label">שעות החודש</span>
+                <span className="stat-label">
+                  {selectedYear !== 'all' && selectedMonth !== 'all' ?
+                    `שעות ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}` :
+                    'שעות החודש הנוכחי'}
+                </span>
                 <span className="stat-value">
                   {getCurrentMonthHours(filteredHours).toFixed(1)}
                 </span>
@@ -609,21 +728,53 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
               <div className="stat-icon-wrapper">
                 <TrendingUp className="stat-icon" />
               </div>
-              <h3 className="stat-title">מגמות צמיחה</h3>
+              <h3 className="stat-title">
+                מגמות צמיחה
+                {selectedYear !== 'all' && selectedMonth !== 'all'
+                  ? ` - ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                  : selectedYear !== 'all'
+                    ? ` - שנת ${selectedYear}`
+                    : selectedMonth !== 'all'
+                      ? ` - ${months.find(m => m.value === selectedMonth)?.label}`
+                      : ''
+                }
+              </h3>
             </div>
             <div className="stat-content">
               <div className="stat-row">
-                <span className="stat-label">צמיחה חודשית</span>
+                <span className="stat-label">
+                  צמיחה חודשית
+                  {selectedYear !== 'all' && selectedMonth !== 'all'
+                    ? ` (${months.find(m => m.value === selectedMonth)?.label} ${selectedYear})`
+                    : ''
+                  }
+                </span>
                 <span className="stat-value highlight">
                   {calculateGrowthMetrics.userGrowth > 0 ? '+' : ''}{calculateGrowthMetrics.userGrowth}%
                 </span>
               </div>
               <div className="stat-row">
-                <span className="stat-label">ארגונים חדשים</span>
+                <span className="stat-label">
+                  ארגונים חדשים
+                  {selectedYear !== 'all' && selectedMonth !== 'all'
+                    ? ` ב${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                    : selectedYear !== 'all'
+                      ? ` בשנת ${selectedYear}`
+                      : selectedMonth !== 'all'
+                        ? ` ב${months.find(m => m.value === selectedMonth)?.label}`
+                        : ''
+                  }
+                </span>
                 <span className="stat-value">+{calculateGrowthMetrics.newOrgs}</span>
               </div>
               <div className="stat-row">
-                <span className="stat-label">שיפור בפעילות</span>
+                <span className="stat-label">
+                  שיפור בפעילות
+                  {selectedYear !== 'all' && selectedMonth !== 'all'
+                    ? ` (${months.find(m => m.value === selectedMonth)?.label} ${selectedYear})`
+                    : ''
+                  }
+                </span>
                 <span className="stat-value highlight">
                   {calculateGrowthMetrics.activityGrowth > 0 ? '+' : ''}{calculateGrowthMetrics.activityGrowth}%
                 </span>
@@ -637,11 +788,29 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
               <div className="stat-icon-wrapper">
                 <Calendar className="stat-icon" />
               </div>
-              <h3 className="stat-title">יעדי החודש</h3>
+              <h3 className="stat-title">
+                יעדי
+                {selectedYear !== 'all' && selectedMonth !== 'all'
+                  ? ` ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                  : selectedMonth !== 'all'
+                    ? ` ${months.find(m => m.value === selectedMonth)?.label}`
+                    : selectedYear !== 'all'
+                      ? ` שנת ${selectedYear}`
+                      : ' החודש הנוכחי'
+                }
+              </h3>
             </div>
             <div className="stat-content">
               <div className="stat-row">
-                <span className="stat-label">יעד שעות</span>
+                <span className="stat-label">
+                  יעד שעות
+                  {selectedYear !== 'all' && selectedMonth !== 'all'
+                    ? ` ל${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                    : selectedMonth !== 'all'
+                      ? ` ל${months.find(m => m.value === selectedMonth)?.label}`
+                      : ''
+                  }
+                </span>
                 {isEditingGoal ? (
                   <div className="goal-edit-container">
                     <input
@@ -670,7 +839,15 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
                 )}
               </div>
               <div className="stat-row">
-                <span className="stat-label">השגה נוכחית</span>
+                <span className="stat-label">
+                  השגה
+                  {selectedYear !== 'all' && selectedMonth !== 'all'
+                    ? ` ב${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                    : selectedMonth !== 'all'
+                      ? ` ב${months.find(m => m.value === selectedMonth)?.label}`
+                      : ' נוכחית '
+                  }
+                </span>
                 <span className="stat-value highlight">
                   {Math.round((getCurrentMonthHours(filteredHours) / monthlyGoal) * 100)}%
                 </span>
@@ -687,316 +864,475 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
           </div>
         </div>
 
-        {/* All Charts Grid */}
-        <div className="charts-grid">
-          {/* First row - User Growth and Role Distribution */}
-          <div className="chart-card">
-            <div className="chart-header">
-              <div className="chart-icon-container chart-icon-blue">
-                <TrendingUp className="chart-icon" />
-              </div>
-              <h3 className="chart-title">משתמשים חדשים לפי זמן</h3>
-            </div>
-            <div className="chart-container">
-              <ResponsiveContainer>
-                <AreaChart data={userGrowthData}>
-                  <defs>
-                    <linearGradient id="userGrowth" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 12, fill: '#4B5563' }}
-                    tickFormatter={(value) => new Date(value).toLocaleDateString('he-IL', { month: 'short' })}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12, fill: '#4B5563' }}
-                    tickFormatter={(value) => value.toLocaleString()}
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload?.length) {
-                        return (
-                          <div className="chart-tooltip">
-                            <p className="chart-tooltip-label">
-                              {new Date(payload[0].payload.date).toLocaleDateString('he-IL', {
-                                month: 'long',
-                                year: 'numeric'
-                              })}
-                            </p>
-                            <p className="chart-tooltip-value">
-                              {payload[0].value.toLocaleString()} משתמשים חדשים
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="count"
-                    stroke="#3B82F6"
-                    fill="url(#userGrowth)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+        {/* Charts Accordion Section */}
+        <div className="charts-accordion">
+          <div className="accordion-header">
+            <h2 className="section-title">דוחות וגרפים מפורטים</h2>
+            <p className="section-subtitle">לחץ על דו"ח כלשהו כדי להציג את הנתונים</p>
           </div>
-          {/* Role Distribution Chart */}
-          <div className="chart-card">
-            <div className="chart-header">
-              <div className="chart-icon-container chart-icon-purple">
-                <Circle className="chart-icon" />
-              </div>
-              <h3 className="chart-title">התפלגות תפקידים</h3>
-            </div>            <div className="chart-container" style={{ display: 'flex', flexDirection: 'row' }}>
-              <ResponsiveContainer width="70%" height="100%">
-                <PieChart>
-                  <defs>
-                    {COLORS.map((color, index) => (
-                      <linearGradient key={index} id={`gradient${index}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={color} stopOpacity={0.8} />
-                        <stop offset="95%" stopColor={color} stopOpacity={0.1} />
-                      </linearGradient>
-                    ))}
-                  </defs>
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload?.[0]) {
-                        const { name, value, percent } = payload[0].payload;
-                        return (
-                          <div className="chart-tooltip">
-                            <p className="chart-tooltip-label">{name}</p>
-                            <p className="chart-tooltip-value">
-                              {value} ({(percent * 100).toFixed(0)}%)
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Pie
-                    data={roleDistribution}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius="60%"
-                    outerRadius="80%"
-                    paddingAngle={2}
-                    stroke="#fff"
-                    strokeWidth={2}
-                    isAnimationActive={false}
-                  >
-                    {roleDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={`url(#gradient${index})`} />))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="legend-container">
-                {roleDistribution.map((role, index) => (
-                  <div key={index} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '0.875rem',
-                    color: '#4B5563',
-                  }}>
-                    <div style={{
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      background: COLORS[index],
-                    }} />
-                    <span>{role.name} ({(role.percent * 100).toFixed(0)}%)</span>
+
+          {/* User Growth Chart */}
+          <div className="accordion-item">
+            <button
+              className={`accordion-toggle ${expandedChart === 'userGrowth' ? 'active' : ''}`}
+              onClick={() => toggleChart('userGrowth')}
+            >
+              <div className="accordion-toggle-content">
+                <div className="accordion-icon-title">
+                  <div className="chart-icon-container chart-icon-blue">
+                    <TrendingUp className="chart-icon" />
                   </div>
-                ))}
+                  <h3 className="accordion-title">
+                    משתמשים חדשים לפי זמן
+                    {selectedYear !== 'all' && selectedMonth !== 'all'
+                      ? ` - ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                      : selectedYear !== 'all'
+                        ? ` - שנת ${selectedYear}`
+                        : selectedMonth !== 'all'
+                          ? ` - ${months.find(m => m.value === selectedMonth)?.label}`
+                          : selectedRole !== 'all'
+                            ? ` - ${roles.find(r => r.value === selectedRole)?.label}`
+                            : selectedOrg !== 'all'
+                              ? ` - ${orgOptions.find(o => o.id === selectedOrg)?.name}`
+                              : ''
+                    }
+                  </h3>
+                </div>
+                <div className={`accordion-arrow ${expandedChart === 'userGrowth' ? 'expanded' : ''}`}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="chart-card">
-            <div className="chart-header">
-              <div className="chart-icon-container chart-icon-red">
-                <Building2 className="chart-icon" />
+            </button>
+            <div className={`accordion-content ${expandedChart === 'userGrowth' ? 'expanded' : ''}`}>
+              <div className="chart-container">
+                <ResponsiveContainer>
+                  <AreaChart data={userGrowthData}>
+                    <defs>
+                      <linearGradient id="userGrowth" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 12, fill: '#4B5563' }}
+                      tickFormatter={(value) => new Date(value).toLocaleDateString('he-IL', { month: 'short' })}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 12, fill: '#4B5563' }}
+                      tickFormatter={(value) => value.toLocaleString()}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload?.length) {
+                          return (
+                            <div className="chart-tooltip">
+                              <p className="chart-tooltip-label">
+                                {new Date(payload[0].payload.date).toLocaleDateString('he-IL', {
+                                  month: 'long',
+                                  year: 'numeric'
+                                })}
+                              </p>
+                              <p className="chart-tooltip-value">
+                                {payload[0].value.toLocaleString()} משתמשים חדשים
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#3B82F6"
+                      fill="url(#userGrowth)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
-              <h3 className="chart-title">ארגונים מובילים לפי שעות</h3>
-            </div>
-            <div className="chart-container">
-              <ResponsiveContainer>
-                <BarChart
-                  data={topOrgsByHours}
-                  layout="vertical"
-                  margin={{ top: 20, right: 20, left: 160, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                  <XAxis
-                    type="number"
-                    tick={{ fontSize: 11, fill: '#374151' }}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={150}
-                    tick={{
-                      fontSize: 11,
-                      fill: '#374151',
-                      textAnchor: 'end',
-                    }}
-                    orientation="right"
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload?.[0]) {
-                        return (
-                          <div className="chart-tooltip">
-                            <p className="chart-tooltip-label">{payload[0].payload.name}</p>
-                            <p className="chart-tooltip-value">
-                              {payload[0].value.toLocaleString()} שעות
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar
-                    dataKey="hours"
-                    fill="#EF4444"
-                    radius={[0, 4, 4, 0]}
-                    barSize={16}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-          </div>
-          <div className="chart-card">
-            <div className="chart-header">
-              <div className="chart-icon-container chart-icon-green">
-                <Clock className="chart-icon" />
-              </div>
-              <h3 className="chart-title">כמות שעות התנדבות לפי זמן</h3>
-            </div>
-            <div className="chart-container">
-              <ResponsiveContainer>
-                <AreaChart data={hoursData}>
-                  <defs>
-                    <linearGradient id="hoursGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => new Date(value).toLocaleDateString('he-IL', { month: 'short' })}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => value.toLocaleString()}
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload?.length) {
-                        return (
-                          <div className="chart-tooltip">
-                            <p className="chart-tooltip-label">
-                              {new Date(payload[0].payload.date).toLocaleDateString('he-IL', {
-                                month: 'long',
-                                year: 'numeric'
-                              })}
-                            </p>
-                            <p className="chart-tooltip-value">
-                              {payload[0].value.toLocaleString()} שעות התנדבות
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="hours"
-                    stroke="#10B981"
-                    fill="url(#hoursGradient)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="chart-card">
-            <div className="chart-header">
-              <div className="chart-icon-container chart-icon-orange">
-                <Users className="chart-icon" />
+          {/* Role Distribution Chart */}
+          <div className="accordion-item">
+            <button
+              className={`accordion-toggle ${expandedChart === 'roleDistribution' ? 'active' : ''}`}
+              onClick={() => toggleChart('roleDistribution')}
+            >
+              <div className="accordion-toggle-content">
+                <div className="accordion-icon-title">
+                  <div className="chart-icon-container chart-icon-purple">
+                    <Circle className="chart-icon" />
+                  </div>
+                  <h3 className="accordion-title">
+                    התפלגות תפקידים
+                    {selectedYear !== 'all' && selectedMonth !== 'all'
+                      ? ` - ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                      : selectedYear !== 'all'
+                        ? ` - שנת ${selectedYear}`
+                        : selectedMonth !== 'all'
+                          ? ` - ${months.find(m => m.value === selectedMonth)?.label}`
+                          : selectedOrg !== 'all'
+                            ? ` - ${orgOptions.find(o => o.id === selectedOrg)?.name}`
+                            : selectedCity !== 'הכל'
+                              ? ` - ${selectedCity}`
+                              : ''
+                    }
+                  </h3>
+                </div>
+                <div className={`accordion-arrow ${expandedChart === 'roleDistribution' ? 'expanded' : ''}`}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
               </div>
-              <h3 className="chart-title">מתנדבים מובילים לפי שעות</h3>
+            </button>
+            <div className={`accordion-content ${expandedChart === 'roleDistribution' ? 'expanded' : ''}`}>
+              <div className="chart-container" style={{ display: 'flex', flexDirection: 'row' }}>
+                <ResponsiveContainer width="70%" height="100%">
+                  <PieChart>
+                    <defs>
+                      {COLORS.map((color, index) => (
+                        <linearGradient key={index} id={`gradient${index}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+                          <stop offset="95%" stopColor={color} stopOpacity={0.1} />
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload?.[0]) {
+                          const { name, value, percent } = payload[0].payload;
+                          return (
+                            <div className="chart-tooltip">
+                              <p className="chart-tooltip-label">{name}</p>
+                              <p className="chart-tooltip-value">
+                                {value} ({(percent * 100).toFixed(0)}%)
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Pie
+                      data={roleDistribution}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="60%"
+                      outerRadius="80%"
+                      paddingAngle={2}
+                      stroke="#fff"
+                      strokeWidth={2}
+                      isAnimationActive={false}
+                    >
+                      {roleDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={`url(#gradient${index})`} />))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="legend-container">
+                  {roleDistribution.map((role, index) => (
+                    <div key={index} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '0.875rem',
+                      color: '#4B5563',
+                    }}>
+                      <div style={{
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background: COLORS[index],
+                      }} />
+                      <span>{role.name} ({(role.percent * 100).toFixed(0)}%)</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="chart-container">
-              <ResponsiveContainer>
-                <BarChart
-                  data={topVolunteers}
-                  layout="vertical"
-                  margin={{ top: 20, right: 20, left: 160, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                  <XAxis
-                    type="number"
-                    tick={{ fontSize: 11, fill: '#374151' }}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={150}
-                    tick={{
-                      fontSize: 11,
-                      fill: '#374151',
-                      textAnchor: 'end',
-                    }}
-                    orientation="right"
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload?.[0]) {
-                        return (
-                          <div className="chart-tooltip">
-                            <p className="chart-tooltip-label">{payload[0].payload.name}</p>
-                            <p className="chart-tooltip-value">
-                              {payload[0].value.toLocaleString()} שעות
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar
-                    dataKey="hours"
-                    fill="#F97316"
-                    radius={[0, 4, 4, 0]}
-                    barSize={16}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+          </div>
+
+          {/* Top Organizations Chart */}
+          <div className="accordion-item">
+            <button
+              className={`accordion-toggle ${expandedChart === 'topOrgs' ? 'active' : ''}`}
+              onClick={() => toggleChart('topOrgs')}
+            >
+              <div className="accordion-toggle-content">
+                <div className="accordion-icon-title">
+                  <div className="chart-icon-container chart-icon-red">
+                    <Building2 className="chart-icon" />
+                  </div>
+                  <h3 className="accordion-title">
+                    ארגונים מובילים לפי שעות
+                    {selectedYear !== 'all' && selectedMonth !== 'all'
+                      ? ` - ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                      : selectedYear !== 'all'
+                        ? ` - שנת ${selectedYear}`
+                        : selectedMonth !== 'all'
+                          ? ` - ${months.find(m => m.value === selectedMonth)?.label}`
+                          : selectedCity !== 'הכל'
+                            ? ` - ${selectedCity}`
+                            : ''
+                    }
+                  </h3>
+                </div>
+                <div className={`accordion-arrow ${expandedChart === 'topOrgs' ? 'expanded' : ''}`}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </button>
+            <div className={`accordion-content ${expandedChart === 'topOrgs' ? 'expanded' : ''}`}>
+              <div className="chart-container">
+                <ResponsiveContainer>
+                  <BarChart
+                    data={topOrgsByHours}
+                    layout="vertical"
+                    margin={{ top: 20, right: 20, left: 160, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis
+                      type="number"
+                      tick={{ fontSize: 11, fill: '#374151' }}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      width={150}
+                      tick={{
+                        fontSize: 11,
+                        fill: '#374151',
+                        textAnchor: 'end',
+                      }}
+                      orientation="right"
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload?.[0]) {
+                          return (
+                            <div className="chart-tooltip">
+                              <p className="chart-tooltip-label">{payload[0].payload.name}</p>
+                              <p className="chart-tooltip-value">
+                                {payload[0].value.toLocaleString()} שעות
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar
+                      dataKey="hours"
+                      fill="#EF4444"
+                      radius={[0, 4, 4, 0]}
+                      barSize={16}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Hours Tracking Chart */}
+          <div className="accordion-item">
+            <button
+              className={`accordion-toggle ${expandedChart === 'hoursTracking' ? 'active' : ''}`}
+              onClick={() => toggleChart('hoursTracking')}
+            >
+              <div className="accordion-toggle-content">
+                <div className="accordion-icon-title">
+                  <div className="chart-icon-container chart-icon-green">
+                    <Clock className="chart-icon" />
+                  </div>
+                  <h3 className="accordion-title">
+                    כמות שעות התנדבות לפי זמן
+                    {selectedYear !== 'all' && selectedMonth !== 'all'
+                      ? ` - ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                      : selectedYear !== 'all'
+                        ? ` - שנת ${selectedYear}`
+                        : selectedMonth !== 'all'
+                          ? ` - ${months.find(m => m.value === selectedMonth)?.label}`
+                          : selectedRole !== 'all'
+                            ? ` - ${roles.find(r => r.value === selectedRole)?.label}`
+                            : selectedOrg !== 'all'
+                              ? ` - ${orgOptions.find(o => o.id === selectedOrg)?.name}`
+                              : ''
+                    }
+                  </h3>
+                </div>
+                <div className={`accordion-arrow ${expandedChart === 'hoursTracking' ? 'expanded' : ''}`}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </button>
+            <div className={`accordion-content ${expandedChart === 'hoursTracking' ? 'expanded' : ''}`}>
+              <div className="chart-container">
+                <ResponsiveContainer>
+                  <AreaChart data={hoursData}>
+                    <defs>
+                      <linearGradient id="hoursGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#10B981" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) => new Date(value).toLocaleDateString('he-IL', { month: 'short' })}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) => value.toLocaleString()}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload?.length) {
+                          return (
+                            <div className="chart-tooltip">
+                              <p className="chart-tooltip-label">
+                                {new Date(payload[0].payload.date).toLocaleDateString('he-IL', {
+                                  month: 'long',
+                                  year: 'numeric'
+                                })}
+                              </p>
+                              <p className="chart-tooltip-value">
+                                {payload[0].value.toLocaleString()} שעות התנדבות
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="hours"
+                      stroke="#10B981"
+                      fill="url(#hoursGradient)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Volunteers Chart */}
+          <div className="accordion-item">
+            <button
+              className={`accordion-toggle ${expandedChart === 'topVolunteers' ? 'active' : ''}`}
+              onClick={() => toggleChart('topVolunteers')}
+            >
+              <div className="accordion-toggle-content">
+                <div className="accordion-icon-title">
+                  <div className="chart-icon-container chart-icon-orange">
+                    <Users className="chart-icon" />
+                  </div>
+                  <h3 className="accordion-title">
+                    מתנדבים מובילים לפי שעות
+                    {selectedYear !== 'all' && selectedMonth !== 'all'
+                      ? ` - ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+                      : selectedYear !== 'all'
+                        ? ` - שנת ${selectedYear}`
+                        : selectedMonth !== 'all'
+                          ? ` - ${months.find(m => m.value === selectedMonth)?.label}`
+                          : selectedOrg !== 'all'
+                            ? ` - ${orgOptions.find(o => o.id === selectedOrg)?.name}`
+                            : selectedCity !== 'הכל'
+                              ? ` - ${selectedCity}`
+                              : ''
+                    }
+                  </h3>
+                </div>
+                <div className={`accordion-arrow ${expandedChart === 'topVolunteers' ? 'expanded' : ''}`}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </button>
+            <div className={`accordion-content ${expandedChart === 'topVolunteers' ? 'expanded' : ''}`}>
+              <div className="chart-container">
+                <ResponsiveContainer>
+                  <BarChart
+                    data={topVolunteers}
+                    layout="vertical"
+                    margin={{ top: 20, right: 20, left: 160, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis
+                      type="number"
+                      tick={{ fontSize: 11, fill: '#374151' }}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      width={150}
+                      tick={{
+                        fontSize: 11,
+                        fill: '#374151',
+                        textAnchor: 'end',
+                      }}
+                      orientation="right"
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload?.[0]) {
+                          return (
+                            <div className="chart-tooltip">
+                              <p className="chart-tooltip-label">{payload[0].payload.name}</p>
+                              <p className="chart-tooltip-value">
+                                {payload[0].value.toLocaleString()} שעות
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar
+                      dataKey="hours"
+                      fill="#F97316"
+                      radius={[0, 4, 4, 0]}
+                      barSize={16}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Organizations Distribution */}
         <div className="city-distribution">
-          <h3 className="section-title">התפלגות ארגונים לפי ערים</h3>
+          <h3 className="section-title">
+            התפלגות ארגונים לפי ערים
+            {selectedYear !== 'all' && selectedMonth !== 'all'
+              ? ` - ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
+              : selectedYear !== 'all'
+                ? ` - שנת ${selectedYear}`
+                : selectedMonth !== 'all'
+                  ? ` - ${months.find(m => m.value === selectedMonth)?.label}`
+                  : ''
+            }
+          </h3>
           <div className="city-grid">
             {cities.filter(city => city !== 'הכל').map((city, index) => {
-              const cityOrgs = organizations.filter(org =>
+              const cityOrgs = filteredOrgs.filter(org =>
                 (org.city || org.City || '').toLowerCase() === city.toLowerCase()
               );
 
@@ -1037,7 +1373,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
                               }
                               return sum;
                             }, 0)
-                          ))) * 100, 100)}%`
+                          ), 1)) * 100, 100)}%`
                       }}
                     />
                   </div>
