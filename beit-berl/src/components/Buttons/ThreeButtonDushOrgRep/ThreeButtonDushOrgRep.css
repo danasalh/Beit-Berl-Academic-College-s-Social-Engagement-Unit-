@@ -3,7 +3,7 @@
   justify-content: center;
   gap: 12px;
   flex-direction: row-reverse;
-  margin: 5px auto;
+  margin: 10px auto;
   flex-wrap: wrap;
   max-width: fit-content;
 }
@@ -48,7 +48,7 @@
 @media screen and (max-width: 768px) {
   .three-button-dush {
     gap: 10px;
-    margin: 5px auto;
+    margin: 10px auto;
   }
   
   .dush-button {
@@ -68,7 +68,7 @@
 @media screen and (max-width: 480px) {
   .three-button-dush {
     gap: 8px;
-    margin: 5px auto;
+    margin: 10px auto;
     flex-wrap: wrap;
   }
   
@@ -113,7 +113,7 @@
 @media screen and (min-width: 1200px) {
   .three-button-dush {
     gap: 15px;
-    margin: 5px auto;
+    margin: 10px auto;
   }
   
   .dush-button {
