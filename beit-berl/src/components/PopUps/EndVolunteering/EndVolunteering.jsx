@@ -29,7 +29,7 @@ const EndVolunteering = () => {
                     receiverId: admin.id || admin.docId,
                     type: 'volunteer-completed',
                     title: 'מתנדב השלים 60 שעות התנדבות',
-                    content: `המתנדב/ת ${currentUser?.firstName || ''} ${currentUser?.lastName || ''} השליםה את הצהרת סיום ההתנדבות ומוכן/ה להמשך התהליך.`,
+                    content: `המתנדב/ת ${currentUser?.firstName || ''} ${currentUser?.lastName || ''} השלימ/ה את הצהרת סיום ההתנדבות ומוכן/ה להמשך התהליך.`,
                     date: new Date(),
                     metadata: {
                         volunteerId: currentUser?.id || currentUser?.docId,
