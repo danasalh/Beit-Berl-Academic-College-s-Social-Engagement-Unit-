@@ -3,7 +3,7 @@ import NotificationsPanel from '../../../Notifications/NotificationsPanel/Notifi
 export default function AdminNotifications() {
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>Admin Notifications</h1>
+      <h1 style={{fontSize: '2em'}}>התראות</h1>
       <NotificationsPanel />
     </div>
   );

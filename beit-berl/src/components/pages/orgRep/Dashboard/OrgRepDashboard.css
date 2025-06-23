@@ -6,55 +6,187 @@
   align-items: center;
   justify-content: flex-start;
   min-height: 100vh;
-  padding: 2rem 1rem;
+  padding: 3rem 2rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   direction: rtl;
+  font-size: 1.2rem;
+  background-color: #f5faff;
+  
 }
 
 .orgrep-welcome-title {
-  font-size: 2.2rem;
+ 
+   font-size: 5rem !important;
   font-weight: bold;
-  margin-bottom: 1.5rem;
-  color: #0077c2;
+  margin-bottom: 3rem;
+  color: #6b93cf;
   text-align: center;
-  width: 100%;
-  max-width: 600px;
-  text-shadow: 0 0 16px #90caf9, 0 0 8px #90caf9;
+  text-shadow: 0 0 12px #223849;
   animation: glow 2s ease-in-out infinite alternate;
-  letter-spacing: 1px;
+  letter-spacing: 1.3px;
+  max-width: 1000px;
 }
 
 @keyframes glow {
   from {
-    text-shadow: 0 0 4px #90caf9, 0 0 2px #90caf9;
+    text-shadow: 0 0 2px #90caf9, 0 0 1px #90caf9;
   }
   to {
-    text-shadow: 0 0 24px #42a5f5, 0 0 12px #42a5f5;
+    text-shadow: 0 0 12px #42a5f5, 0 0 6px #42a5f5;
   }
 }
 
-/* Button container styling */
+/* Button container styling - reduced spacing */
 .orgrep-dashboard-center > *:nth-child(3) {
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
   transition: all 0.3s ease;
+  
 }
+
+.three-button-dush {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+.three-button-dush button {
+  padding: 1rem 2.5rem;
+  font-size: 1.7rem;
+  font-weight: 500 !important;
+  border: 2px solid #99a4af;
+  border: none;
+  border-radius: 12px;
+  background-color: #bec8db;
+  color: rgb(59, 61, 107);
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.three-button-dush button:hover {
+  background-color: #8296ad;
+  transform: translateY(-2px);
+}
+
+@media screen and (max-width: 768px) {
+  .orgrep-welcome-title {
+    font-size: 3rem !important;
+    margin-bottom: 2rem;
+    max-width: 90%;
+    line-height: 1.2;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .orgrep-welcome-title {
+    font-size: 2.2rem !important;
+    margin-bottom: 1.5rem;
+    max-width: 100%;
+  }
+}
+
+
 
 /* Organizations list container */
 .orgrep-dashboard-center > *:last-child {
   width: 100%;
   max-width: 1200px;
-  margin-top: 2rem;
-  scroll-margin-top: 100px; /* Offset for smooth scrolling */
+  margin-top: 1rem;
+  scroll-margin-top: 100
+  px; /* Offset for smooth scrolling */
+  max-width: 1600px;
+   justify-content: center !important; 
+}
+@media screen and (max-width: 768px) {
+  .three-button-dush {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+  }
+@media screen and (max-width: 480px) {
+  
+  .orgrep-welcome-title {
+    font-size: 2rem !important;
+    margin-bottom: 1.5rem;
+    max-width: 95%;
+    text-align: center;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+
+  .three-button-dush {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .three-button-dush button {
+    width: 90%;
+    font-size: 1.3rem;
+    padding: 1rem 1.5rem;
+  }
+
+
 }
 
-.organizations-list {
+ .org-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  justify-items: center;
+  width: 100%;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+}
+
+.card-org {
+  width: 100%;
+  max-width: 340px;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+
+@media screen and (max-width: 480px) {
+  .org-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .card-org {
+    width: 90%;
+    max-width: 100%;
+  }
+}
+
+
+
+.organizations-list-orgRep {
+   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-/* Smooth scrolling for the entire page */
-html {
-  scroll-behavior: smooth;
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
+
 
 @keyframes shimmer {
   0% {
@@ -70,21 +202,21 @@ html {
 /* Tablet styles */
 @media screen and (max-width: 768px) {
   .orgrep-dashboard-center {
-    padding: 1.5rem 0.75rem;
+    padding: 1rem 0.75rem;
   }
   
   .orgrep-welcome-title {
-    font-size: 1.8rem;
+    font-size: 2rem;
     margin-bottom: 1.2rem;
     max-width: 500px;
   }
   
   .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
   }
   
   .orgrep-dashboard-center > *:last-child {
-    margin-top: 1.5rem;
+    margin-top: 0.75rem;
     scroll-margin-top: 80px;
   }
 }
@@ -97,54 +229,73 @@ html {
   }
   
   .orgrep-welcome-title {
-    font-size: 1.5rem;
+    font-size: 2rem;
     margin-bottom: 1rem;
     max-width: 350px;
     line-height: 1.3;
   }
   
   .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
     width: 100%;
     max-width: 350px;
   }
   
   .orgrep-dashboard-center > *:last-child {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     scroll-margin-top: 60px;
     padding: 0 0.5rem;
   }
 }
+.org-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2.5rem;
+  justify-items: center !important ; 
+  padding: 2rem;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
 
 /* Extra small mobile devices */
 @media screen and (max-width: 320px) {
   .orgrep-welcome-title {
-    font-size: 1.3rem;
+    font-size: 2rem;
     max-width: 280px;
   }
   
   .orgrep-dashboard-center {
     padding: 0.75rem 0.25rem;
   }
+  
+  .orgrep-dashboard-center > *:nth-child(3) {
+    margin-bottom: 0.5rem;
+  }
+  
+  .orgrep-dashboard-center > *:last-child {
+    margin-top: 0.25rem;
+  }
 }
 
 /* Large desktop styles */
 @media screen and (min-width: 1200px) {
   .orgrep-dashboard-center {
-    padding: 3rem 2rem;
+    padding: 1rem 2rem;
   }
   
   .orgrep-welcome-title {
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
   }
   
   .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
   }
   
   .orgrep-dashboard-center > *:last-child {
-    margin-top: 3rem;
+    margin-top: 2rem;
     scroll-margin-top: 120px;
   }
 }
@@ -173,4 +324,5 @@ html {
   .orgrep-dashboard-center > *:nth-child(3) {
     transition: none;
   }
+}
 }

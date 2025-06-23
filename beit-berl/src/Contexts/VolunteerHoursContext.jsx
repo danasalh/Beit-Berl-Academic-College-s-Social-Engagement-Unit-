@@ -1,4 +1,4 @@
-// src/contexts/VolunteerHoursContext.jsx - Fixed Version
+// src/contexts/VolunteerHoursContext.jsx - Updated with reject functionality
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { 
   collection, 
@@ -47,13 +47,14 @@ export const VolunteerHoursProvider = ({ children }) => {
       volunteerId: String(data.volunteerId),
       orgId: Number(data.orgId),
       hours: Number(data.hours),
-      approved: Boolean(data.approved)
+      approved: Boolean(data.approved),
+      rejected: Boolean(data.rejected || false) // New field with default false
     };
   };
 
-  // Get all volunteer hours
-  const getVolunteerHours = useCallback(async () => {
-    console.log('⏰ Fetching all volunteer hours...');
+  // Get all volunteer hours (excluding rejected ones)
+  const getVolunteerHours = useCallback(async (includeRejected = false) => {
+    console.log('⏰ Fetching all volunteer hours...', includeRejected ? 'including rejected' : 'excluding rejected');
     setLoading(true);
     setError(null);
     
@@ -61,7 +62,12 @@ export const VolunteerHoursProvider = ({ children }) => {
       const q = query(hoursCollection, orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
       
-      const hoursData = querySnapshot.docs.map(processHoursData);
+      let hoursData = querySnapshot.docs.map(processHoursData);
+      
+      // Filter out rejected hours unless specifically requested
+      if (!includeRejected) {
+        hoursData = hoursData.filter(record => !record.rejected);
+      }
       
       setVolunteerHours(hoursData);
       console.log(`✅ Fetched ${hoursData.length} volunteer hour records`);
@@ -75,8 +81,8 @@ export const VolunteerHoursProvider = ({ children }) => {
     }
   }, []);
 
-  // Get volunteer hours by volunteer ID
-  const getVolunteerHoursByVolunteerId = useCallback(async (volunteerId) => {
+  // Get volunteer hours by volunteer ID (excluding rejected ones by default)
+  const getVolunteerHoursByVolunteerId = useCallback(async (volunteerId, includeRejected = false) => {
     if (!volunteerId) {
       console.warn('⚠️ No volunteer ID provided');
       return [];
@@ -97,7 +103,12 @@ export const VolunteerHoursProvider = ({ children }) => {
       );
       
       const querySnapshot = await getDocs(q);
-      const hoursData = querySnapshot.docs.map(processHoursData);
+      let hoursData = querySnapshot.docs.map(processHoursData);
+      
+      // Filter out rejected hours unless specifically requested
+      if (!includeRejected) {
+        hoursData = hoursData.filter(record => !record.rejected);
+      }
       
       console.log(`✅ Found ${hoursData.length} records for volunteer: ${volunteerId}`);
       return hoursData;
@@ -110,8 +121,8 @@ export const VolunteerHoursProvider = ({ children }) => {
     }
   }, []);
 
-  // Get volunteer hours by organization ID
-  const getVolunteerHoursByOrganizationId = useCallback(async (orgId) => {
+  // Get volunteer hours by organization ID (excluding rejected ones by default)
+  const getVolunteerHoursByOrganizationId = useCallback(async (orgId, includeRejected = false) => {
     if (orgId === undefined || orgId === null) {
       console.warn('⚠️ No organization ID provided');
       return [];
@@ -131,7 +142,12 @@ export const VolunteerHoursProvider = ({ children }) => {
       );
       
       const querySnapshot = await getDocs(q);
-      const hoursData = querySnapshot.docs.map(processHoursData);
+      let hoursData = querySnapshot.docs.map(processHoursData);
+      
+      // Filter out rejected hours unless specifically requested
+      if (!includeRejected) {
+        hoursData = hoursData.filter(record => !record.rejected);
+      }
       
       console.log(`✅ Found ${hoursData.length} records for organization: ${orgId}`);
       return hoursData;
@@ -176,7 +192,7 @@ export const VolunteerHoursProvider = ({ children }) => {
     }
   }, []);
 
-  // Calculate total hours for a volunteer
+  // Calculate total hours for a volunteer (excluding rejected)
   const getTotalHoursForVolunteer = useCallback(async (volunteerId, approvedOnly = true) => {
     if (!volunteerId) {
       console.warn('⚠️ No volunteer ID provided for total hours calculation');
@@ -186,11 +202,11 @@ export const VolunteerHoursProvider = ({ children }) => {
     console.log('📊 Calculating total hours for volunteer:', volunteerId, 'approvedOnly:', approvedOnly);
     
     try {
-      const hoursData = await getVolunteerHoursByVolunteerId(volunteerId);
+      const hoursData = await getVolunteerHoursByVolunteerId(volunteerId, false); // Don't include rejected
       
       const filteredHours = approvedOnly 
-        ? hoursData.filter(record => record.approved === true)
-        : hoursData;
+        ? hoursData.filter(record => record.approved === true && !record.rejected)
+        : hoursData.filter(record => !record.rejected);
       
       const totalHours = filteredHours.reduce((sum, record) => {
         return sum + Number(record.hours || 0);
@@ -221,12 +237,13 @@ export const VolunteerHoursProvider = ({ children }) => {
         orgId: Number(hoursData.orgId),
         hours: Number(hoursData.hours),
         approved: false, // Default to false
+        rejected: false, // Default to false
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         // Include any additional fields
         ...Object.fromEntries(
           Object.entries(hoursData).filter(([key]) => 
-            !['volunteerId', 'orgId', 'hours', 'approved', 'createdAt', 'updatedAt'].includes(key)
+            !['volunteerId', 'orgId', 'hours', 'approved', 'rejected', 'createdAt', 'updatedAt'].includes(key)
           )
         )
       };
@@ -272,6 +289,7 @@ export const VolunteerHoursProvider = ({ children }) => {
         ...(updateData.orgId !== undefined && { orgId: Number(updateData.orgId) }),
         ...(updateData.hours && { hours: Number(updateData.hours) }),
         ...(updateData.approved !== undefined && { approved: Boolean(updateData.approved) }),
+        ...(updateData.rejected !== undefined && { rejected: Boolean(updateData.rejected) }),
         updatedAt: serverTimestamp()
       };
 
@@ -326,10 +344,16 @@ export const VolunteerHoursProvider = ({ children }) => {
     }
   }, []);
 
-  // Approve/Reject volunteer hours
+  // Approve volunteer hours
   const updateHoursApprovalStatus = useCallback(async (hoursId, approved) => {
     console.log('✅ Updating approval status:', hoursId, approved);
-    return await updateVolunteerHours(hoursId, { approved });
+    return await updateVolunteerHours(hoursId, { approved, rejected: false });
+  }, [updateVolunteerHours]);
+
+  // Reject volunteer hours - NEW FUNCTION
+  const updateHoursRejectionStatus = useCallback(async (hoursId, rejected) => {
+    console.log('❌ Updating rejection status:', hoursId, rejected);
+    return await updateVolunteerHours(hoursId, { rejected, approved: false });
   }, [updateVolunteerHours]);
 
   // Bulk approve hours
@@ -340,7 +364,7 @@ export const VolunteerHoursProvider = ({ children }) => {
 
     try {
       const updatePromises = hoursIds.map(hoursId =>
-        updateVolunteerHours(hoursId, { approved })
+        updateVolunteerHours(hoursId, { approved, rejected: false })
       );
 
       await Promise.all(updatePromises);
@@ -348,6 +372,29 @@ export const VolunteerHoursProvider = ({ children }) => {
       return true;
     } catch (err) {
       console.error('❌ Error in bulk approval update:', err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [updateVolunteerHours]);
+
+  // Bulk reject hours - NEW FUNCTION
+  const bulkRejectHours = useCallback(async (hoursIds, rejected = true) => {
+    console.log('🔄 Bulk updating rejection status:', hoursIds.length, 'records');
+    setLoading(true);
+    setError(null);
+
+    try {
+      const updatePromises = hoursIds.map(hoursId =>
+        updateVolunteerHours(hoursId, { rejected, approved: false })
+      );
+
+      await Promise.all(updatePromises);
+      console.log('✅ Bulk rejection update completed successfully');
+      return true;
+    } catch (err) {
+      console.error('❌ Error in bulk rejection update:', err);
       setError(err.message);
       throw err;
     } finally {
@@ -364,7 +411,7 @@ export const VolunteerHoursProvider = ({ children }) => {
       
       // If we don't have data in state, fetch it
       if (hoursData.length === 0) {
-        hoursData = await getVolunteerHours();
+        hoursData = await getVolunteerHours(true); // Include rejected for statistics
       }
 
       // Apply filters
@@ -377,15 +424,21 @@ export const VolunteerHoursProvider = ({ children }) => {
       if (filters.approved !== undefined) {
         hoursData = hoursData.filter(record => record.approved === filters.approved);
       }
+      if (filters.rejected !== undefined) {
+        hoursData = hoursData.filter(record => record.rejected === filters.rejected);
+      }
 
       const stats = {
         totalRecords: hoursData.length,
         totalHours: hoursData.reduce((sum, record) => sum + Number(record.hours || 0), 0),
         approvedHours: hoursData
-          .filter(record => record.approved)
+          .filter(record => record.approved && !record.rejected)
           .reduce((sum, record) => sum + Number(record.hours || 0), 0),
         pendingHours: hoursData
-          .filter(record => !record.approved)
+          .filter(record => !record.approved && !record.rejected)
+          .reduce((sum, record) => sum + Number(record.hours || 0), 0),
+        rejectedHours: hoursData
+          .filter(record => record.rejected)
           .reduce((sum, record) => sum + Number(record.hours || 0), 0),
         uniqueVolunteers: new Set(hoursData.map(record => record.volunteerId)).size,
         uniqueOrganizations: new Set(hoursData.map(record => record.orgId)).size
@@ -400,6 +453,7 @@ export const VolunteerHoursProvider = ({ children }) => {
         totalHours: 0,
         approvedHours: 0,
         pendingHours: 0,
+        rejectedHours: 0,
         uniqueVolunteers: 0,
         uniqueOrganizations: 0
       };
@@ -426,7 +480,9 @@ export const VolunteerHoursProvider = ({ children }) => {
     
     // Approval operations
     updateHoursApprovalStatus,
+    updateHoursRejectionStatus, // NEW
     bulkApproveHours,
+    bulkRejectHours, // NEW
     
     // Statistics
     getHoursStatistics

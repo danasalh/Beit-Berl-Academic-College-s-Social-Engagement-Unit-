@@ -24,6 +24,8 @@ export default function NotificationsPanel() {
   const [loading, setLoading] = useState(true);
   const [hasInitialized, setHasInitialized] = useState(false);
 
+  const [dropdownPosition, setDropdownPosition] = useState({});
+
   // Notification type configurations - contains titles and display info
   const notificationTypeConfig = useMemo(() => ({
     'reminder': {
@@ -43,21 +45,42 @@ export default function NotificationsPanel() {
       displayName: 'פידבק חדש',
       color: '#4caf50',
       icon: '💬'
+    },
+    'welcome': {
+      title: 'ברוכים הבאים למערכת!',
+      displayName: 'ברוכים הבאים',
+      color: '#2196f3',
+      icon: '🎉'
+    },
+    'hours-status': {
+      title: 'עדכון על שעות התנדבות',
+      displayName: 'סטטוס שעות',
+      color: '#d1e725',
+      icon: '⏰'
+    },
+    'volunteer-completed': {
+      title: 'מתנדב השלים 60 שעות התנדבות',
+      displayName: 'השלמת התנדבות',
+      color: '#9c27b0',
+      icon: '🎓'
     }
   }), []);
 
   // Helper function to get notification display properties
   const getNotificationDisplayProps = useCallback((notification) => {
     const config = notificationTypeConfig[notification.type] || {};
-    
+
     // For feedback-notification, prioritize the config title over notification.title
     let finalTitle;
     if (notification.type === 'feedback-notification') {
       finalTitle = config.title || notification.title || 'הוזן פידבק חדש במערכת';
+    } else if (notification.type === 'volunteer-completed') {
+      // For volunteer-completed, use the dynamic title from the notification if available
+      finalTitle = notification.title || config.title || 'מתנדב השלים 60 שעות התנדבות';
     } else {
       finalTitle = notification.title || config.title || 'הודעה חדשה';
     }
-    
+
     return {
       title: finalTitle,
       displayName: config.displayName || notification.type || 'הודעה',
@@ -108,7 +131,7 @@ export default function NotificationsPanel() {
       // Transform notifications to match the expected format
       const transformedNotifications = userNotifications.map(notif => {
         const displayProps = getNotificationDisplayProps(notif);
-        
+
         return {
           id: notif.id,
           title: displayProps.title,
@@ -120,7 +143,9 @@ export default function NotificationsPanel() {
           originalDate: notif.date,
           displayName: displayProps.displayName,
           color: displayProps.color,
-          icon: displayProps.icon
+          icon: displayProps.icon,
+          // Include metadata for volunteer-completed notifications
+          metadata: notif.metadata || null
         };
       });
 
@@ -168,6 +193,8 @@ export default function NotificationsPanel() {
 
   // Handle read/unread status toggle
   const toggleReadStatus = useCallback(async (id, readStatus) => {
+    console.log('toggleReadStatus called:', { id, readStatus });
+
     try {
       if (readStatus) {
         await markNotificationAsRead(id);
@@ -176,18 +203,23 @@ export default function NotificationsPanel() {
       }
 
       // Update local state
-      setNotifications(prev =>
-        prev.map(notif =>
+      setNotifications(prev => {
+        const updated = prev.map(notif =>
           notif.id === id ? { ...notif, read: readStatus } : notif
-        )
-      );
+        );
+        console.log('Updated notifications state:', updated);
+        return updated;
+      });
 
       // Update selected notification if it's the one being changed
       if (selectedNotification && selectedNotification.id === id) {
         setSelectedNotification(prev => ({ ...prev, read: readStatus }));
       }
 
+      // Close the dropdown
       setOpenMenuId(null);
+
+      console.log('Successfully updated notification status');
     } catch (error) {
       console.error('Error updating notification status:', error);
     }
@@ -220,14 +252,79 @@ export default function NotificationsPanel() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (openMenuId && !event.target.closest('.notifications-item-menu')) {
+      // Check if click is outside both the menu button and dropdown
+      if (openMenuId &&
+        !event.target.closest('.notifications-item-menu') &&
+        !event.target.closest('.menu-dropdown')) {
         setOpenMenuId(null);
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    const handleScroll = () => {
+      if (openMenuId) {
+        setOpenMenuId(null);
+      }
+    };
+
+    const handleResize = () => {
+      if (openMenuId) {
+        setOpenMenuId(null);
+      }
+    };
+
+    if (openMenuId) {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
   }, [openMenuId]);
+
+  // Helper function to render notification content based on type
+  const renderNotificationContent = useCallback((notification) => {
+    const baseContent = (
+      <>
+        <p className="notifications-message">{notification.message}</p>
+        {notification.type && (
+          <div className="notifications-type">
+            <span className={`type-badge ${notification.type}`}>
+              {notification.icon} {notification.displayName}
+            </span>
+          </div>
+        )}
+      </>
+    );
+
+    // Add extra details for volunteer-completed notifications
+    if (notification.type === 'volunteer-completed' && notification.metadata) {
+      const { volunteerName, volunteerEmail, completionDate } = notification.metadata;
+
+      return (
+        <>
+          {baseContent}
+          <div className="notification-details volunteer-completed-details">
+            <h4>פרטי המתנדב:</h4>
+            <div className="detail-item">
+              <strong>שם:</strong> {volunteerName || 'לא צוין'}
+            </div>
+            <div className="detail-item">
+              <strong>אימייל:</strong> {volunteerEmail || 'לא צוין'}
+            </div>
+            <div className="detail-item">
+              <strong>תאריך השלמה:</strong> {completionDate ? new Date(completionDate).toLocaleDateString('he-IL') : 'לא צוין'}
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    return baseContent;
+  }, []);
 
   // Loading state - only show on initial load
   if (loading && !hasInitialized) {
@@ -318,14 +415,7 @@ export default function NotificationsPanel() {
               {selectedNotification.time} | {selectedNotification.date}
             </div>
             <div className="notifications-content">
-              <p className="notifications-message">{selectedNotification.message}</p>
-              {selectedNotification.type && (
-                <div className="notifications-type">
-                  <span className={`type-badge ${selectedNotification.type}`}>
-                    {selectedNotification.icon} {selectedNotification.displayName}
-                  </span>
-                </div>
-              )}
+              {renderNotificationContent(selectedNotification)}
             </div>
           </>
         )}
@@ -359,7 +449,7 @@ export default function NotificationsPanel() {
             <div
               key={notif.id}
               className={`notifications-item ${selectedNotification?.id === notif.id ? "selected" : ""
-                } ${!notif.read ? "unread" : ""}`}
+                } ${!notif.read ? "unread" : ""} ${notif.type === 'volunteer-completed' ? 'volunteer-completed-item' : ''}`}
             >
               <div onClick={() => handleNotificationSelect(notif)}>
                 <div className="notifications-item-time">
@@ -371,7 +461,7 @@ export default function NotificationsPanel() {
                   </span>
                   <span className="title-text">{notif.title}</span>
                   {notif.type && (
-                    <span 
+                    <span
                       className={`type-indicator ${notif.type}`}
                       style={{ backgroundColor: notif.color }}
                     ></span>
@@ -384,45 +474,66 @@ export default function NotificationsPanel() {
                 className="notifications-item-menu"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setOpenMenuId(openMenuId === notif.id ? null : notif.id);
+
+                  if (openMenuId === notif.id) {
+                    setOpenMenuId(null);
+                  } else {
+                    // Calculate position for fixed positioning
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                    setDropdownPosition({
+                      top: rect.bottom + scrollTop,
+                      right: window.innerWidth - rect.right,
+                    });
+
+                    setOpenMenuId(notif.id);
+                  }
                 }}
               >
                 ⋮
-                {openMenuId === notif.id && (
-                  <div className="menu-dropdown">
-                    <div
-                      className="menu-item"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleReadStatus(notif.id, true);
-                      }}
-                    >
-                      סמן כנקרא
-                    </div>
-                    <div
-                      className="menu-item"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleReadStatus(notif.id, false);
-                      }}
-                    >
-                      סמן כלא נקרא
-                    </div>
-                  </div>
-                )}
               </div>
+
+              {/* Render dropdown outside of the menu button but still inside the item */}
+              {openMenuId === notif.id && (
+                <div
+                  className="menu-dropdown"
+                  style={{
+                    position: 'fixed',
+                    top: `${dropdownPosition.top}px`,
+                    right: `${dropdownPosition.right}px`,
+                    zIndex: 1000
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    className="menu-item"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      console.log('Mark as read clicked for notification:', notif.id);
+                      await toggleReadStatus(notif.id, true);
+                    }}
+                  >
+                    סמן כנקרא
+                  </div>
+                  <div
+                    className="menu-item"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      console.log('Mark as unread clicked for notification:', notif.id);
+                      await toggleReadStatus(notif.id, false);
+                    }}
+                  >
+                    סמן כלא נקרא
+                  </div>
+                </div>
+              )}
+
 
               {/* Show expanded content on mobile under item */}
               {selectedNotification?.id === notif.id && (
                 <div className="notifications-item-expanded-content">
-                  <p>{notif.message}</p>
-                  {notif.type && (
-                    <div className="notifications-type">
-                      <span className={`type-badge ${notif.type}`}>
-                        {notif.icon} {notif.displayName}
-                      </span>
-                    </div>
-                  )}
+                  {renderNotificationContent(notif)}
                 </div>
               )}
             </div>

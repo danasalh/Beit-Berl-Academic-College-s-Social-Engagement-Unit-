@@ -71,28 +71,6 @@
   font-weight: 400;
 }
 
-.close-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.close-btn svg {
-  font-size: 20px;
-}
-
 /* Body */
 .hours-modal-body {
   flex: 1;
@@ -443,7 +421,7 @@
     margin-right: 0;
   }
 
-  .approve-btn {
+  .approve-btn , .reject-btn {
     width: 100%;
   }
 }
@@ -473,4 +451,38 @@
   .hours-number {
     font-size: 20px;
   }
+}
+
+.reject-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ef4444; /* red-500 */
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 100px;
+  justify-content: center;
+  margin-top: 0.1rem;
+}
+
+.reject-btn:hover:not(:disabled) {
+  background: #dc2626; /* red-600 */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.reject-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reject-btn.loading {
+  background: #9ca3af; /* gray-400 */
 }

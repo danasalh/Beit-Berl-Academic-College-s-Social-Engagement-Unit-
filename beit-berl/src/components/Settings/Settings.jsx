@@ -128,7 +128,7 @@ const Settings = () => {
   }
 
   return (
-    <div className="settings-container">
+    <div className="settings-container" style={{ direction: "rtl", textAlign: "left" }}>
       <h2>הגדרות משתמש</h2>
 
       <div className="setting-row">
@@ -176,10 +176,12 @@ const Settings = () => {
           readOnly={true}
           className={getInputClass('email')} 
         />
-        {isEditable && (
-          <small className="field-note">לא ניתן לשנות כתובת דוא"ל</small>
-        )}
       </div>
+      {isEditable && (
+        <div className="field-note-wrapper">
+          <small className="field-note">לא ניתן לשנות כתובת דוא"ל</small>
+        </div>
+      )}
 
       <div className="setting-row">
         <label>תפקיד:</label>
@@ -190,10 +192,12 @@ const Settings = () => {
           readOnly={true}
           className={getInputClass('role')} 
         />
-        {isEditable && (
-          <small className="field-note">לא ניתן לשנות תפקיד</small>
-        )}
       </div>
+      {isEditable && (
+        <div className="field-note-wrapper">
+          <small className="field-note">לא ניתן לשנות תפקיד</small>
+        </div>
+      )}
 
       <div className="edit-button-container">
         {!isEditable ? (

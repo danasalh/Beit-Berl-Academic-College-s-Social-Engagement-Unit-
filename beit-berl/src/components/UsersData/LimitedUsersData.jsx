@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useUsers } from '../../Contexts/UsersContext';
 import { useOrganizations } from '../../Contexts/OrganizationsContext';
 import UserProfile from '../UserProfile/UserProfile';
+import { getRoleLabel } from '../../utils/roleTranslations';
 import FilterBar from '../FilterBar/FilterBar';
 import FeedbackPopup from '../PopUps/FeedbackPopup/FeedbackPopup';
 import NotAllowed from '../PopUps/NotAllowed/NotAllowed';
 import HoursData from '../HoursData/HoursData';
 
 import './UsersData.css';
-import { HiOutlineEye, HiOutlinePencil , HiOutlineClock} from 'react-icons/hi';
+import { HiOutlineEye, HiOutlinePencil, HiOutlineClock } from 'react-icons/hi';
 
 const LimitedUsersData = () => {
     const {
@@ -488,7 +489,7 @@ const LimitedUsersData = () => {
 
                                     return (
                                         <tr key={user.docId || user.id}>
-                                            <td data-label="Name">
+                                            <td data-label="">
                                                 <div className="user-name">
                                                     <div className="user-avatar">
                                                         {(user.firstName || user.email || String(user.id)).charAt(0).toUpperCase()}
@@ -496,45 +497,45 @@ const LimitedUsersData = () => {
                                                     <span>{`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'N/A'}</span>
                                                 </div>
                                             </td>
-                                            <td data-label="Email">{user.email || 'N/A'}</td>
-                                            <td data-label="Role">
+                                            <td data-label="">{user.email || 'N/A'}</td>
+                                            <td data-label="">
                                                 <span className={`role-badge ${user.role || 'no-role'}`}>
-                                                    {user.role || 'N/A'}
+                                                    {getRoleLabel(user.role) || 'לא מוגדר'}
                                                 </span>
                                             </td>
-                                            <td data-label="Status">
+                                            <td data-label="">
                                                 <span className={`status-badge ${user.status}`}>
                                                     {user.status}
                                                 </span>
                                             </td>
-                                            <td data-label="Organizations">
+                                            <td data-label="">
                                                 <div className="organizations-list" title={sharedOrgNames}>
                                                     {sharedOrgNames || 'N/A'}
                                                 </div>
                                             </td>
-                                            <td data-label="Created At">{formatDate(user.createdAt)}</td>
-                                            <td data-label="Operations">
+                                            <td data-label="">{formatDate(user.createdAt)}</td>
+                                            <td data-label="">
                                                 <div className="operations-buttons">
                                                     <button
                                                         className="btn btn-watch"
                                                         onClick={() => handleWatch(user)}
-                                                        title="View Profile"
+                                                        title="צפייה בפרופיל"
                                                     >
                                                         <HiOutlineEye />
                                                     </button>
                                                     <button
                                                         className="btn btn-edit"
                                                         onClick={() => handleEdit(user)}
-                                                        title="Add/Edit Feedback"
+                                                        title="הוספת פידבק"
                                                     >
-                                                        <HiOutlinePencil />
+                                                        <HiOutlinePencil /> 
                                                     </button>
                                                     {/* UPDATED: Added onClick handler and conditional display */}
                                                     {user.role === 'volunteer' && (
                                                         <button
                                                             className="btn btn-hours"
                                                             onClick={() => handleHours(user)}
-                                                            title="Manage Hours"
+                                                            title="אישור וצפייה בשעות"
                                                         >
                                                             <HiOutlineClock />
                                                         </button>

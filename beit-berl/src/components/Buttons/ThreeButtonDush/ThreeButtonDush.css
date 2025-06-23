@@ -1,14 +1,14 @@
-.three-button-dush {
+.three-button-dush-v {
   display: flex;
   gap: 16px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-.dush-button {
+.dush-button-v {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1.5rem;
   padding: 1.1rem 2.2rem;
   font-size: 1.08rem;
   font-weight: 600;
@@ -24,13 +24,13 @@
     color 0.18s;
   outline: none;
   min-width: 120px;
+  max-width: 240px;
   box-shadow: 0 4px 24px 0 rgba(33, 150, 243, 0.13), 0 1.5px 6px 0 #90caf9;
   flex: 1 1 180px;
-  max-width: 240px;
 }
 
-.dush-button:hover,
-.dush-button:focus {
+.dush-button-v:hover,
+.dush-button-v:focus {
   background: #fff;
   box-shadow: 0 8px 32px 0 #42a5f5cc, 0 2px 12px 0 #90caf9;
   transform: translateY(-4px) scale(1.045);
@@ -38,7 +38,7 @@
   animation: dush-glow 1.2s infinite alternate;
 }
 
-.dush-button:active {
+.dush-button-v:active {
   animation: none;
   transform: scale(0.96);
   box-shadow: 0 2px 8px 0 #90caf9;
@@ -54,34 +54,52 @@
   }
 }
 
-.dush-icon {
+.dush-icon-v {
   font-size: 2.1rem;
   margin-bottom: 0;
   color: #1976d2;
   transition: color 0.18s;
 }
 
-.dush-button:hover .dush-icon,
-.dush-button:focus .dush-icon {
+.dush-button-v:hover .dush-icon,
+.dush-button-v:focus .dush-icon {
   color: #0d47a1;
 }
 
-.dush-button:focus,
-.dush-button:active {
+.dush-button-v:focus,
+.dush-button-v:active {
   outline: none !important;
   box-shadow: none !important;
 }
 
 /* רספונסיביות: בשורות במסכים קטנים */
 @media (max-width: 700px) {
-  .three-button-dush {
+  .three-button-dush-v {
     flex-direction: column;
     gap: 18px;
     align-items: center;
+
   }
-  .dush-button {
-    width: 90vw;
-    max-width: 98vw;
+  .dush-button-v {
+    width: 80vw;
+    max-width: 80vw;
     min-width: unset;
   }
+}
+
+.duch-info-v {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem; 
+}
+
+.dush-info-v h6{
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+.dush-info-v p{
+  text-align: right;
+  font-size: 0.7rem;
 }

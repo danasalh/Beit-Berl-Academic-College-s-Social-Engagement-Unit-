@@ -1,4 +1,4 @@
-.users-data-container { width: 90%; max-width: 1280px; margin: 0 auto; padding: 1.5rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
+.users-data-container { width: 95%; max-width: 1280px; margin: 0 auto; padding: 1.5rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
 
 /* Header styles */ .users-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid 
 #eaeaea; }
@@ -177,12 +177,6 @@
 #e2e8f0; }
 
 .modal-header h3 { margin: 0; font-size: 1.25rem; font-weight: 600; color: 
-#1e293b; }
-
-.close-btn { background: none; border: none; font-size: 1.5rem; line-height: 1; color: 
-#64748b; cursor: pointer; padding: 0.25rem; }
-
-.close-btn:hover { color: 
 #1e293b; }
 
 .modal-body { padding: 1.5rem; }

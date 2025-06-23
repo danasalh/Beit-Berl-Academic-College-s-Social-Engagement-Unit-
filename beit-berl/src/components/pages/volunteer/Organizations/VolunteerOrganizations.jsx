@@ -1,5 +1,5 @@
 // src/components/pages/volunteer/organizations/VcOrganizatios.jsx
-import OrganizationsList from '../../../Organizations/OrganizationsComp/OrganizationsList';
+import OrganizationsList from '../../../Organizations/OrganizationsList';
 
 export default function Volunteerorganizations() {
   return (

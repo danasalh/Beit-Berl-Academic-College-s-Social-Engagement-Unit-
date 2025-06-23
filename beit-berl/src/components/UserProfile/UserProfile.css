@@ -67,7 +67,27 @@
     margin-bottom: 4px;
   }
 }
+
 .org-grid:has(.org-card:only-child) {
   justify-content: center;
   display: flex;
 }
+
+
+.btn-feedback {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  background-color: rgb(52, 152, 219);
+  color: white;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  border-radius: 0.25rem;
+  border: none;
+}
+
+.btn-feedback:hover {
+  background-color: rgb(82, 166, 214);
+  transition: cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+

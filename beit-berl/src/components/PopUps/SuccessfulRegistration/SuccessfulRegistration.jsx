@@ -9,7 +9,6 @@ const SuccessfulRegistration = ({ onClose }) => {
         </div>
         <p className="success-message">
           הטופס נשלח בהצלחה. הבקשה שלך נמצאת בבדיקה. <br />
-          נשלח לך הודעה ברגע שיתקבל אישור.
         </p>
       </div>
     </div>

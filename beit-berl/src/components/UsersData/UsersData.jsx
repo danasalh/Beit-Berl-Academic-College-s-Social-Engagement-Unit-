@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUsers } from '../../Contexts/UsersContext';
 import { useOrganizations } from '../../Contexts/OrganizationsContext';
+import { getRoleLabel } from '../../utils/roleTranslations';
 import UserProfile from '../UserProfile/UserProfile';
 import FilterBar from '../FilterBar/FilterBar';
 import FeedbackPopup from '../PopUps/FeedbackPopup/FeedbackPopup';
@@ -10,8 +11,11 @@ import { exportUsersToExcel } from '../../utils/excelExport';
 import UserEdit from './UserEdit';
 import './UsersData.css';
 import { HiOutlineEye, HiOutlinePencil, HiOutlineClock } from 'react-icons/hi';
+import { db } from '../../firebase/config';
+import { useWelcomeNotifications } from '../../utils/welcomeNotificationHelpers';
 
 const UsersData = () => {
+  // Context hooks - always keep these at the top and in the same order
   const {
     users,
     loading,
@@ -25,6 +29,8 @@ const UsersData = () => {
     getOrganizations,
     loading: orgLoading
   } = useOrganizations();
+
+  const { sendWelcomeNotification } = useWelcomeNotifications();
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -203,7 +209,7 @@ const UsersData = () => {
     }
   }, [updateUser, getStatusAction, refreshData, showSuccess]);
 
-  // Status update in modal
+  // Handle status update in modal
   const handleStatusUpdateInModal = useCallback(async (newStatus) => {
     if (!selectedUser?.docId) {
       console.error('No selected user document ID');
@@ -222,6 +228,23 @@ const UsersData = () => {
         status: newStatus
       }));
 
+      // Send welcome notification if the user was approved
+      if (newStatus === 'approved') {
+        try {
+          const userForNotification = {
+            id: selectedUser.docId,
+            name: `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.email,
+            role: selectedUser.role
+          };
+          
+          await sendWelcomeNotification(userForNotification);
+          console.log('✅ Welcome notification sent successfully');
+        } catch (notificationError) {
+          console.error('Error sending welcome notification:', notificationError);
+          // Continue execution even if notification fails
+        }
+      }
+
       // Refresh data after successful update
       await refreshData();
 
@@ -234,7 +257,7 @@ const UsersData = () => {
       console.error('Error updating user status:', err);
       alert(`Failed to update user status: ${err.message}`);
     }
-  }, [selectedUser, updateUser, refreshData, showSuccess]);
+  }, [selectedUser, updateUser, refreshData, showSuccess, sendWelcomeNotification]);
 
   // Handle watch user profile
   const handleWatch = useCallback((user) => {
@@ -658,7 +681,7 @@ const UsersData = () => {
 
                   return (
                     <tr key={user.docId || user.id}>
-                      <td data-label="Name">
+                      <td data-label="">
                         <div className="user-name">
                           <div className="user-avatar">
                             {(user.firstName || user.email || String(user.id)).charAt(0).toUpperCase()}
@@ -666,38 +689,38 @@ const UsersData = () => {
                           <span>{`${user.firstName || ''} ${user.lastName || ''}`.trim() || 'N/A'}</span>
                         </div>
                       </td>
-                      <td data-label="Email">{user.email || 'N/A'}</td>
-                      <td data-label="Role">
+                      <td data-label="">{user.email || 'N/A'}</td>
+                      <td data-label="">
                         <span className={`role-badge ${user.role || 'no-role'}`}>
-                          {user.role || 'N/A'}
+                          {getRoleLabel(user.role) || 'לא מוגדר'}
                         </span>
                       </td>
-                      <td data-label="Organizations">
+                      <td data-label="">
                         <div className="organizations-cell">
                           {getOrganizationNames(user.orgId)}
                         </div>
                       </td>
-                      <td data-label="Status">
+                      <td data-label="">
                         <div className="status-management">
                           <span className={`status-badge ${user.status}`}>
                             {user.status}
                           </span>
                         </div>
                       </td>
-                      <td data-label="Created At">{formatDate(user.createdAt)}</td>
-                      <td data-label="Operations">
+                      <td data-label="">{formatDate(user.createdAt)}</td>
+                      <td data-label="">
                         <div className="operations-buttons">
                           <button
                             className="btn btn-watch"
                             onClick={() => handleWatch(user)}
-                            title="View Profile"
+                            title="צפייה בפרופיל"
                           >
                             <HiOutlineEye />
                           </button>
                           <button
                             className="btn btn-edit"
                             onClick={() => handleEdit(user)}
-                            title="Edit User"
+                            title="עריכת פרופיל משתמש"
                           >
                             <HiOutlinePencil />
                           </button>
@@ -706,7 +729,7 @@ const UsersData = () => {
                             <button
                               className="btn btn-hours"
                               onClick={() => handleHours(user)}
-                              title="Manage Hours"
+                              title="צפייה ואישור שעות"
                             >
                               <HiOutlineClock />
                             </button>

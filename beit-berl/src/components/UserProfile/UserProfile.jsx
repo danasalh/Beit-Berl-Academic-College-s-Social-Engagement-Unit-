@@ -1,6 +1,7 @@
-import React from 'react';
+import { getRoleLabel } from '../../utils/roleTranslations';
 import { useUsers } from '../../Contexts/UsersContext'; // Import the useUsers hook
 import './UserProfile.css';
+import CloseButton from '../Buttons/CloseButton/CloseButton';
 
 const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
   const { currentUser } = useUsers(); // Get current logged-in user
@@ -51,8 +52,8 @@ const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content profile-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>User Profile</h3>
-          <button className="close-btn" onClick={onClose}>×</button>
+          <h3>פרופיל המשתמש</h3>
+          <CloseButton onClick={onClose} />
         </div>
         <div className="modal-body">
           <div className="profile-section">
@@ -64,45 +65,41 @@ const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
           </div>
           <div className="profile-details">
             <div className="detail-group">
-              <label>User ID:</label>
-              <span>{user.id || 'N/A'}</span>
-            </div>
-            <div className="detail-group">
-              <label>First Name:</label>
+              <label>שם פרטי:</label>
               <span>{user.firstName || 'N/A'}</span>
             </div>
             <div className="detail-group">
-              <label>Last Name:</label>
+              <label>שם משפחה:</label>
               <span>{user.lastName || 'N/A'}</span>
             </div>
             <div className="detail-group">
-              <label>Email:</label>
+              <label>כתובת דוא"ל:</label>
               <span>{user.email || 'N/A'}</span>
             </div>
             <div className="detail-group">
-              <label>Phone Number:</label>
+              <label>מספר טלפון:</label>
               <span>{user.phoneNumber || 'N/A'}</span>
             </div>
             <div className="detail-group">
-              <label>Role:</label>
+              <label>תפקיד:</label>
               <span className={`role-badge ${user.role}`}>
-                {user.role || 'N/A'}
+                {getRoleLabel(user.role) || 'לא מוגדר'}
               </span>
             </div>
             <div className="detail-group">
-              <label>Organizations:</label>
+              <label>ארגונים משוייכים:</label>
               <span className="organizations-list">
                 {getOrganizationNames(user.orgId)}
               </span>
             </div>
             <div className="detail-group">
-              <label>Status:</label>
+              <label>סטטוס:</label>
               <span className={`status-badge ${user.status}`}>
                 {user.status}
               </span>
             </div>
             <div className="detail-group">
-              <label>Created At:</label>
+              <label>תאריך יצירה:</label>
               <span>{formatDate(user.createdAt)}</span>
             </div>
           </div>
@@ -110,17 +107,16 @@ const UserProfile = ({ user, organizations = [], onClose, onFeedback }) => {
           {user.role === 'volunteer' && isAdmin && (
             <div className="form-row">
               <div className="form-group feedback-group">
-                <label>Volunteer Feedback:</label>
                 <div className="feedback-controls">
                   <p className="feedback-description">
-                    Add or update feedback for this volunteer to help track their performance and development.
+                    הוסף או צפה בפידבק של המתנדב:
                   </p>
                   <button
                     type="button"
                     className="btn btn-feedback"
                     onClick={() => onFeedback(user)}
                   >
-                    Manage Feedback
+                    צפייה והוספת פידבק
                   </button>
                 </div>
               </div>

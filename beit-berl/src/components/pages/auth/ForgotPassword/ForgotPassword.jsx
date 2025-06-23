@@ -122,9 +122,6 @@ const ForgotPassword = () => {
           </form>
         ) : (
           <div className="back-to-login-container">
-            <p className="success-message">
-              תודה! בדוק את הדוא״ל שלך לקבלת הוראות איפוס הסיסמה.
-            </p>
             <Link to="/login" className="back-to-login-button">
               בחזרה להתחברות
             </Link>
@@ -134,7 +131,7 @@ const ForgotPassword = () => {
         {!isMobile && (
           <div className="desktop-footer">
             <p className="copyright-text">
-              © {new Date().getFullYear()} MyApp. כל הזכויות שמורות.
+              © {new Date().getFullYear()} Vtime. כל הזכויות שמורות.
             </p>
           </div>
         )}
