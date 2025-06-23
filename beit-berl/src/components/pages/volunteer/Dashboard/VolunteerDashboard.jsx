@@ -27,6 +27,8 @@ export default function VcDashboard() {
   const [loadingOrgs, setLoadingOrgs] = useState(false);
   const [orgsLoaded, setOrgsLoaded] = useState(false);
   const [showEndPopup, setShowEndPopup] = useState(false);
+  const [hasDeclared, setHasDeclared] = useState(false);
+
 
   // Updated helper function to get the correct user ID - prioritize id over docId
   const getUserId = (user) => {
@@ -470,7 +472,8 @@ export default function VcDashboard() {
 
   const handleFinishVol = () => {
     setShowEndPopup(true);
-  };
+    setHasDeclared(true);
+  }
 
   // Function to refresh approved hours (call this when hours are approved/rejected)
   const refreshApprovedHours = async () => {
@@ -501,7 +504,10 @@ export default function VcDashboard() {
       {/* Show FinishVol button only when user has at least 60 APPROVED hours */}
       {userApprovedHours >= 60 && (
         <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "center" }}>
-          <FinishVol onClick={handleFinishVol} />
+          <FinishVol
+            onClick={handleFinishVol}
+            label={hasDeclared ? "להצהיר שוב?" : "סיום התנדבות"}
+          />
         </div>
       )}
 
