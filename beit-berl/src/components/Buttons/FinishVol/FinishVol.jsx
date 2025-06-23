@@ -1,10 +1,9 @@
-import React from "react";
 import "./FinishVol.css";
 
-const FinishVol = ({ onClick }) => {
+const FinishVol = ({ onClick, label = "סיום התנדבות" }) => {
   return (
     <button className="finish-vol-button" onClick={onClick}>
-      סיום התנדבות
+      {label}
     </button>
   );
 };
