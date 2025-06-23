@@ -1,4 +1,3 @@
-import React from "react";
 import "./FinishVol.css";
 
 const FinishVol = ({ onClick }) => {
