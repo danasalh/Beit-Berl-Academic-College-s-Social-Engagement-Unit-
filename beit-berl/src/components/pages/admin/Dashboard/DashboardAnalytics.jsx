@@ -298,7 +298,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
     }
 
     if (selectedOrg !== 'all') {
-      const orgName = orgOptions.find(o => o.id === selectedOrg)?.name;
+      const orgName = orgOptions.find(o => String(o.id) === String(selectedOrg))?.name;
       parts.push(orgName);
     }
 
@@ -568,6 +568,14 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
     };
   }, [filteredUsers, filteredHours, filteredOrgs, convertToDate, selectedYear, selectedMonth, getCurrentMonthHours, months]);
 
+  const selectedOrgName = useMemo(() => {
+    if (selectedOrg === 'all') return 'כל הארגונים';
+    const match = organizations.find(
+      org => String(org.id) === String(selectedOrg) || String(org.docId) === String(selectedOrg)
+    );
+    return match?.name || match?.Name || 'ארגון נבחר';
+  }, [selectedOrg, organizations]);
+
   const lastUpdateDate = useMemo(() => new Date(), []);
 
   if (isLoading || !dataReady) {
@@ -729,7 +737,9 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
                 <TrendingUp className="stat-icon" />
               </div>
               <h3 className="stat-title">
-                מגמות צמיחה
+                <h3 className="stat-title">
+                  מגמות צמיחה{getFilterContext()}
+                </h3>
                 {selectedYear !== 'all' && selectedMonth !== 'all'
                   ? ` - ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`
                   : selectedYear !== 'all'
@@ -893,7 +903,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
                           : selectedRole !== 'all'
                             ? ` - ${roles.find(r => r.value === selectedRole)?.label}`
                             : selectedOrg !== 'all'
-                              ? ` - ${orgOptions.find(o => o.id === selectedOrg)?.name}`
+                              ? ` - ${orgOptions.find(o => String(o.id) === String(selectedOrg))?.name || 'ארגון נבחר'}`
                               : ''
                     }
                   </h3>
@@ -978,7 +988,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
                         : selectedMonth !== 'all'
                           ? ` - ${months.find(m => m.value === selectedMonth)?.label}`
                           : selectedOrg !== 'all'
-                            ? ` - ${orgOptions.find(o => o.id === selectedOrg)?.name}`
+                            ? ` - ${orgOptions.find(o => String(o.id) === String(selectedOrg))?.name || 'ארגון נבחר'}`
                             : selectedCity !== 'הכל'
                               ? ` - ${selectedCity}`
                               : ''
@@ -1166,7 +1176,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
                           : selectedRole !== 'all'
                             ? ` - ${roles.find(r => r.value === selectedRole)?.label}`
                             : selectedOrg !== 'all'
-                              ? ` - ${orgOptions.find(o => o.id === selectedOrg)?.name}`
+                              ? ` - ${orgOptions.find(o => String(o.id) === String(selectedOrg))?.name || 'ארגון נבחר'}`
                               : ''
                     }
                   </h3>
@@ -1251,7 +1261,7 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
                         : selectedMonth !== 'all'
                           ? ` - ${months.find(m => m.value === selectedMonth)?.label}`
                           : selectedOrg !== 'all'
-                            ? ` - ${orgOptions.find(o => o.id === selectedOrg)?.name}`
+                            ? ` - ${orgOptions.find(o => String(o.id) === String(selectedOrg))?.name || 'ארגון נבחר'}`
                             : selectedCity !== 'הכל'
                               ? ` - ${selectedCity}`
                               : ''
