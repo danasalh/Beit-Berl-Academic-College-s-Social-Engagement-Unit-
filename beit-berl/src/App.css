@@ -1,3 +1,31 @@
+/* 🔆 Force light mode across all devices and browsers */
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: white;
+  color: black;
+}
+
+/* Override dark mode if system prefers it */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: white;
+    color: black;
+  }
+
+  button, input, textarea, select {
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+  }
+
+  a {
+    color: blue;
+  }
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
