@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useUsers } from "../../Contexts/UsersContext";
+import { getRoleLabel } from "../../utils/roleTranslations"; 
 import "./Settings.css";
 
 const Settings = () => {
@@ -188,7 +189,7 @@ const Settings = () => {
         <input 
           type="text" 
           name="role"
-          value={formData.role}
+          value={getRoleLabel(formData.role)} // Display Hebrew role
           readOnly={true}
           className={getInputClass('role')} 
         />
