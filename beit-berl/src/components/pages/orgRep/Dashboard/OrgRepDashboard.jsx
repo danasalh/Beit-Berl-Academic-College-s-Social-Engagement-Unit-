@@ -18,12 +18,41 @@ export default function OrgRepDashboard() {
 
   return (
     <div className="orgrep-dashboard-center">
-      <div className="orgrep-welcome-title">
-        ברוך הבא
+      {/* Background decoration */}
+      <div className="background-decoration">
+        <div className="floating-circle circle-1"></div>
+        <div className="floating-circle circle-2"></div>
+        <div className="floating-circle circle-3"></div>
       </div>
-      <ThreeButtonDushOrgRep onSectionsClick={scrollToOrganizations} />
-      <div className="organizations-list-orgRep" ref={organizationsListRef}>
-        <OrganizationsList/>
+      
+      {/* Main content container */}
+      <div className="dashboard-content">
+        {/* Welcome section */}
+        <div className="welcome-section">
+          <div className="orgrep-welcome-title">
+            <span className="welcome-text">ברוך הבא</span>
+            <div className="title-underline"></div>
+          </div>
+          <div className="welcome-subtitle">
+          
+          </div>
+        </div>
+        
+        {/* Buttons section */}
+        <div className="buttons-section">
+          <ThreeButtonDushOrgRep onSectionsClick={scrollToOrganizations} />
+        </div>
+        
+        {/* Organizations section */}
+        <div className="organizations-section">
+          <div className="section-header">
+            <h2 className="section-title">הארגונים שלי</h2>
+            <div className="section-divider"></div>
+          </div>
+          <div className="organizations-list-orgRep" ref={organizationsListRef}>
+            <OrganizationsList/>
+          </div>
+        </div>
       </div>
     </div>
   );

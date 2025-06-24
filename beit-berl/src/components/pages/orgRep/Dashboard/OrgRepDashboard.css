@@ -1,200 +1,277 @@
-/* OrgRepDashboard.css */
+/* OrgRepDashboard.css - Modern Design */
+
+* {
+  box-sizing: border-box;
+}
 
 .orgrep-dashboard-center {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   min-height: 100vh;
-  padding: 3rem 2rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 1rem;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   direction: rtl;
-  font-size: 1.2rem;
-  background-color: #f5faff;
-  
+  background: linear-gradient(135deg, #b6bfea 0%, #d2f4fe 100%);
+  overflow-x: hidden;
+}
+
+/* Background decoration */
+.background-decoration {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  animation: float 6s ease-in-out infinite;
+}
+
+.circle-1 {
+  width: 200px;
+  height: 200px;
+  top: 10%;
+  right: 10%;
+  animation-delay: 0s;
+}
+
+.circle-2 {
+  width: 150px;
+  height: 150px;
+  bottom: 20%;
+  left: 15%;
+  animation-delay: 2s;
+}
+
+.circle-3 {
+  width: 100px;
+  height: 100px;
+  top: 60%;
+  right: 20%;
+  animation-delay: 4s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+/* Main content container */
+.dashboard-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Welcome section */
+.welcome-section {
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
 .orgrep-welcome-title {
- 
-   font-size: 5rem !important;
-  font-weight: bold;
-  margin-bottom: 3rem;
-  color: #6b93cf;
-  text-align: center;
-  text-shadow: 0 0 12px #223849;
-  animation: glow 2s ease-in-out infinite alternate;
-  letter-spacing: 1.3px;
-  max-width: 1000px;
+  margin-bottom: 0.5rem;
+  position: relative;
 }
 
-@keyframes glow {
+.welcome-text {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  letter-spacing: 2px;
+  display: inline-block;
+  animation: welcomeGlow 3s ease-in-out infinite alternate;
+  background: linear-gradient(45deg, #ffffff, #e3f2fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.title-underline {
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #42a5f5, #90caf9);
+  margin: 0.5rem auto;
+  border-radius: 2px;
+  animation: underlineGlow 2s ease-in-out infinite alternate;
+}
+
+.welcome-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 300;
+  margin-top: 0.5rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes welcomeGlow {
   from {
-    text-shadow: 0 0 2px #90caf9, 0 0 1px #90caf9;
+    filter: brightness(1);
+    transform: scale(1);
   }
   to {
-    text-shadow: 0 0 12px #42a5f5, 0 0 6px #42a5f5;
+    filter: brightness(1.1);
+    transform: scale(1.02);
   }
 }
 
-/* Button container styling - reduced spacing */
-.orgrep-dashboard-center > *:nth-child(3) {
-  margin-bottom: 1.5rem;
-  transition: all 0.3s ease;
-  
+@keyframes underlineGlow {
+  from {
+    box-shadow: 0 0 5px rgba(66, 165, 245, 0.5);
+    transform: scaleX(1);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(66, 165, 245, 0.8);
+    transform: scaleX(1.1);
+  }
 }
 
+/* Buttons section */
+.buttons-section {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 2.5rem 3.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  max-width: 800px;
+}
+
+.buttons-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Three Button Dash styling */
 .three-button-dush {
   display: flex;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 2rem;
-  margin-bottom: 3rem;
+  gap: 1.5rem;
+  width: 100%;
   flex-wrap: wrap;
 }
 
 .three-button-dush button {
-  padding: 1rem 2.5rem;
-  font-size: 1.7rem;
-  font-weight: 500 !important;
-  border: 2px solid #99a4af;
+  background: linear-gradient(135deg, #9ec2ed 0%, #4a7481 100%);
+  color: white;
   border: none;
-  border-radius: 12px;
-  background-color: #bec8db;
-  color: rgb(59, 61, 107);
+  border-radius: 16px;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+  min-width: 140px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.three-button-dush button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.three-button-dush button:hover::before {
+  left: 100%;
 }
 
 .three-button-dush button:hover {
-  background-color: #8296ad;
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #7c8cfa 0%, #8b5fbf 100%);
 }
 
-@media screen and (max-width: 768px) {
-  .orgrep-welcome-title {
-    font-size: 3rem !important;
-    margin-bottom: 2rem;
-    max-width: 90%;
-    line-height: 1.2;
-  }
+.three-button-dush button:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
 }
 
-@media screen and (max-width: 480px) {
-  .orgrep-welcome-title {
-    font-size: 2.2rem !important;
-    margin-bottom: 1.5rem;
-    max-width: 100%;
-  }
+.three-button-dush button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4);
 }
 
-
-
-/* Organizations list container */
-.orgrep-dashboard-center > *:last-child {
+/* Organizations section */
+.organizations-section {
   width: 100%;
-  max-width: 1200px;
-  margin-top: 1rem;
-  scroll-margin-top: 100
-  px; /* Offset for smooth scrolling */
-  max-width: 1600px;
-   justify-content: center !important; 
-}
-@media screen and (max-width: 768px) {
-  .three-button-dush {
-    flex-direction: column;
-    align-items: center;
-    gap: 1.2rem;
-  }
-@media screen and (max-width: 480px) {
-  
-  .orgrep-welcome-title {
-    font-size: 2rem !important;
-    margin-bottom: 1.5rem;
-    max-width: 95%;
-    text-align: center;
-    line-height: 1.3;
-    word-break: break-word;
-  }
-
-
-  .three-button-dush {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .three-button-dush button {
-    width: 90%;
-    font-size: 1.3rem;
-    padding: 1rem 1.5rem;
-  }
-
-
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
 }
 
- .org-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  justify-items: center;
-  width: 100%;
-  padding: 2rem 1rem;
-  box-sizing: border-box;
-}
-
-.card-org {
-  width: 100%;
-  max-width: 340px;
-  padding: 1.5rem;
-  border-radius: 12px;
-  background-color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.section-header {
   text-align: center;
-  box-sizing: border-box;
+  margin-bottom: 2rem;
 }
 
-
-@media screen and (max-width: 480px) {
-  .org-grid {
-    grid-template-columns: 1fr;
-    padding: 1rem;
-  }
-
-  .card-org {
-    width: 90%;
-    max-width: 100%;
-  }
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 1rem 0;
+  background: linear-gradient(135deg, #8daff3, #a3b7e5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-
+.section-divider {
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  margin: 0 auto;
+  border-radius: 2px;
+}
 
 .organizations-list-orgRep {
-   display: flex;
-  flex-wrap: wrap;
+  display: flex;
+  flex-direction: row;
   justify-content: center;
-  gap: 1.5rem;
-  padding: 1rem;
-  max-width: 100%;
-  box-sizing: border-box;
+  width: 100%;
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-}
-
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
 /* Responsive Design */
@@ -205,19 +282,48 @@ html, body {
     padding: 1rem 0.75rem;
   }
   
-  .orgrep-welcome-title {
-    font-size: 2rem;
-    margin-bottom: 1.2rem;
-    max-width: 500px;
+  .dashboard-content {
+    gap: 1.5rem;
   }
   
-  .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 1rem;
+  .welcome-text {
+    font-size: 2.5rem;
+    letter-spacing: 1px;
   }
   
-  .orgrep-dashboard-center > *:last-child {
-    margin-top: 0.75rem;
-    scroll-margin-top: 80px;
+  .welcome-subtitle {
+    font-size: 1rem;
+  }
+  
+  .buttons-section {
+    padding: 2rem 2.5rem;
+    border-radius: 20px;
+    max-width: 600px;
+  }
+  
+  .three-button-dush {
+    gap: 1.25rem;
+  }
+  
+  .three-button-dush button {
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+    min-width: 120px;
+    border-radius: 14px;
+  }
+  
+  .organizations-section {
+    padding: 1.5rem;
+    border-radius: 20px;
+  }
+  
+  .section-title {
+    font-size: 1.6rem;
+  }
+  
+  .circle-1 {
+    width: 150px;
+    height: 150px;
   }
 }
 
@@ -225,104 +331,191 @@ html, body {
 @media screen and (max-width: 480px) {
   .orgrep-dashboard-center {
     padding: 1rem 0.5rem;
-    min-height: 100vh;
   }
   
-  .orgrep-welcome-title {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    max-width: 350px;
-    line-height: 1.3;
+  .dashboard-content {
+    gap: 1.25rem;
   }
   
-  .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 0.75rem;
+  .welcome-text {
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+  }
+  
+  .welcome-subtitle {
+    font-size: 0.95rem;
+  }
+  
+  .title-underline {
+    width: 60px;
+    height: 3px;
+  }
+  
+  .buttons-section {
+    padding: 1.75rem 2rem;
+    border-radius: 18px;
     width: 100%;
-    max-width: 350px;
+    max-width: 400px;
   }
   
-  .orgrep-dashboard-center > *:last-child {
-    margin-top: 0.5rem;
-    scroll-margin-top: 60px;
+  .three-button-dush {
+    gap: 1rem;
+    flex-direction: column;
+  }
+  
+  .three-button-dush button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    min-width: 100%;
+    border-radius: 12px;
+  }
+  
+  .organizations-section {
+    padding: 1.25rem;
+    border-radius: 16px;
+  }
+  
+  .section-title {
+    font-size: 1.4rem;
+  }
+  
+  .section-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .organizations-list-orgRep {
     padding: 0 0.5rem;
   }
+  
+  .circle-1, .circle-2 {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .circle-3 {
+    width: 80px;
+    height: 80px;
+  }
 }
-.org-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2.5rem;
-  justify-items: center !important ; 
-  padding: 2rem;
-  width: 100%;
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
 
 /* Extra small mobile devices */
 @media screen and (max-width: 320px) {
-  .orgrep-welcome-title {
-    font-size: 2rem;
-    max-width: 280px;
-  }
-  
   .orgrep-dashboard-center {
     padding: 0.75rem 0.25rem;
   }
   
-  .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 0.5rem;
+  .welcome-text {
+    font-size: 1.9rem;
   }
   
-  .orgrep-dashboard-center > *:last-child {
-    margin-top: 0.25rem;
+  .welcome-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .buttons-section {
+    padding: 1.5rem 1.75rem;
+    max-width: 320px;
+  }
+  
+  .three-button-dush button {
+    padding: 0.675rem 1.25rem;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+  
+  .organizations-section {
+    padding: 1rem;
+  }
+  
+  .section-title {
+    font-size: 1.3rem;
   }
 }
 
 /* Large desktop styles */
 @media screen and (min-width: 1200px) {
   .orgrep-dashboard-center {
-    padding: 1rem 2rem;
+    padding: 2rem;
   }
   
-  .orgrep-welcome-title {
+  .dashboard-content {
+    gap: 2.5rem;
+  }
+  
+  .welcome-text {
+    font-size: 3.5rem;
+    letter-spacing: 3px;
+  }
+  
+  .welcome-subtitle {
+    font-size: 1.2rem;
+  }
+  
+  .buttons-section {
+    padding: 3rem 4rem;
+    border-radius: 28px;
+    max-width: 900px;
+  }
+  
+  .three-button-dush {
+    gap: 2rem;
+  }
+  
+  .three-button-dush button {
+    padding: 1.25rem 2.5rem;
+    font-size: 1.2rem;
+    min-width: 160px;
+    border-radius: 18px;
+  }
+  
+  .organizations-section {
+    padding: 2.5rem;
+    border-radius: 28px;
+  }
+  
+  .section-title {
     font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 2rem;
-  }
-  
-  .orgrep-dashboard-center > *:last-child {
-    margin-top: 2rem;
-    scroll-margin-top: 120px;
   }
 }
 
 /* Focus and accessibility improvements */
 .orgrep-dashboard-center *:focus {
-  outline: 2px solid #0077c2;
+  outline: 2px solid #42a5f5;
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* Reduce motion for users who prefer it */
+/* Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
-  .orgrep-welcome-title {
+  .welcome-text {
     animation: none;
-    text-shadow: 0 0 8px #90caf9;
+  }
+  
+  .title-underline {
+    animation: none;
+  }
+  
+  .floating-circle {
+    animation: none;
   }
   
   html {
     scroll-behavior: auto;
   }
   
-  .orgrep-dashboard-center::before {
-    animation: none;
+  .buttons-section {
+    transition: none;
   }
   
-  .orgrep-dashboard-center > *:nth-child(3) {
+  .organizations-section {
     transition: none;
   }
 }
+
+/* Hover effects for interactive elements */
+@media (hover: hover) {
+  .organizations-section:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.12);
+  }
 }
