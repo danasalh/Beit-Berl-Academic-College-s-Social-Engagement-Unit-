@@ -9,13 +9,13 @@
 }
 
 .vc-dashboard {
-  padding: 2rem;
+  padding: 1rem;
 }
 
 .vc-welcome-title {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.7rem;
   color: #0077c2;
   text-align: center;
   width: 100%;
@@ -24,13 +24,12 @@
   animation: glow 2s ease-in-out infinite alternate;
   margin-right: auto;
   margin-left: auto;
-  margin-bottom: 3rem;
 }
 
 .vc-dashboard-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 0.7rem;
 }
 
 .vc-dashboard-header {
@@ -98,5 +97,14 @@
     padding: 0;
     justify-content: center;
     align-items: center;
+  }
+
+  .org-info-card p {
+    font-size: 0.7rem;
+    margin: 0;
+    margin-right: 2rem;
+    padding: 0.3rem;
+    text-align: right;
+    max-width: 400px;
   }
 }
