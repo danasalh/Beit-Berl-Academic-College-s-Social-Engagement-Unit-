@@ -92,7 +92,7 @@ body {
 }
 
 .form-group label {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
   font-size: 0.8rem;
   font-weight: 600;
   color: #555;
