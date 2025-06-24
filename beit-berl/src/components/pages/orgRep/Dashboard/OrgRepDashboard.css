@@ -7,14 +7,14 @@
   justify-content: flex-start;
   min-height: 100vh;
   padding: 1rem 1rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   direction: rtl;
+  gap: 0.3rem; 
 }
 
 .orgrep-welcome-title {
   font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 0.2rem;
   color: #0077c2;
   text-align: center;
   width: 100%;
@@ -33,24 +33,22 @@
   }
 }
 
-/* Button container styling - reduced spacing */
-.orgrep-dashboard-center > *:nth-child(3) {
-  margin-bottom: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-/* Organizations list container */
-.orgrep-dashboard-center > *:last-child {
-  width: 100%;
-  max-width: 1200px;
+.sub-title-orgs {
   margin-top: 1rem;
-  scroll-margin-top: 100px; /* Offset for smooth scrolling */
+  margin-bottom: 0rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+  text-align: center;
 }
 
 .organizations-list-orgRep {
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap; /* 🔹 New: wrap cards on small screens */
   justify-content: center;
+  gap: 1.5rem; /* 🔹 New: spacing between cards */
+  width: 100%;
+  max-width: 1200px;
+  scroll-margin-top: 100px;
 }
 
 /* Smooth scrolling for the entire page */
@@ -58,36 +56,25 @@ html {
   scroll-behavior: smooth;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Responsive Design */
-
 /* Tablet styles */
 @media screen and (max-width: 768px) {
   .orgrep-dashboard-center {
     padding: 1rem 0.75rem;
   }
-  
+
   .orgrep-welcome-title {
     font-size: 2rem;
-    margin-bottom: 1.2rem;
     max-width: 500px;
   }
-  
-  .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 1rem;
+
+  .sub-title-orgs {
+    font-size: 1.2rem;
+    margin: 0px;
+    padding: 0px;
   }
-  
-  .orgrep-dashboard-center > *:last-child {
-    margin-top: 0.75rem;
-    scroll-margin-top: 80px;
+
+  .organizations-list-orgRep {
+    gap: 1rem;
   }
 }
 
@@ -95,46 +82,39 @@ html {
 @media screen and (max-width: 480px) {
   .orgrep-dashboard-center {
     padding: 1rem 0.5rem;
-    min-height: 100vh;
   }
-  
+
   .orgrep-welcome-title {
-    font-size: 2rem;
-    margin-bottom: 1rem;
+    font-size: 1.8rem;
     max-width: 350px;
     line-height: 1.3;
   }
-  
-  .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 0.75rem;
-    width: 100%;
-    max-width: 350px;
+
+  .sub-title-orgs {
+    font-size: 1.1rem;
+    margin: 0px;
+    padding: 0px;
   }
-  
-  .orgrep-dashboard-center > *:last-child {
-    margin-top: 0.5rem;
-    scroll-margin-top: 60px;
+
+  .organizations-list-orgRep {
     padding: 0 0.5rem;
+    gap: 0.75rem;
   }
 }
 
 /* Extra small mobile devices */
 @media screen and (max-width: 320px) {
-  .orgrep-welcome-title {
-    font-size: 2rem;
-    max-width: 280px;
-  }
-  
   .orgrep-dashboard-center {
     padding: 0.75rem 0.25rem;
   }
-  
-  .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 0.5rem;
+
+  .orgrep-welcome-title {
+    font-size: 1.6rem;
+    max-width: 280px;
   }
-  
-  .orgrep-dashboard-center > *:last-child {
-    margin-top: 0.25rem;
+
+  .sub-title-orgs {
+    font-size: 1rem;
   }
 }
 
@@ -143,19 +123,14 @@ html {
   .orgrep-dashboard-center {
     padding: 1rem 2rem;
   }
-  
+
   .orgrep-welcome-title {
     font-size: 2rem;
-    margin-bottom: 0.5rem;
   }
-  
-  .orgrep-dashboard-center > *:nth-child(3) {
-    margin-bottom: 2rem;
-  }
-  
-  .orgrep-dashboard-center > *:last-child {
-    margin-top: 2rem;
-    scroll-margin-top: 120px;
+
+  .organizations-list-orgRep {
+    margin-top: 1rem;
+    gap: 2rem;
   }
 }
 
@@ -165,22 +140,18 @@ html {
   outline-offset: 2px;
 }
 
-/* Reduce motion for users who prefer it */
+/* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   .orgrep-welcome-title {
     animation: none;
     text-shadow: 0 0 8px #90caf9;
   }
-  
+
   html {
     scroll-behavior: auto;
   }
-  
+
   .orgrep-dashboard-center::before {
     animation: none;
-  }
-  
-  .orgrep-dashboard-center > *:nth-child(3) {
-    transition: none;
   }
 }

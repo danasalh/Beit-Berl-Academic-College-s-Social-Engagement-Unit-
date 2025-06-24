@@ -21,6 +21,7 @@ export default function OrgRepDashboard() {
       <div className="orgrep-welcome-title">
         ברוך הבא
       </div>
+      <h3 className="sub-title-orgs">הארגון שלי במספרים:</h3>
       <ThreeButtonDushOrgRep onSectionsClick={scrollToOrganizations} />
       <div className="organizations-list-orgRep" ref={organizationsListRef}>
         <OrganizationsList/>
