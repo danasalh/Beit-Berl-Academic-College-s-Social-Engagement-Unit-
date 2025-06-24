@@ -1,8 +1,114 @@
+/* 🔆 COMPREHENSIVE LIGHT MODE ENFORCEMENT */
+
+/* Force light mode at the root level */
+:root {
+  color-scheme: light !important;
+  --bg-color: white;
+  --text-color: black;
+  --border-color: #ccc;
+  --input-bg: white;
+  --button-bg: #f0f0f0;
+}
+
+/* Base styles for all elements */
+* {
+  color-scheme: light !important;
+}
+
+body {
+  background-color: white !important;
+  color: black !important;
+}
+
+/* Comprehensive form element styling */
+input, 
+textarea, 
+select, 
+button {
+  background-color: white !important;
+  color: black !important;
+  border: 1px solid #ccc !important;
+}
+
+/* Specific input field fixes */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="number"] {
+  background-color: white !important;
+  color: black !important;
+  border: 1px solid #ccc !important;
+}
+
+/* Placeholder text visibility */
+input::placeholder,
+textarea::placeholder {
+  color: #666 !important;
+  opacity: 1 !important;
+}
+
+/* Button styling */
+button {
+  background-color: #f0f0f0 !important;
+  color: black !important;
+  border: 1px solid #ccc !important;
+}
+
+button:hover {
+  background-color: #e0e0e0 !important;
+}
+
+/* Link colors */
+a {
+  color: #0066cc !important;
+}
+
+a:visited {
+  color: #551a8b !important;
+}
+
+/* Override ANY dark mode preferences */
+@media (prefers-color-scheme: dark) {
+  *, *::before, *::after {
+    background-color: inherit !important;
+    color: inherit !important;
+  }
+  
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  input, 
+  textarea, 
+  select, 
+  button {
+    background-color: white !important;
+    color: black !important;
+    border: 1px solid #ccc !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #666 !important;
+  }
+
+  a {
+    color: #0066cc !important;
+  }
+}
+
+/* Your existing styles */
 #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  background-color: white !important;
+  color: black !important;
 }
 
 .logo {
@@ -11,9 +117,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -35,8 +143,27 @@
 
 .card {
   padding: 2em;
+  background-color: white !important;
+  color: black !important;
 }
 
 .read-the-docs {
-  color: #888;
+  color: #888 !important;
+}
+
+/* Additional safeguards for common framework classes */
+.dark, [data-theme="dark"], .theme-dark {
+  background-color: white !important;
+  color: black !important;
+}
+
+/* Force light mode on common container elements */
+div, span, p, h1, h2, h3, h4, h5, h6 {
+  color: inherit !important;
+}
+
+/* Ensure form containers are also light */
+form, fieldset, legend {
+  background-color: white !important;
+  color: black !important;
 }
