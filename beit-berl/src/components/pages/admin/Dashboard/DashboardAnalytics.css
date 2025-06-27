@@ -99,6 +99,25 @@
   border-color: transparent;
 }
 
+/* Clear Filters Button */
+.clear-filter-btn-dashboard {
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem;
+  background: #e8e9ec;
+  color: #0e60e4;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.clear-filter-btn-dashboard:hover {
+  background: #88a8cd;
+  color: #111827;
+  border-color: #515c91;
+}
+
 /* Overview Cards */
 .overview-grid {
   display: grid;
