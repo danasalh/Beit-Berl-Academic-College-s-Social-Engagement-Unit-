@@ -7,24 +7,30 @@ import AreYouSure from '../PopUps/AreYouSure/AreYouSure';
 import './Sidebar.css';
 
 const Sidebar = ({ userRole, userName }) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(true); // Start with true, will be adjusted by useEffect
   const [isMobile, setIsMobile] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // State for confirmation popup
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   
   // Check if mobile view and set sidebar closed by default on mobile
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-      setIsOpen(window.innerWidth >= 768);
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      // Set sidebar open on desktop, closed on mobile
+      setIsOpen(!mobile);
     };
     
+    // Initial check
     checkIfMobile();
+    
+    // Add resize listener
     window.addEventListener('resize', checkIfMobile);
     
+    // Cleanup
     return () => window.removeEventListener('resize', checkIfMobile);
-  }, []);
+  }, []); // Empty dependency array to avoid infinite loops
   
   const toggleSidebar = () => setIsOpen(!isOpen);
   
@@ -137,7 +143,13 @@ const Sidebar = ({ userRole, userName }) => {
                 return (
                   <li key={link.path}>
                     <button
-                      onClick={() => navigate(link.path)}
+                      onClick={() => {
+                        navigate(link.path);
+                        // Close sidebar on mobile after navigation
+                        if (isMobile) {
+                          setIsOpen(false);
+                        }
+                      }}
                       className={`nav-item ${isActive ? 'active' : ''}`}
                       title={link.label}
                     >
@@ -152,8 +164,9 @@ const Sidebar = ({ userRole, userName }) => {
           
           {/* Logout button */}
           <button
-            onClick={initiateLogout} // Changed to initiateLogout instead of handleLogout
+            onClick={initiateLogout}
             className="logout-button"
+            title="התנתקות"
           >
             <span className="nav-icon"><HiLogout size={20} /></span>
             {isOpen && <span className="nav-label">התנתקות</span>}
