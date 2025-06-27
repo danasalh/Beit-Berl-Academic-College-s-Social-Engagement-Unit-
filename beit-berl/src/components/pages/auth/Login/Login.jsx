@@ -170,12 +170,12 @@ const Login = () => {
           <div className="login-header">
             <h1 className="login-title">התחברות לחשבון</h1>
           </div>
+          <img src="/logo.svg" alt="Logo" className="app-logo" />
           {error && (
             <div className="error-alert" role="alert">
               <span>{error}</span>
             </div>
           )}
-          <img src="/logo.svg" alt="Logo" className="app-logo" />
         </div>
         <h1 className="login-description">
           מערכת לניהול ומעקב אחר פעילות התנדבותית של סטודנטים במכללה האקדמית בית ברל

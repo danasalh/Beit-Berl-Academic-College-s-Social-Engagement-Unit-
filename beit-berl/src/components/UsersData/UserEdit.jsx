@@ -2,6 +2,7 @@
 import { HiX } from 'react-icons/hi';
 import { getRolesWithLabels } from '../../utils/roleTranslations';
 import CloseButton from '../Buttons/CloseButton/CloseButton';
+import { useState, useEffect } from 'react';
 
 const UserEdit = ({
   editFormData,
@@ -15,6 +16,66 @@ const UserEdit = ({
   handleStatusUpdateInModal,
   handleSaveEdit
 }) => {
+  const [phoneError, setPhoneError] = useState('');
+
+  // Validate phone number
+  const validatePhoneNumber = (phone) => {
+    // Remove any non-digit characters for validation
+    const digitsOnly = phone.replace(/\D/g, '');
+    
+    if (digitsOnly.length === 0) {
+      return { isValid: true, message: '' }; // Allow empty phone number
+    }
+    
+    if (digitsOnly.length !== 10) {
+      return { 
+        isValid: false, 
+        message: 'מספר הטלפון חייב להכיל בדיוק 10 ספרות' 
+      };
+    }
+    
+    return { isValid: true, message: '' };
+  };
+
+  // Enhanced input change handler for phone validation
+  const handleInputChangeWithValidation = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'phoneNumber') {
+      // Just validate, don't filter the input during typing
+      const validation = validatePhoneNumber(value);
+      setPhoneError(validation.message);
+      
+      // Pass the original event through unchanged
+      handleInputChange(e);
+    } else {
+      handleInputChange(e);
+    }
+  };
+
+  // Enhanced save handler with phone validation
+  const handleSaveEditWithValidation = () => {
+    // Validate phone number before saving
+    const phoneValidation = validatePhoneNumber(editFormData.phoneNumber || '');
+    if (!phoneValidation.isValid) {
+      // Don't prevent saving, just show error - let the save button disabled state handle it
+      setPhoneError(phoneValidation.message);
+      return;
+    }
+    
+    // Clear phone error and proceed with save
+    setPhoneError('');
+    handleSaveEdit();
+  };
+
+  // Check if save should be disabled
+  const isSaveDisabled = phoneError !== '';
+
+  // Clear phone error when modal opens or user changes
+  useEffect(() => {
+    setPhoneError('');
+  }, [selectedUser]);
+
   if (!selectedUser) return null;
 
   return (
@@ -34,7 +95,7 @@ const UserEdit = ({
                   id="firstName"
                   name="firstName"
                   value={editFormData.firstName || ''}
-                  onChange={handleInputChange}
+                  onChange={handleInputChangeWithValidation}
                   required
                 />
               </div>
@@ -45,7 +106,7 @@ const UserEdit = ({
                   id="lastName"
                   name="lastName"
                   value={editFormData.lastName || ''}
-                  onChange={handleInputChange}
+                  onChange={handleInputChangeWithValidation}
                   required
                 />
               </div>
@@ -59,7 +120,7 @@ const UserEdit = ({
                   id="email"
                   name="email"
                   value={editFormData.email || ''}
-                  onChange={handleInputChange}
+                  onChange={handleInputChangeWithValidation}
                   required
                 />
               </div>
@@ -70,8 +131,15 @@ const UserEdit = ({
                   id="phoneNumber"
                   name="phoneNumber"
                   value={editFormData.phoneNumber || ''}
-                  onChange={handleInputChange}
+                  onChange={handleInputChangeWithValidation}
+                  placeholder="0501234567"
+                  className={phoneError ? 'error-input' : ''}
                 />
+                {phoneError && (
+                  <div className="field-error">
+                    <small className="error-message">{phoneError}</small>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -82,7 +150,7 @@ const UserEdit = ({
                   id="role"
                   name="role"
                   value={editFormData.role}
-                  onChange={handleInputChange}
+                  onChange={handleInputChangeWithValidation}
                   required
                 >
                   <option value="">בחר תפקיד</option>
@@ -184,7 +252,12 @@ const UserEdit = ({
           <button className="btn btn-secondary" onClick={closeEditModal}>
             ביטול
           </button>
-          <button className="btn btn-primary" onClick={handleSaveEdit}>
+          <button 
+            className="btn btn-primary" 
+            onClick={handleSaveEditWithValidation}
+            disabled={isSaveDisabled}
+            title={phoneError ? phoneError : ''}
+          >
             שמירת שינויים
           </button>
         </div>
