@@ -609,6 +609,18 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
           <div className="filter-header">
             <Filter className="filter-icon" />
             <h3 className="filter-title">מסנני נתונים</h3>
+            <button
+              className="clear-filter-btn-dashboard"
+              onClick={() => {
+                setSelectedYear('all');
+                setSelectedMonth('all');
+                setSelectedRole('all');
+                setSelectedOrg('all');
+                setSelectedCity('הכל');
+              }}
+            >
+              נקה מסננים
+            </button>
           </div>
           <div className="filters-grid">
             <div className="filter-group">
@@ -672,18 +684,6 @@ const DashboardAnalytics = ({ users = [], organizations = [], hoursTracking = []
               </select>
             </div>
           </div>
-          <button
-            className="clear-filter-btn-dashboard"
-            onClick={() => {
-              setSelectedYear('all');
-              setSelectedMonth('all');
-              setSelectedRole('all');
-              setSelectedOrg('all');
-              setSelectedCity('הכל');
-            }}
-          >
-            נקה מסננים
-          </button>
         </div>
 
         {/* Overview Cards */}

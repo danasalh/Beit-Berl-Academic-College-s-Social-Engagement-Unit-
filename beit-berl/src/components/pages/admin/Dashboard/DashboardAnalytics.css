@@ -91,23 +91,70 @@
   transition: all 0.2s ease;
   font-size: 0.875rem;
   min-width: 0;
+  /* Enhanced contrast and visibility */
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 .filter-select:focus {
   outline: none;
   box-shadow: 0 0 0 2px #3b82f6;
   border-color: transparent;
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+}
+
+.filter-select:hover {
+  border-color: #9ca3af;
+  color: #111827 !important;
+}
+
+/* Ensure dropdown options are visible */
+.filter-select option {
+  background-color: white !important;
+  color: #111827 !important;
+  padding: 0.5rem;
+}
+
+.filter-select option:checked {
+  background-color: #3b82f6 !important;
+  color: white !important;
+}
+
+.filter-select option:hover {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+/* Force text visibility in all states */
+.filter-select::-webkit-input-placeholder {
+  color: #6b7280 !important;
+}
+
+.filter-select::-moz-placeholder {
+  color: #6b7280 !important;
+}
+
+.filter-select:-ms-input-placeholder {
+  color: #6b7280 !important;
+}
+
+.filter-select::placeholder {
+  color: #6b7280 !important;
 }
 
 /* Clear Filters Button */
 .clear-filter-btn-dashboard {
-  margin-top: 1rem;
-  padding: 0.5rem 1.5rem;
+  margin-right: 1rem;
+  padding: 0.3rem 1rem;
   background: #e8e9ec;
   color: #0e60e4;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 0.7rem;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, border 0.2s;
 }
@@ -591,6 +638,8 @@
   border: 1px solid #e5e7eb;
   border-radius: 4px;
   text-align: right;
+  color: #111827 !important;
+  background-color: white !important;
 }
 
 .goal-save-btn,
