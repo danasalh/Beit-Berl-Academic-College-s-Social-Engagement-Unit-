@@ -5,7 +5,6 @@
   display: flex;
   flex-direction: column;
   margin-right: 2rem;
-  background-color: white !important;
   color: black !important;
   color-scheme: light !important;
 }
@@ -134,7 +133,6 @@
   max-width: 80rem;
   margin: 0 auto;
   padding: 1rem;
-  background-color: white !important;
   color: black !important;
 }
 
@@ -142,7 +140,6 @@
   max-width: none;
   margin: 0 auto;
   padding: 40px 24px;
-  background-color: white !important;
   color: black !important;
 }
 
@@ -869,7 +866,6 @@ path {
   max-width: calc(100% - 48px);
   margin: 0 auto;
   padding: 40px 24px;
-  background-color: white !important;
   color: black !important;
 }
 
@@ -894,7 +890,6 @@ path {
 
   .organizations-container {
     padding: 28px 16px;
-    background-color: white !important;
   }
 
   .page-header {
@@ -950,7 +945,6 @@ path {
 @media (max-width: 575px) {
   .organizations-container {
     padding: 20px 12px;
-    background-color: white !important;
   }
 
   .page-header {
