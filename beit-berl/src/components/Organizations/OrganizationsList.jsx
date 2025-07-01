@@ -150,7 +150,7 @@ const OrganizationsList = () => {
 
   const handleSaveOrg = useCallback(async (orgData) => {
     // Prevent volunteers and orgReps from saving organizations
-    if (isVolunteer || isOrgRep) {
+    if (isVolunteer) {
       return;
     }
 
