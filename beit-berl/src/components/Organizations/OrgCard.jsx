@@ -35,11 +35,6 @@ const OrgCard = ({ org, onShowDetails, allUsers = [], isVolunteer = false }) => 
 
   const volunteerCount = calculateVolunteerCount(org);
 
-  // Debug: Log the organization object to see all fields
-  console.log('🏢 OrgCard - Organization object:', org);
-  console.log('🌆 OrgCard - City value:', getCityValue(org));
-  console.log('👥 OrgCard - Volunteer count:', volunteerCount);
-
   return (
     <div className="org-card">
       <div className="org-card-header">

@@ -51,7 +51,6 @@ export const resetFirestoreConnection = async () => {
     await disableNetwork(db);
     await new Promise(resolve => setTimeout(resolve, 1000));
     await enableNetwork(db);
-    console.log('✅ Firestore connection reset successfully');
   } catch (err) {
     console.error('❌ Error resetting Firestore connection:', err);
     throw err;
@@ -65,7 +64,6 @@ export const withFirestoreRetry = async (operation, context) => {
   } catch (err) {
     if (isRecoverableError(err)) {
       // Try resetting connection and retry once more
-      console.log('🔄 Attempting connection reset and final retry...');
       await resetFirestoreConnection();
       return await retryOperation(operation, 1);
     }

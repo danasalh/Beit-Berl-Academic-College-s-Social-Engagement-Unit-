@@ -93,7 +93,7 @@ const FilterBar = ({
         </button>
       )}
       
-      <button className="search-btn" onClick={() => console.log("Filters applied")}>
+      <button className="search-btn">
         <HiOutlineSearch />
       </button>
     </div>

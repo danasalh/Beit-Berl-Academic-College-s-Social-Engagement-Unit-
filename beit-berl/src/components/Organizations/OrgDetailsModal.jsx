@@ -20,12 +20,6 @@ const OrgDetailsModal = ({
   const { currentUser, currentUserHasRole } = useUsers();
   const isAdmin = currentUserHasRole('admin') || currentUserHasRole('Admin');
 
-  // Debug: Log the organization object
-  console.log('🏢 OrgDetailsModal - Organization object:', org);
-  console.log('👥 OrgDetailsModal - All users count:', allUsers.length);
-  console.log('👤 OrgDetailsModal - Is volunteer:', isVolunteer);
-  console.log('👤 OrgDetailsModal - Is admin:', isAdmin);
-
   // Get all volunteer coordinators from users
   const getVolunteerCoordinators = () => {
     if (!allUsers || !Array.isArray(allUsers)) {
@@ -151,9 +145,6 @@ const OrgDetailsModal = ({
       return [];
     }
 
-    console.log('🔍 Looking for VCs with IDs:', vcIds);
-    console.log('👥 Available users:', allUsers.map(u => ({ id: u.id, docId: u.docId, name: u.firstName, role: u.role })));
-
     return vcIds.map(vcId => {
       // Find user by ID (try multiple matching strategies)
       const user = allUsers.find(u =>
@@ -171,18 +162,15 @@ const OrgDetailsModal = ({
         const fullName = `${firstName} ${lastName}`.trim();
 
         if (fullName) {
-          console.log(`✅ Found VC: ${fullName} for ID: ${vcId}`);
           return fullName;
         }
 
         // Fallback to name field
         if (user.name) {
-          console.log(`✅ Found VC (name field): ${user.name} for ID: ${vcId}`);
           return user.name;
         }
       }
 
-      console.log(`❌ VC not found for ID: ${vcId}`);
       return `מזהה: ${vcId}`;
     });
   };
@@ -279,7 +267,6 @@ const OrgDetailsModal = ({
       newVcIds = [...currentVcIds, originalVcId];
     }
 
-    console.log('🔄 Updating VC IDs from:', currentVcIds, 'to:', newVcIds);
     setEditedOrg(prev => ({ ...prev, vcId: newVcIds }));
   };
 
@@ -303,7 +290,6 @@ const OrgDetailsModal = ({
   const handleSave = async () => {
     // Prevent volunteers from saving
     if (isVolunteer) {
-      console.log('❌ Volunteer users cannot save organizations');
       return;
     }
 
@@ -331,7 +317,6 @@ const OrgDetailsModal = ({
   const handleDelete = async () => {
     // Only allow admins to delete
     if (!isAdmin) {
-      console.log('❌ Only admin users can delete organizations');
       return;
     }
 

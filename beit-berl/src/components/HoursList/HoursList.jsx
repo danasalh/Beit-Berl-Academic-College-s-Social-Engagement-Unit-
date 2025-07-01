@@ -57,9 +57,6 @@ const HoursList = () => {
       }
       
       setError(null);
-
-      console.log('🔍 Fetching pending hours for CV dashboard...');
-
       // Get all volunteer hours
       const allHours = await getVolunteerHours();
 
@@ -67,9 +64,6 @@ const HoursList = () => {
       const pendingHours = allHours.filter(record => 
         !record.approved && canApproveForOrg(record.orgId)
       );
-
-      console.log(`📊 Found ${pendingHours.length} pending hours records`);
-
       // Group pending hours by volunteer ID and get volunteer details
       const volunteersMap = new Map();
 
@@ -114,8 +108,6 @@ const HoursList = () => {
         .sort((a, b) => b.totalPendingHours - a.totalPendingHours);
 
       setPendingHoursData(pendingData);
-      console.log(`✅ Processed pending hours for ${pendingData.length} volunteers`);
-
     } catch (err) {
       console.error('❌ Error fetching pending hours:', err);
       setError(err.message);
@@ -132,7 +124,6 @@ const HoursList = () => {
 
   // Handle opening hours modal
   const handleOpenHoursModal = useCallback((volunteer) => {
-    console.log('📖 Opening hours modal for volunteer:', volunteer);
     setSelectedVolunteer(volunteer);
     setShowHoursModal(true);
   }, []);

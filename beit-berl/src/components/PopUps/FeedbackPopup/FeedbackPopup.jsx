@@ -45,7 +45,6 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
       hasFetchedRef.current = true;
       targetUserIdRef.current = targetUser.id;
 
-      console.log('Fetching feedback for user:', targetUser.id);
       const feedback = await getFeedbackByVolunteerId(String(targetUser.id));
       setFeedbackList(feedback || []);
     } catch (error) {
@@ -132,7 +131,6 @@ const FeedbackPopup = ({ targetUser, onClose }) => {
     if (!targetUser?.id) return;
 
     try {
-      console.log('Refreshing feedback for user:', targetUser.id);
       const feedback = await getFeedbackByVolunteerId(String(targetUser.id));
       setFeedbackList(feedback || []);
     } catch (error) {

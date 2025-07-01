@@ -231,10 +231,8 @@ const Register = () => {
   const createAdminNotifications = async (newUser) => {
     try {
       const adminUsers = await getAdminUsers();
-      console.log('Found admin users:', adminUsers.length);
 
       if (adminUsers.length === 0) {
-        console.warn('No admin users found to notify');
         return;
       }
 
@@ -252,7 +250,6 @@ const Register = () => {
 
         try {
           const notificationId = await createNotification(notificationData);
-          console.log(`✅ Notification created for admin ${admin.id}:`, notificationId);
           return notificationId;
         } catch (error) {
           console.error(`❌ Error creating notification for admin ${admin.id}:`, error);
@@ -261,7 +258,6 @@ const Register = () => {
       });
 
       const results = await Promise.all(notificationPromises);
-      console.log(`✅ Successfully created ${results.length} notifications for admins`);
       return results;
     } catch (error) {
       console.error('❌ Error creating admin notifications:', error);
@@ -297,8 +293,6 @@ const Register = () => {
       if (location.state?.isGoogleAuth) {
         userId = location.state.uid;
       } else {
-        console.log("Creating user with email:", normalizedEmail);
-        console.log("Password length:", formData.password.length);
 
         try {
           const userCredential = await createUserWithEmailAndPassword(
@@ -308,8 +302,6 @@ const Register = () => {
           );
 
           userId = userCredential.user.uid;
-          console.log("User created successfully with ID:", userId);
-
           await updateProfile(auth.currentUser, {
             displayName: `${formData.firstName.trim()} ${formData.lastName.trim()}`
           });
@@ -348,12 +340,10 @@ const Register = () => {
 
       try {
         await setDoc(doc(db, 'users', userId), userData);
-        console.log("User data saved to Firestore with ID:", userId);
 
         // Create notifications for all admins about the new user registration
         try {
           await createAdminNotifications(userData);
-          console.log("✅ Admin notifications created successfully");
         } catch (notificationError) {
           console.error("❌ Error creating admin notifications:", notificationError);
           // Don't fail the registration if notification creation fails
@@ -367,7 +357,6 @@ const Register = () => {
       }
 
       try {
-        console.log("Signing out user after registration");
         await auth.signOut();
       } catch (signOutError) {
         console.error("Error signing out:", signOutError);

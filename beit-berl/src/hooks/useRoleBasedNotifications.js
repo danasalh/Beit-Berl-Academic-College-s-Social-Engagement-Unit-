@@ -62,13 +62,10 @@ export const useRoleBasedNotifications = () => {
   // Set up real-time listener
   useEffect(() => {
     if (!currentUserId) return;
-
-    console.log('🔔 Setting up real-time notifications for user:', currentUserId);
     
     const unsubscribe = subscribeToNotificationsByReceiver(
       String(currentUserId),
       (notificationsData) => {
-        console.log('📨 Real-time notifications update:', notificationsData.length);
         setNotifications(notificationsData);
         
         // Update unread count
@@ -78,7 +75,6 @@ export const useRoleBasedNotifications = () => {
     );
 
     return () => {
-      console.log('🔕 Cleaning up real-time notifications listener');
       unsubscribe();
     };
   }, [currentUserId, subscribeToNotificationsByReceiver]);

@@ -59,18 +59,10 @@ const OrganizationsList = () => {
     }
 
     if (userOrgIds.length === 0) {
-      console.log('⚠️ No organizations assigned to user');
       return [];
     }
 
     const filtered = organizations.filter(org => userOrgIds.includes(org.id));
-    
-    console.log('🔍 Role-filtered organizations:', {
-      role: isVc ? 'VC' : 'OrgRep',
-      userOrgIds,
-      totalOrgs: organizations.length,
-      filteredCount: filtered.length
-    });
 
     return filtered;
   }, [organizations, isOrgRep, isVc, userOrgIds]);
@@ -98,15 +90,6 @@ const OrganizationsList = () => {
       }
     }
 
-    console.log('🔍 Final filtered organizations:', {
-      original: organizations.length,
-      roleFiltered: roleFilteredOrgs.length,
-      final: filtered.length,
-      userRole: currentUser?.role,
-      isVc,
-      isOrgRep
-    });
-
     return filtered;
   }, [roleFilteredOrgs, searchTerm, cityFilter, isVc, isOrgRep, getCityValue, organizations.length, currentUser?.role]);
 
@@ -115,9 +98,7 @@ const OrganizationsList = () => {
     const loadData = async () => {
       if (dataLoaded) return; // Prevent multiple loads
 
-      try {
-        console.log('🔄 Loading organizations and users...');
-        
+      try {        
         const promises = [];
         
         // Load organizations if we don't have them yet
@@ -146,7 +127,6 @@ const OrganizationsList = () => {
   // Simplified debug effect - only log when loading states change
   useEffect(() => {
     if (loading || usersLoading) {
-      console.log('📊 Loading state - orgs:', loading, 'users:', usersLoading);
     }
   }, [loading, usersLoading]);
 
@@ -154,7 +134,6 @@ const OrganizationsList = () => {
   const handleDeleteOrg = useCallback(async (orgId) => {
     // Prevent volunteers and orgReps from deleting organizations
     if (isVolunteer || isOrgRep) {
-      console.log('❌ Volunteer and orgRep users cannot delete organizations');
       return;
     }
 
@@ -162,7 +141,6 @@ const OrganizationsList = () => {
       try {
         await deleteOrganization(orgId);
         setSelectedOrg(null);
-        console.log('Organization deleted successfully');
       } catch (err) {
         console.error('Failed to delete organization:', err);
         alert('שגיאה במחיקת הארגון');
@@ -173,7 +151,6 @@ const OrganizationsList = () => {
   const handleSaveOrg = useCallback(async (orgData) => {
     // Prevent volunteers and orgReps from saving organizations
     if (isVolunteer || isOrgRep) {
-      console.log('❌ Volunteer and orgRep users cannot create/edit organizations');
       return;
     }
 
@@ -182,18 +159,15 @@ const OrganizationsList = () => {
         // Update existing organization
         const { id, ...updateData } = orgData;
         await updateOrganization(id, updateData);
-        console.log('Organization updated successfully');
       } else {
         // Create new organization
         const { id, ...createData } = orgData;
         await createOrganization(createData);
-        console.log('Organization created successfully');
       }
       
       setSelectedOrg(null);
       setIsAdding(false);
     } catch (err) {
-      console.error('Failed to save organization:', err);
       alert('שגיאה בשמירת הארגון');
     }
   }, [isVolunteer, isOrgRep, organizations, updateOrganization, createOrganization]);
@@ -208,15 +182,10 @@ const OrganizationsList = () => {
       }
     } else {
       // For general search, we rely on the memoized filtering
-      console.log('🔍 Performing client-side search with filters:', {
-        searchTerm,
-        cityFilter
-      });
     }
   }, [cityFilter, searchTerm, getOrganizationsByCity]);
 
   const handleRefresh = useCallback(() => {
-    console.log('🔄 Manual refresh triggered');
     setDataLoaded(false);
     getOrganizations();
     getUsers();

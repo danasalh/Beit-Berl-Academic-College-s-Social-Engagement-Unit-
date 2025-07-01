@@ -97,11 +97,6 @@ const Settings = () => {
       return;
     }
 
-    // Debug current user data
-    console.log('Current user data:', currentUser);
-    console.log('Current user ID:', currentUser.id);
-    console.log('Current user docId:', currentUser.docId);
-
     // Use docId for Firestore operations (it's the actual document ID)
     const userId = currentUser.docId;
     if (!userId || typeof userId !== 'string') {
@@ -121,7 +116,6 @@ const Settings = () => {
         name: `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim()
       };
 
-      console.log('Updating user with ID:', userId, 'Data:', updateData);
       await updateUser(userId, updateData);
       
       // Update original data to reflect the saved changes

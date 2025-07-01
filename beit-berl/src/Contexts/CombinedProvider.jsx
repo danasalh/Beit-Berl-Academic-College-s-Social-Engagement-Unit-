@@ -11,7 +11,6 @@ import { NotificationsProvider } from './NotificationsContext';
  * Usage: Wrap your main App component with this provider
  */
 export const CombinedProvider = ({ children }) => {
-  console.log('🚀 Initializing all context providers...');
   
   return (
     <UsersProvider>
