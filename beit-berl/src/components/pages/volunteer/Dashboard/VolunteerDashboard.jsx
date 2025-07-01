@@ -42,7 +42,6 @@ export default function VcDashboard() {
 
   // ADD THE MISSING FUNCTION HERE
   const handleMarkHoursClick = async () => {
-    console.log('Mark hours button clicked');
 
     // Load organizations when needed
     if (!orgsLoaded) {
@@ -71,7 +70,6 @@ export default function VcDashboard() {
         const approvedHours = await getTotalHoursForVolunteer(userId, true);
         setUserApprovedHours(approvedHours);
 
-        console.log(`User ${userId} - Total hours: ${totalHours}, Approved hours: ${approvedHours}`);
       } catch (error) {
         console.error('Error fetching user hours:', error);
         setUserTotalHours(0);
@@ -86,10 +84,7 @@ export default function VcDashboard() {
   const loadUserOrganizations = async () => {
     if (orgsLoaded || loadingOrgs) return;
 
-    console.log('Loading user organizations...');
-
     if (!currentUser?.orgId) {
-      console.log('User has no organizations');
       setUserOrganizations([]);
       setOrgsLoaded(true);
       return;
@@ -108,15 +103,11 @@ export default function VcDashboard() {
       orgIds = orgIds.filter(id => id !== null && id !== undefined && id !== '');
 
       if (orgIds.length === 0) {
-        console.log('No valid organization IDs found');
         setUserOrganizations([]);
         setOrgsLoaded(true);
         setLoadingOrgs(false);
         return;
       }
-
-      console.log('Fetching organizations for IDs:', orgIds);
-
       const orgPromises = orgIds.map(async (orgId) => {
         try {
           const org = await getOrganizationById(orgId);
@@ -135,7 +126,6 @@ export default function VcDashboard() {
         return true;
       });
 
-      console.log('Successfully loaded organizations:', validOrganizations);
       setUserOrganizations(validOrganizations);
       setOrgsLoaded(true);
 
@@ -150,22 +140,10 @@ export default function VcDashboard() {
 
   // Enhanced function to send notifications when hours are submitted
   const sendNotificationsForNewHours = async (selectedOrgId, hoursSubmitted) => {
-    console.log('🔔 === STARTING NOTIFICATION PROCESS ===');
-    console.log('Selected Organization ID:', selectedOrgId, 'Type:', typeof selectedOrgId);
-    console.log('Hours Submitted:', hoursSubmitted);
 
     // Use consistent user ID - prioritize user.id over docId
     const userId = currentUser?.id || currentUser?.docId;
     const userName = getUserName(currentUser);
-
-    console.log('Current User Info:', {
-      id: currentUser?.id,
-      docId: currentUser?.docId,
-      actualUserId: userId,
-      name: userName,
-      role: currentUser?.role,
-      orgId: currentUser?.orgId
-    });
 
     if (!userId) {
       console.error('❌ No valid user ID found for notifications');
@@ -181,10 +159,8 @@ export default function VcDashboard() {
       const notifications = [];
 
       // 1. Get all admins (they get notifications for all submissions)
-      console.log('📋 Fetching all admins...');
       try {
         const admins = await getUsersByRole('admin');
-        console.log('Found admins:', admins?.length || 0);
 
         if (admins && admins.length > 0) {
           for (const admin of admins) {
@@ -199,7 +175,6 @@ export default function VcDashboard() {
                 date: new Date(),
                 orgId: selectedOrgId
               });
-              console.log('✅ Added notification for admin:', adminId);
             }
           }
         } else {
@@ -210,14 +185,12 @@ export default function VcDashboard() {
       }
 
       // 2. Get VCs and orgReps specifically for the selected organization
-      console.log('🏢 Fetching VCs and orgReps for organization:', selectedOrgId);
       try {
         // Convert selectedOrgId to ensure consistent comparison
         const orgIdToSearch = String(selectedOrgId);
 
         // Get all VCs
         const allVCs = await getUsersByRole('vc');
-        console.log('All VCs found:', allVCs?.length || 0);
 
         // Filter VCs by organization
         const relevantVCs = allVCs?.filter(vc => {
@@ -232,15 +205,12 @@ export default function VcDashboard() {
           }
 
           const hasOrg = vcOrgIds.includes(orgIdToSearch);
-          console.log(`VC ${vc.id || vc.docId} orgIds:`, vcOrgIds, 'includes', orgIdToSearch, '?', hasOrg);
           return hasOrg;
         }) || [];
 
-        console.log('Relevant VCs for org', selectedOrgId, ':', relevantVCs.length);
 
         // Get all orgReps
         const allOrgReps = await getUsersByRole('orgRep');
-        console.log('All orgReps found:', allOrgReps?.length || 0);
 
         // Filter orgReps by organization
         const relevantOrgReps = allOrgReps?.filter(orgRep => {
@@ -255,11 +225,8 @@ export default function VcDashboard() {
           }
 
           const hasOrg = orgRepOrgIds.includes(orgIdToSearch);
-          console.log(`OrgRep ${orgRep.id || orgRep.docId} orgIds:`, orgRepOrgIds, 'includes', orgIdToSearch, '?', hasOrg);
           return hasOrg;
         }) || [];
-
-        console.log('Relevant orgReps for org', selectedOrgId, ':', relevantOrgReps.length);
 
         // Add notifications for relevant VCs
         for (const vc of relevantVCs) {
@@ -274,7 +241,6 @@ export default function VcDashboard() {
               date: new Date(),
               orgId: selectedOrgId
             });
-            console.log('✅ Added notification for VC:', vcId);
           }
         }
 
@@ -291,7 +257,6 @@ export default function VcDashboard() {
               date: new Date(),
               orgId: selectedOrgId
             });
-            console.log('✅ Added notification for orgRep:', orgRepId);
           }
         }
 
@@ -300,10 +265,8 @@ export default function VcDashboard() {
       }
 
       // 3. Alternative approach: Get users by organization (fallback)
-      console.log('🔄 Fallback: Getting users by organization...');
       try {
         const orgUsers = await getUsersByOrganization(selectedOrgId);
-        console.log('Users in organization', selectedOrgId, ':', orgUsers?.length || 0);
 
         if (orgUsers && orgUsers.length > 0) {
           // Filter for VCs and orgReps that we haven't already processed
@@ -316,9 +279,6 @@ export default function VcDashboard() {
             user.role === 'orgRep' &&
             !notifications.some(n => n.receiverId === String(user.id || user.docId))
           );
-
-          console.log('Additional VCs found:', additionalVCs.length);
-          console.log('Additional orgReps found:', additionalOrgReps.length);
 
           // Add notifications for additional VCs
           for (const vc of additionalVCs) {
@@ -333,7 +293,6 @@ export default function VcDashboard() {
                 date: new Date(),
                 orgId: selectedOrgId
               });
-              console.log('✅ Added additional notification for VC:', vcId);
             }
           }
 
@@ -350,7 +309,6 @@ export default function VcDashboard() {
                 date: new Date(),
                 orgId: selectedOrgId
               });
-              console.log('✅ Added additional notification for orgRep:', orgRepId);
             }
           }
         }
@@ -358,29 +316,19 @@ export default function VcDashboard() {
         console.error('❌ Error in fallback organization user fetch:', error);
       }
 
-      console.log(`📨 Total notifications to create: ${notifications.length}`);
-      console.log('Notification recipients:', notifications.map(n => ({
-        receiverId: n.receiverId,
-        type: n.type,
-        orgId: n.orgId
-      })));
-
       if (notifications.length === 0) {
         console.warn('⚠️ No notifications to send! Check user roles and organization setup.');
         return;
       }
 
       // Create all notifications
-      console.log('🚀 Creating notifications...');
       const results = [];
 
       for (let i = 0; i < notifications.length; i++) {
         const notification = notifications[i];
         try {
-          console.log(`Creating notification ${i + 1}/${notifications.length} for receiver:`, notification.receiverId);
           const result = await createNotification(notification);
           results.push(result);
-          console.log(`✅ Notification ${i + 1} created successfully with ID:`, result);
         } catch (error) {
           console.error(`❌ Failed to create notification ${i + 1}:`, error);
           results.push(null);
@@ -388,10 +336,8 @@ export default function VcDashboard() {
       }
 
       const successCount = results.filter(r => r !== null).length;
-      console.log(`📊 Notification creation results: ${successCount}/${notifications.length} successful`);
 
       if (successCount > 0) {
-        console.log('✅ Notification process completed successfully!');
       } else {
         console.error('❌ All notifications failed to create!');
       }
@@ -401,14 +347,9 @@ export default function VcDashboard() {
       // Don't throw error to prevent breaking the main flow
     }
 
-    console.log('🔔 === NOTIFICATION PROCESS COMPLETED ===');
   };
 
   const handleSubmitHours = async (hoursToAdd, selectedOrgId) => {
-    console.log('🚀 === STARTING HOURS SUBMISSION ===');
-    console.log('Hours to add:', hoursToAdd);
-    console.log('Selected org ID:', selectedOrgId);
-    console.log('Current user:', currentUser);
 
     const userId = getUserId(currentUser);
     if (!userId) {
@@ -430,14 +371,11 @@ export default function VcDashboard() {
         hours: hoursToAdd
       };
 
-      console.log('📝 Submitting hours to database:', hoursData);
 
       // 1. Save hours to database with the selected organization ID
       const hoursId = await logVolunteerHours(hoursData);
-      console.log('✅ Hours saved successfully with ID:', hoursId);
 
       // 2. Send notifications to relevant users
-      console.log('📢 Sending notifications...');
       await sendNotificationsForNewHours(selectedOrgId, hoursToAdd);
 
       // 3. Update local total hours immediately for better UX (but not approved hours - they need approval)
@@ -460,8 +398,6 @@ export default function VcDashboard() {
       // Show success message
       alert(`נרשמו בהצלחה ${hoursToAdd} שעות עבור ${orgName}! השעות ממתינות לאישור והודעות נשלחו לגורמים המאשרים.`);
 
-      console.log('✅ === HOURS SUBMISSION COMPLETED SUCCESSFULLY ===');
-
     } catch (error) {
       console.error('❌ === ERROR IN HOURS SUBMISSION ===', error);
       alert("אירעה שגיאה ברישום השעות. אנא נסו שוב.");
@@ -483,7 +419,6 @@ export default function VcDashboard() {
     try {
       const approvedHours = await getTotalHoursForVolunteer(userId, true);
       setUserApprovedHours(approvedHours);
-      console.log(`Refreshed approved hours for user ${userId}: ${approvedHours}`);
     } catch (error) {
       console.error('Error refreshing approved hours:', error);
     }

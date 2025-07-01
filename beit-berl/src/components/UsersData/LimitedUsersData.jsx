@@ -54,7 +54,6 @@ const LimitedUsersData = () => {
 
     // Handle hours management - UPDATED
     const handleHours = useCallback((user) => {
-        console.log('Opening hours management for user:', user.id);
         setSelectedUser(user);
         setShowHoursModal(true);
         // Close other modals when opening hours
@@ -84,7 +83,6 @@ const LimitedUsersData = () => {
     // Get current user's organization IDs
     const getCurrentUserOrgIds = useCallback(() => {
         if (!currentUser || !currentUser.orgId) {
-            console.log('⚠️ No current user or orgId found');
             return [];
         }
 
@@ -92,7 +90,6 @@ const LimitedUsersData = () => {
             ? currentUser.orgId.map(id => Number(id))
             : [Number(currentUser.orgId)];
 
-        console.log('👤 Current user org IDs:', orgIds);
         return orgIds;
     }, [currentUser]);
 
@@ -114,14 +111,6 @@ const LimitedUsersData = () => {
 
         const hasIntersection = currentUserOrgIds.some(orgId => userOrgIds.includes(orgId));
 
-        if (hasIntersection) {
-            console.log(`✅ User ${user.id} shares org with current user:`, {
-                userOrgIds,
-                currentUserOrgIds,
-                sharedOrgs: currentUserOrgIds.filter(orgId => userOrgIds.includes(orgId))
-            });
-        }
-
         return hasIntersection;
     }, [getCurrentUserOrgIds]);
 
@@ -133,8 +122,6 @@ const LimitedUsersData = () => {
 
         try {
             fetchAttempted.current = true;
-            console.log('🚀 Fetching users and organizations in background...');
-
             // Set loading states for background indicators
             setIsLoadingUsers(true);
             setIsLoadingOrgs(true);
@@ -159,7 +146,6 @@ const LimitedUsersData = () => {
             }
 
             setHasInitialData(true);
-            console.log('✅ Background data fetch completed');
         } catch (error) {
             console.error('❌ Error fetching data:', error);
             setIsLoadingUsers(false);
@@ -182,19 +168,16 @@ const LimitedUsersData = () => {
 
     // Handle watch user profile
     const handleWatch = useCallback((user) => {
-        console.log('Viewing user profile for user ID:', user.id);
         setSelectedUser(user);
         setShowProfile(true);
     }, []);
 
     const handleEdit = useCallback((user) => {
         if (user.role !== 'volunteer') {
-            console.log('Edit denied for non-volunteer:', user.role);
             setNotAllowedRole(user.role || 'Unknown');
             setShowNotAllowedPopup(true);
             return;
         }
-        console.log('Opening feedback popup for volunteer user:', user.id);
         setFeedbackTargetUser(user);
         setShowFeedbackPopup(true);
     }, []);
@@ -245,9 +228,7 @@ const LimitedUsersData = () => {
         try {
             fetchAttempted.current = false; // Reset to allow retry
             setHasInitialData(false);
-            console.log('🔄 Retrying to fetch data...');
             await fetchData();
-            console.log('✅ Retry successful');
         } catch (error) {
             console.error('❌ Retry failed:', error);
         }
@@ -255,8 +236,6 @@ const LimitedUsersData = () => {
 
     // Filter users based on organization sharing and other filters
     const filteredUsers = React.useMemo(() => {
-        console.log('🔍 Filtering users...');
-        console.log('Total users before filtering:', users.length);
 
         const orgFilteredUsers = users.filter(user => {
             if (currentUser && (
@@ -265,14 +244,11 @@ const LimitedUsersData = () => {
                 (currentUser.docId && user.id === currentUser.docId) ||
                 (currentUser.id && user.docId === currentUser.id)
             )) {
-                console.log('🚫 Excluding current user from list:', user.id);
                 return false;
             }
 
             return hasSharedOrganization(user);
         });
-
-        console.log('Users after org filtering:', orgFilteredUsers.length);
 
         const finalFilteredUsers = orgFilteredUsers.filter(user => {
             const searchLower = searchTerm.toLowerCase();

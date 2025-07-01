@@ -54,19 +54,12 @@ export const useFeedbackReminderSystem = () => {
           60: data.sentMilestones?.[60] || false
         };
         
-        console.log('📋 Retrieved tracking data:', {
-          volunteerId,
-          sentMilestones,
-          lastUpdated: data.lastUpdated
-        });
-        
         return {
           volunteerId: data.volunteerId || volunteerId,
           sentMilestones,
           lastUpdated: data.lastUpdated || new Date()
         };
       } else {
-        console.log('📋 No tracking document found, returning default:', defaultTracking);
         return defaultTracking;
       }
     } catch (error) {
@@ -104,7 +97,6 @@ export const useFeedbackReminderSystem = () => {
       };
       
       await setDoc(trackingRef, updatedTracking);
-      console.log('✅ Updated reminder tracking for volunteer:', volunteerId, milestones);
       
       return updatedTracking;
     } catch (error) {
@@ -120,14 +112,8 @@ export const useFeedbackReminderSystem = () => {
    */
   const sendFeedbackReminders = async (volunteerId, milestonesToSend) => {
     try {
-      console.log('🔔 sendFeedbackReminders called:', { 
-        volunteerId, 
-        milestonesToSend, 
-        timestamp: new Date().toISOString() 
-      });
 
       if (!milestonesToSend || milestonesToSend.length === 0) {
-        console.log('⏭️ No milestones to send reminders for');
         return 0;
       }
 
@@ -144,7 +130,6 @@ export const useFeedbackReminderSystem = () => {
       }
 
       const volunteerDisplayName = getUserDisplayName(volunteer);
-      console.log('👤 Volunteer data:', { name: volunteerDisplayName, orgId: volunteer.orgId });
 
       // Get all VCs and OrgReps
       const [vcs, orgReps] = await Promise.all([
@@ -152,7 +137,6 @@ export const useFeedbackReminderSystem = () => {
         getUsersByRole('orgRep')
       ]);
 
-      console.log(`📋 Found ${vcs.length} VCs and ${orgReps.length} OrgReps`);
 
       // Combine VCs and OrgReps for processing
       const recipients = [...vcs, ...orgReps];
@@ -160,10 +144,7 @@ export const useFeedbackReminderSystem = () => {
       // Remove duplicates based on user ID
       const uniqueRecipients = recipients.filter((recipient, index, self) => 
         index === self.findIndex(r => r.id === recipient.id)
-      );
-      
-      console.log(`📋 After deduplication: ${uniqueRecipients.length} unique recipients`);
-      
+      );      
       const notificationsToSend = [];
 
       // Find recipients that share at least one organization with the volunteer
@@ -178,9 +159,7 @@ export const useFeedbackReminderSystem = () => {
         );
 
         if (hasSharedOrg) {
-          const recipientDisplayName = getUserDisplayName(recipient);
-          console.log(`✅ Found matching recipient: ${recipientDisplayName} (${recipient.role})`);
-          
+          const recipientDisplayName = getUserDisplayName(recipient);          
           // Create ONE notification per recipient that includes ALL milestones
           const milestonesText = milestonesToSend.length === 1 
             ? `${milestonesToSend[0]} שעות`
@@ -198,8 +177,6 @@ export const useFeedbackReminderSystem = () => {
         }
       });
 
-      console.log(`📨 Sending ${notificationsToSend.length} feedback reminder notifications (1 per unique recipient)`);
-
       // Send all notifications
       const notificationPromises = notificationsToSend.map(notification => 
         createNotification(notification)
@@ -214,8 +191,6 @@ export const useFeedbackReminderSystem = () => {
       });
       
       await updateReminderTracking(volunteerId, milestonesToUpdate);
-
-      console.log('✅ All feedback reminder notifications sent and tracking updated');
       return notificationsToSend.length;
 
     } catch (error) {
@@ -235,65 +210,47 @@ export const useFeedbackReminderSystem = () => {
     
     // Check if we've already processed this volunteer with these hours
     if (reminderCheckCache.has(cacheKey)) {
-      console.log('🔄 Reminder check already completed for:', cacheKey);
       return 0;
     }
     
     // Check if there's already an active check for this volunteer
     if (activeReminderChecks.has(volunteerId)) {
-      console.log('⏳ Reminder check already in progress for volunteer:', volunteerId);
       return 0;
     }
     
     try {
       // Mark as active
       activeReminderChecks.add(volunteerId);
-      
-      console.log('🔍 Checking feedback reminders for volunteer:', {
-        volunteerId,
-        currentApprovedHours
-      });
 
       if (currentApprovedHours <= 0) {
-        console.log('⏭️ No approved hours, skipping reminder check');
         return 0;
       }
 
       // Get current reminder tracking
       const tracking = await getReminderTracking(volunteerId);
-      console.log('📋 Current reminder tracking:', tracking);
 
       // Determine which milestones should have been sent based on current hours
       const possibleMilestones = [15, 30, 45, 60];
       const milestonesToSend = [];
 
-      console.log('🔍 Analyzing milestones:');
       possibleMilestones.forEach(milestone => {
         const hasReachedMilestone = currentApprovedHours >= milestone;
         const alreadySent = tracking.sentMilestones[milestone];
         
-        console.log(`  📊 Milestone ${milestone}: hours=${currentApprovedHours} >= ${milestone}? ${hasReachedMilestone}, already sent? ${alreadySent}`);
         
         if (hasReachedMilestone && !alreadySent) {
           milestonesToSend.push(milestone);
-          console.log(`  ✅ Adding milestone ${milestone} to send list`);
         }
       });
 
-      console.log('🎯 Milestones to send reminders for:', milestonesToSend);
 
       if (milestonesToSend.length === 0) {
-        console.log('✅ No new milestones to send reminders for');
         // Cache the result even if no reminders were sent
         reminderCheckCache.set(cacheKey, true);
         return 0;
       }
 
       const remindersSent = await sendFeedbackReminders(volunteerId, milestonesToSend);
-
-      if (remindersSent > 0) {
-        console.log(`🎉 Successfully sent ${remindersSent} feedback reminder notifications for milestones: ${milestonesToSend.join(', ')}`);
-      }
 
       // Cache the successful result
       reminderCheckCache.set(cacheKey, true);
@@ -320,12 +277,10 @@ export const useFeedbackReminderSystem = () => {
           reminderCheckCache.delete(key);
         }
       }
-      console.log('🗑️ Cleared reminder cache for volunteer:', volunteerId);
     } else {
       // Clear all cache
       reminderCheckCache.clear();
       activeReminderChecks.clear();
-      console.log('🗑️ Cleared all reminder cache');
     }
   };
 
@@ -370,7 +325,6 @@ export const useFeedbackReminderSystem = () => {
     // Clear cache for this volunteer
     clearReminderCache(volunteerId);
     
-    console.log('🔄 Reset reminder tracking for volunteer:', volunteerId);
     return resetTracking;
   };
 

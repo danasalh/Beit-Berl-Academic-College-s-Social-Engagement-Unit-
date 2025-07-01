@@ -39,19 +39,16 @@ const ProgressBar = ({
 
       // Only fetch if we have a current user
       if (!currentUser?.id) {
-        console.log('👤 No current user, resetting hours to 0');
         setUserHours(0);
         setReminderCheckDone(false);
         return;
       }
 
-      console.log('📊 Fetching hours for current user:', currentUser.id);
       setLoading(true);
 
       try {
         const totalHours = await getTotalHoursForVolunteer(currentUser.id, approvedOnly);
         setUserHours(totalHours);
-        console.log(`✅ Total hours for user ${currentUser.id}: ${totalHours}`);
 
       } catch (err) {
         console.error('❌ Error fetching user hours:', err);
@@ -79,21 +76,14 @@ const ProgressBar = ({
           !reminderCheckDone &&
           hours === null) {
         
-        console.log('🔔 Performing background reminder check for volunteer:', {
-          volunteerId: currentUser.id,
-          hours: displayHours
-        });
-
         // Mark as done immediately to prevent multiple calls
         setReminderCheckDone(true);
 
         // Run reminder check in background - don't await it!
         checkAndSendFeedbackReminders(String(currentUser.id), displayHours)
           .then(() => {
-            console.log('✅ Background reminder check completed');
           })
           .catch((error) => {
-            console.error('❌ Error during background reminder check:', error);
           });
       }
     };

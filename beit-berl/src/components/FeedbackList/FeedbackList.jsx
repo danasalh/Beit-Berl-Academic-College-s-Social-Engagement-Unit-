@@ -23,10 +23,10 @@ const FeedbackList = () => {
   // Check if current user can provide feedback for a specific organization
   const canProvideFeedbackForOrg = useCallback((orgId) => {
     if (!currentUser) return false;
-    
+
     // Admin can provide feedback for all organizations
     if (currentUser.role === 'admin') return true;
-    
+
     // OrgRep or VC can provide feedback only for their organizations
     if (currentUser.role === 'orgRep' || currentUser.role === 'vc') {
       // Check if user has the same orgId
@@ -35,7 +35,7 @@ const FeedbackList = () => {
       }
       return Number(currentUser.orgId) === Number(orgId);
     }
-    
+
     return false;
   }, [currentUser]);
 
@@ -49,7 +49,7 @@ const FeedbackList = () => {
   const calculateFeedbackNeeded = useCallback((volunteerHours, existingFeedback) => {
     // Group approved hours by organization
     const approvedHoursByOrg = {};
-    
+
     volunteerHours
       .filter(record => record.approved)
       .forEach(record => {
@@ -62,20 +62,20 @@ const FeedbackList = () => {
 
     // Calculate feedback requests needed
     const feedbackRequests = [];
-    
+
     Object.entries(approvedHoursByOrg).forEach(([orgId, totalHours]) => {
       // Check if current user can provide feedback for this org
       if (!canProvideFeedbackForOrg(orgId)) return;
-      
+
       // Calculate how many feedback sessions should have been completed
       const expectedFeedbackSessions = Math.floor(totalHours / 15);
-      
+
       // Count existing feedback for this volunteer from this organization
       const existingFeedbackCount = existingFeedback.filter(feedback => {
         // Check if feedback is from someone in the same organization
         return feedback.volunteerId === String(volunteerHours[0]?.volunteerId);
       }).length;
-      
+
       // If we need more feedback sessions
       if (expectedFeedbackSessions > existingFeedbackCount) {
         const missingSessions = expectedFeedbackSessions - existingFeedbackCount;
@@ -102,10 +102,8 @@ const FeedbackList = () => {
       } else if (feedbackRequestsData.length === 0) {
         setInitialLoading(true);
       }
-      
-      setError(null);
 
-      console.log('🔍 Fetching feedback requests for dashboard...');
+      setError(null);
 
       // Get all volunteer hours and existing feedback in parallel
       const [allHours, existingFeedback] = await Promise.all([
@@ -123,18 +121,16 @@ const FeedbackList = () => {
         volunteerHoursMap.get(volunteerId).push(record);
       });
 
-      console.log(`📊 Processing ${volunteerHoursMap.size} volunteers for feedback requests`);
-
       // Calculate feedback requests for each volunteer
       const feedbackRequestsMap = new Map();
 
       for (const [volunteerId, volunteerHours] of volunteerHoursMap) {
-        const volunteerFeedback = existingFeedback.filter(f => 
+        const volunteerFeedback = existingFeedback.filter(f =>
           f.volunteerId === String(volunteerId)
         );
-        
+
         const feedbackRequests = calculateFeedbackNeeded(volunteerHours, volunteerFeedback);
-        
+
         if (feedbackRequests.length > 0) {
           // Fetch volunteer details
           try {
@@ -170,7 +166,6 @@ const FeedbackList = () => {
         .sort((a, b) => b.totalMissingSessions - a.totalMissingSessions);
 
       setFeedbackRequestsData(requestsData);
-      console.log(`✅ Found feedback requests for ${requestsData.length} volunteers`);
 
     } catch (err) {
       console.error('❌ Error fetching feedback requests:', err);
@@ -188,7 +183,6 @@ const FeedbackList = () => {
 
   // Handle opening feedback popup
   const handleOpenFeedbackPopup = useCallback((volunteer) => {
-    console.log('💬 Opening feedback popup for volunteer:', volunteer);
     setSelectedVolunteer(volunteer);
     setShowFeedbackPopup(true);
   }, []);
@@ -208,9 +202,9 @@ const FeedbackList = () => {
 
   // Get volunteer display name
   const getVolunteerName = useCallback((volunteer) => {
-    return `${volunteer?.firstName || ''} ${volunteer?.lastName || ''}`.trim() || 
-           volunteer?.email || 
-           `Volunteer ${volunteer?.id}`;
+    return `${volunteer?.firstName || ''} ${volunteer?.lastName || ''}`.trim() ||
+      volunteer?.email ||
+      `Volunteer ${volunteer?.id}`;
   }, []);
 
   // Show initial loading only on first load with empty data
@@ -247,7 +241,7 @@ const FeedbackList = () => {
             <p>רשימת מתנדבים הזקוקים לפידבק על פי שעות התנדבות</p>
           </div>
         </div>
-        <button 
+        <button
           className="refresh-btn"
           onClick={handleRefresh}
           disabled={refreshing}
@@ -305,7 +299,7 @@ const FeedbackList = () => {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="row-actions">
                     <button
                       className="feedback-btn"
