@@ -1,4 +1,4 @@
-# Vtime - Volunteer Coordination System
+# Vtime System
 
 This project is a responsive, scalable web application designed to support and streamline volunteer coordination for academic and community organizations. Built with React and Firebase, Vtime provides role-based access control and comprehensive volunteer management features.
 
