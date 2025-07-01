@@ -37,7 +37,7 @@ const LimitedUsersData = () => {
     const [showNotAllowedPopup, setShowNotAllowedPopup] = useState(false);
     const [notAllowedRole, setNotAllowedRole] = useState('');
     const [showHoursModal, setShowHoursModal] = useState(false);
-
+    const [showEditModal, setShowEditModal] = useState(false);
 
     // Background loading states - non-blocking
     const [isLoadingUsers, setIsLoadingUsers] = useState(false);
