@@ -2,7 +2,7 @@
   display: flex;
   gap: 12px;
   padding: 16px;
-  background-color: #f5f6fa;
+  background-color: #f5f6fa !important;
   border-radius: 12px;
   margin: 20px 0;
   flex-wrap: wrap;
@@ -13,22 +13,58 @@
 .filter-bar input,
 .filter-bar select {
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #ddd !important;
   border-radius: 8px;
   min-width: 130px;
-  background-color: white;
+  background-color: white !important;
+  color: black !important;
   font-size: 12px;
 }
 
+/* Ensure placeholder text is visible */
+.filter-bar input::placeholder {
+  color: #666 !important;
+  opacity: 1 !important;
+}
+
+/* Specific targeting for search inputs */
+.filter-bar .search-input {
+  background-color: white !important;
+  color: black !important;
+  border: 1px solid #ddd !important;
+}
+
+.filter-bar .search-input:focus {
+  background-color: white !important;
+  color: black !important;
+  outline: 2px solid #007bff !important;
+  outline-offset: -2px !important;
+}
+
+/* Select dropdown styling */
 .filter-bar select {
   appearance: menulist;
   cursor: pointer;
+  background-color: white !important;
+  color: black !important;
 }
 
-.search-btn{
-  background-color: rgb(251, 182, 9);
-  color: white;
-  border: none;
+/* Ensure select options are visible */
+.filter-bar select option {
+  background-color: white !important;
+  color: black !important;
+}
+
+.filter-bar .filter-select {
+  background-color: white !important;
+  color: black !important;
+  border: 1px solid #ddd !important;
+}
+
+.search-btn {
+  background-color: rgb(251, 182, 9) !important;
+  color: white !important;
+  border: none !important;
   padding: 10px 14px;
   border-radius: 8px;
   cursor: pointer;
@@ -39,9 +75,57 @@
   font-weight: 500;
 }
 
+.search-btn:hover {
+  background-color: rgb(230, 165, 8) !important;
+}
+
 .clear-filter-btn {
-  background-color: #6c757d;
+  background-color: #6c757d !important;
   margin-left: auto;
+}
+
+.clear-filter-btn:hover {
+  background-color: #5a6268 !important;
+}
+
+/* Force light mode for all filter bar elements */
+.filter-bar * {
+  color-scheme: light !important;
+}
+
+/* Override dark mode specifically */
+@media (prefers-color-scheme: dark) {
+  .filter-bar {
+    background-color: #f5f6fa !important;
+  }
+  
+  .filter-bar input,
+  .filter-bar select,
+  .filter-bar .search-input,
+  .filter-bar .filter-select {
+    background-color: white !important;
+    color: black !important;
+    border: 1px solid #ddd !important;
+  }
+  
+  .filter-bar input::placeholder {
+    color: #666 !important;
+  }
+  
+  .filter-bar select option {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  .search-btn {
+    background-color: rgb(251, 182, 9) !important;
+    color: white !important;
+  }
+  
+  .clear-filter-btn {
+    background-color: #6c757d !important;
+    color: white !important;
+  }
 }
 
 /* Responsive adjustments */
@@ -49,6 +133,7 @@
   .filter-bar {
     flex-direction: column;
     gap: 10px;
+    background-color: #f5f6fa !important;
   }
   
   .filter-bar input,
@@ -56,6 +141,12 @@
   .filter-bar button {
     width: 100%;
     min-width: unset;
+  }
+  
+  .filter-bar input,
+  .filter-bar select {
+    background-color: white !important;
+    color: black !important;
   }
   
   .clear-filter-btn {

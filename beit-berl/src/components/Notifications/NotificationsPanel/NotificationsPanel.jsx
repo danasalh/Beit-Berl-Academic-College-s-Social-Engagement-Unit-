@@ -5,8 +5,10 @@ import "./NotificationsPanel.css";
 
 export default function NotificationsPanel() {
   const [filter, setFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all"); // New type filter
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [showTypeFilter, setShowTypeFilter] = useState(false); // Toggle for mobile
 
   // Get context functions and state
   const {
@@ -65,6 +67,16 @@ export default function NotificationsPanel() {
       icon: '🎓'
     }
   }), []);
+
+  // Get available notification types from current notifications
+  const availableTypes = useMemo(() => {
+    const types = [...new Set(notifications.map(n => n.type).filter(Boolean))];
+    return types.map(type => ({
+      value: type,
+      ...notificationTypeConfig[type],
+      count: notifications.filter(n => n.type === type).length
+    }));
+  }, [notifications, notificationTypeConfig]);
 
   // Helper function to get notification display properties
   const getNotificationDisplayProps = useCallback((notification) => {
@@ -175,14 +187,21 @@ export default function NotificationsPanel() {
     fetchNotifications();
   }, [currentUser?.id]); // Only depend on currentUser.id, not the entire fetchNotifications function
 
-  // Filter notifications based on selected filter - memoized for performance
+  // Filter notifications based on selected filters - memoized for performance
   const filteredNotifications = useMemo(() => {
     return notifications.filter((n) => {
-      if (filter === "read") return n.read;
-      if (filter === "unread") return !n.read;
-      return true;
+      // Read/unread filter
+      let passesReadFilter = true;
+      if (filter === "read") passesReadFilter = n.read;
+      if (filter === "unread") passesReadFilter = !n.read;
+
+      // Type filter
+      let passesTypeFilter = true;
+      if (typeFilter !== "all") passesTypeFilter = n.type === typeFilter;
+
+      return passesReadFilter && passesTypeFilter;
     });
-  }, [notifications, filter]);
+  }, [notifications, filter, typeFilter]);
 
   // Memoized count calculations
   const notificationCounts = useMemo(() => ({
@@ -396,6 +415,44 @@ export default function NotificationsPanel() {
               לא נקראו ({notificationCounts.unread})
             </button>
           </div>
+
+          {/* Type Filter */}
+          <div className="notifications-type-filters">
+            <div className="type-filter-header">
+              <button 
+                className="type-filter-toggle"
+                onClick={() => setShowTypeFilter(!showTypeFilter)}
+              >
+                <span>סינון לפי סוג</span>
+                <span className={`toggle-icon ${showTypeFilter ? 'open' : ''}`}>▼</span>
+              </button>
+            </div>
+            
+            <div className={`type-filter-content ${showTypeFilter ? 'show' : ''}`}>
+              <button
+                className={`type-filter-btn ${typeFilter === "all" ? "active" : ""}`}
+                onClick={() => setTypeFilter("all")}
+              >
+                <span className="type-icon">📋</span>
+                <span>הכל</span>
+                <span className="count">({notifications.length})</span>
+              </button>
+              
+              {availableTypes.map(type => (
+                <button
+                  key={type.value}
+                  className={`type-filter-btn ${typeFilter === type.value ? "active" : ""}`}
+                  onClick={() => setTypeFilter(type.value)}
+                  style={{ '--type-color': type.color }}
+                >
+                  <span className="type-icon">{type.icon}</span>
+                  <span>{type.displayName}</span>
+                  <span className="count">({type.count})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="notifications-empty-filter">
             <p>אין הודעות בקטגוריה זו</p>
           </div>
@@ -442,6 +499,43 @@ export default function NotificationsPanel() {
           >
             לא נקראו ({notificationCounts.unread})
           </button>
+        </div>
+
+        {/* Type Filter */}
+        <div className="notifications-type-filters">
+          <div className="type-filter-header">
+            <button 
+              className="type-filter-toggle"
+              onClick={() => setShowTypeFilter(!showTypeFilter)}
+            >
+              <span>סינון לפי סוג</span>
+              <span className={`toggle-icon ${showTypeFilter ? 'open' : ''}`}>▼</span>
+            </button>
+          </div>
+          
+          <div className={`type-filter-content ${showTypeFilter ? 'show' : ''}`}>
+            <button
+              className={`type-filter-btn ${typeFilter === "all" ? "active" : ""}`}
+              onClick={() => setTypeFilter("all")}
+            >
+              <span className="type-icon">📋</span>
+              <span>הכל</span>
+              <span className="count">({notifications.length})</span>
+            </button>
+            
+            {availableTypes.map(type => (
+              <button
+                key={type.value}
+                className={`type-filter-btn ${typeFilter === type.value ? "active" : ""}`}
+                onClick={() => setTypeFilter(type.value)}
+                style={{ '--type-color': type.color }}
+              >
+                <span className="type-icon">{type.icon}</span>
+                <span>{type.displayName}</span>
+                <span className="count">({type.count})</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="notifications-list">
@@ -528,7 +622,6 @@ export default function NotificationsPanel() {
                   </div>
                 </div>
               )}
-
 
               {/* Show expanded content on mobile under item */}
               {selectedNotification?.id === notif.id && (

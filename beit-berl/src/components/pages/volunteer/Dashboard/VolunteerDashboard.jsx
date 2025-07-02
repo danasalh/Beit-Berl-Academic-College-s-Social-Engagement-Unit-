@@ -1,4 +1,4 @@
-// Enhanced VolunteerDashboard.jsx with comprehensive debug logging
+// Enhanced VolunteerDashboard.jsx with fix for approved hours calculation
 import { useState, useEffect } from 'react';
 import { useUsers } from '../../../../Contexts/UsersContext';
 import { useVolunteerHours } from '../../../../Contexts/VolunteerHoursContext';
@@ -21,11 +21,14 @@ export default function VcDashboard() {
   const [showPopup, setShowPopup] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [userTotalHours, setUserTotalHours] = useState(0);
+  const [userApprovedHours, setUserApprovedHours] = useState(0); // Separate state for approved hours
   const [progressKey, setProgressKey] = useState(0);
   const [userOrganizations, setUserOrganizations] = useState([]);
   const [loadingOrgs, setLoadingOrgs] = useState(false);
   const [orgsLoaded, setOrgsLoaded] = useState(false);
   const [showEndPopup, setShowEndPopup] = useState(false);
+  const [hasDeclared, setHasDeclared] = useState(false);
+
 
   // Updated helper function to get the correct user ID - prioritize id over docId
   const getUserId = (user) => {
@@ -49,25 +52,34 @@ export default function VcDashboard() {
     setShowPopup(true);
   };
 
-  // Fetch user's total approved hours on component mount and when currentUser changes
+  // Fetch user's total hours (all) and approved hours separately
   useEffect(() => {
-    const fetchUserTotalHours = async () => {
+    const fetchUserHours = async () => {
       const userId = getUserId(currentUser);
       if (!userId) {
         setUserTotalHours(0);
+        setUserApprovedHours(0);
         return;
       }
 
       try {
-        const totalHours = await getTotalHoursForVolunteer(userId, true);
+        // Fetch total hours (all submissions)
+        const totalHours = await getTotalHoursForVolunteer(userId, false);
         setUserTotalHours(totalHours);
+
+        // Fetch approved hours only
+        const approvedHours = await getTotalHoursForVolunteer(userId, true);
+        setUserApprovedHours(approvedHours);
+
+        console.log(`User ${userId} - Total hours: ${totalHours}, Approved hours: ${approvedHours}`);
       } catch (error) {
-        console.error('Error fetching user total hours:', error);
+        console.error('Error fetching user hours:', error);
         setUserTotalHours(0);
+        setUserApprovedHours(0);
       }
     };
 
-    fetchUserTotalHours();
+    fetchUserHours();
   }, [currentUser?.docId, currentUser?.id, getTotalHoursForVolunteer]);
 
   // Function to load organizations - called only when needed
@@ -428,8 +440,9 @@ export default function VcDashboard() {
       console.log('📢 Sending notifications...');
       await sendNotificationsForNewHours(selectedOrgId, hoursToAdd);
 
-      // 3. Update local total hours immediately for better UX
+      // 3. Update local total hours immediately for better UX (but not approved hours - they need approval)
       setUserTotalHours(prevTotal => prevTotal + hoursToAdd);
+      // Note: userApprovedHours should NOT be updated here since the hours are pending approval
 
       // 4. Force ProgressBar to refresh by changing its key
       setProgressKey(prev => prev + 1);
@@ -459,6 +472,21 @@ export default function VcDashboard() {
 
   const handleFinishVol = () => {
     setShowEndPopup(true);
+    setHasDeclared(true);
+  }
+
+  // Function to refresh approved hours (call this when hours are approved/rejected)
+  const refreshApprovedHours = async () => {
+    const userId = getUserId(currentUser);
+    if (!userId) return;
+
+    try {
+      const approvedHours = await getTotalHoursForVolunteer(userId, true);
+      setUserApprovedHours(approvedHours);
+      console.log(`Refreshed approved hours for user ${userId}: ${approvedHours}`);
+    } catch (error) {
+      console.error('Error refreshing approved hours:', error);
+    }
   };
 
   const displayName = getUserName(currentUser);
@@ -473,14 +501,28 @@ export default function VcDashboard() {
         <ProgressBar key={progressKey} approvedOnly={true} />
       </div>
 
-      {userTotalHours >= 60 && (
+      {/* Show FinishVol button only when user has at least 60 APPROVED hours */}
+      {userApprovedHours >= 60 && (
         <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "center" }}>
-          <FinishVol onClick={handleFinishVol} />
+          <FinishVol
+            onClick={handleFinishVol}
+            label={hasDeclared ? "להצהיר שוב?" : "סיום התנדבות"}
+          />
         </div>
       )}
 
       <div className="dashboard-buttons-wrapper">
         <ThreeButtonDush onMarkHoursClick={handleMarkHoursClick} />
+      </div>
+
+      {/* Debug info - remove in production */}
+      <div style={{
+        fontSize: '12px',
+        color: '#666',
+        marginTop: '10px',
+        textAlign: 'center',
+        display: process.env.NODE_ENV === 'development' ? 'block' : 'none'
+      }}>
       </div>
 
       {showPopup && (
@@ -511,7 +553,7 @@ export default function VcDashboard() {
             className="popup-content popup-animate"
             onClick={e => e.stopPropagation()}
           >
-            <CloseButton onClick={() => setShowEndPopup(false)} className="close"/>
+            <CloseButton onClick={() => setShowEndPopup(false)} className="close" />
             <EndVolunteering />
           </div>
         </div>

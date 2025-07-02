@@ -1,15 +1,22 @@
-/* Main Page Styles */
+/* Force light mode for entire organizations page */
 .organizations-page {
   direction: rtl;
   justify-content: center;
   display: flex;
   flex-direction: column;
   margin-right: 2rem;
+  color: black !important;
+  color-scheme: light !important;
+}
+
+/* Main Page Styles */
+.organizations-page * {
+  color-scheme: light !important;
 }
 
 /* Header Styles */
 .page-header {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
@@ -19,6 +26,7 @@
   top: 0;
   z-index: 10;
   border-radius: 15px;
+  color: black !important;
 }
 
 /* Search Section */
@@ -40,32 +48,41 @@
   flex: 1;
   max-width: 16rem;
   padding: 6px 20px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 12px;
   text-align: right;
   font-size: 15px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: black !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
+.search-input::placeholder {
+  color: #666 !important;
+  opacity: 1 !important;
+}
+
 .search-input:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: #4f46e5 !important;
   box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1), 0 8px 25px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
+  background-color: white !important;
+  color: black !important;
 }
 
 .search-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   padding: 7px;
   border-radius: 10px;
-  border: none;
+  border: none !important;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  color: white !important;
 }
 
 .search-button:hover {
@@ -76,17 +93,29 @@
 .search-icon {
   width: 15px;
   height: 15px;
-  color: white;
+  color: white !important;
+  background: transparent !important;
+  fill: white !important;
+}
+
+/* Fix for search button and icon backgrounds */
+.search-button,
+.search-button * {
+  background: transparent !important;
+}
+
+.search-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
 }
 
 .add-org-button {
   display: block;
   margin: 0 auto;
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-  color: #374151;
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%) !important;
+  color: #374151 !important;
   padding: 12px 24px;
   border-radius: 25px;
-  border: none;
+  border: none !important;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -103,13 +132,15 @@
 .organizations-container {
   max-width: 80rem;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 1rem;
+  color: black !important;
 }
 
 .organizations-container-alternative {
   max-width: none;
   margin: 0 auto;
   padding: 40px 24px;
+  color: black !important;
 }
 
 /* Responsive Grid Layout */
@@ -122,7 +153,7 @@
 
 /* Organization Card Styles */
 .org-card {
-  background: rgba(224, 227, 231, 0.95);
+  background: rgba(224, 227, 231, 0.95) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 20px;
@@ -138,6 +169,7 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  color: black !important;
 }
 
 .org-card::before {
@@ -176,7 +208,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.7) !important;
   padding: 3px 12px;
   border-radius: 15px;
   backdrop-filter: blur(5px);
@@ -184,15 +216,17 @@
 }
 
 .location-icon {
-  color: #667eea;
+  color: #667eea !important;
   width: 16px;
   height: 16px;
   margin-top: 2px;
   flex-shrink: 0;
+  background: transparent !important;
+  fill: #667eea !important;
 }
 
 .city-text {
-  color: #4a5568;
+  color: #4a5568 !important;
   font-size: 13px;
   font-weight: 500;
 }
@@ -211,7 +245,7 @@
 }
 
 .org-description {
-  color: #4a5568;
+  color: #4a5568 !important;
   font-size: 14px;
   margin-bottom: 20px;
   text-align: right;
@@ -220,7 +254,7 @@
 }
 
 .org-description-continued {
-  color: #4a5568;
+  color: #4a5568 !important;
   font-size: 14px;
   margin-bottom: 20px;
   text-align: right;
@@ -228,11 +262,11 @@
 }
 
 .details-button {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  color: #4a5568;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%) !important;
+  color: #4a5568 !important;
   padding: 10px 20px;
   border-radius: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -243,8 +277,8 @@
 }
 
 .details-button:hover {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
@@ -256,7 +290,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.6) !important;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   display: flex;
@@ -267,7 +301,8 @@
 }
 
 .modal-content {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: black !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 20px;
@@ -314,7 +349,7 @@
 .form-label {
   font-size: 15px;
   font-weight: 600;
-  color: #374151;
+  color: #374151 !important;
   margin-bottom: 8px;
   text-align: right;
 }
@@ -323,21 +358,30 @@
 .form-textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid rgba(209, 213, 219, 0.3);
+  border: 2px solid rgba(209, 213, 219, 0.3) !important;
   border-radius: 12px;
   text-align: right;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.7) !important;
+  color: black !important;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   transition: all 0.3s ease;
   font-size: 15px;
 }
 
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: #666 !important;
+  opacity: 1 !important;
+}
+
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: #4f46e5 !important;
+  background-color: white !important;
+  color: black !important;
   box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
   transform: translateY(-2px);
 }
@@ -354,11 +398,11 @@
 }
 
 .save-button {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  color: white;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  color: white !important;
   padding: 12px 24px;
   border-radius: 12px;
-  border: none;
+  border: none !important;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
@@ -372,11 +416,11 @@
 }
 
 .cancel-button-org {
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  color: #374151;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+  color: #374151 !important;
   padding: 12px 24px;
   border-radius: 12px;
-  border: none;
+  border: none !important;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
@@ -392,6 +436,7 @@
 /* View Details Styles */
 .view-details {
   text-align: right;
+  color: black !important;
 }
 
 .org-info {
@@ -411,7 +456,7 @@
 }
 
 .org-city-modal {
-  color: #6b7280;
+  color: #6b7280 !important;
   margin-bottom: 12px;
   font-weight: 500;
 }
@@ -421,7 +466,7 @@
 }
 
 .org-description-modal p {
-  color: #374151;
+  color: #374151 !important;
   line-height: 1.6;
   font-size: 15px;
 }
@@ -431,7 +476,7 @@
 }
 
 .contact-text {
-  color: #6b7280;
+  color: #6b7280 !important;
   font-size: 15px;
   margin-bottom: 12px;
   font-weight: 600;
@@ -439,10 +484,10 @@
 
 .contact-field {
   margin-bottom: 16px;
-  color: #374151;
+  color: #374151 !important;
   font-size: 15px;
   padding: 12px;
-  background: rgba(249, 250, 251, 0.8);
+  background: rgba(249, 250, 251, 0.8) !important;
   border-radius: 12px;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
@@ -458,8 +503,8 @@
 
 .coordinator-name,
 .volunteer-name {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
   padding: 6px 12px;
   border-radius: 15px;
   font-size: 13px;
@@ -474,11 +519,11 @@
 }
 
 .edit-button-org {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  color: white;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  color: white !important;
   padding: 12px 24px;
   border-radius: 12px;
-  border: none;
+  border: none !important;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
@@ -490,12 +535,21 @@
   box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6);
 }
 
+/* Fix for edit button icons */
+.edit-button-org *,
+.edit-button-org svg,
+.edit-button-org path {
+  background: transparent !important;
+  fill: white !important;
+  color: white !important;
+}
+
 .delete-button {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
   padding: 12px 24px;
   border-radius: 12px;
-  border: none;
+  border: none !important;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
@@ -507,17 +561,253 @@
   box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
 }
 
+/* Fix for delete button icons */
+.delete-button *,
+.delete-button svg,
+.delete-button path {
+  background: transparent !important;
+  fill: white !important;
+  color: white !important;
+}
+
 .role-info-message p,
 .no-results {
   text-align: center;
-  color: hsl(220, 9%, 46%);
+  color: hsl(220, 9%, 46%) !important;
   padding: 40px;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.7) !important;
   border-radius: 16px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   margin: 20px;
   height: 10%;
+}
+
+/* VC Selection Styles */
+.vc-selection-container {
+  border: 2px solid rgba(225, 229, 233, 0.3) !important;
+  border-radius: 16px;
+  padding: 20px;
+  background: rgba(248, 249, 250, 0.8) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: black !important;
+}
+
+.vc-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.vc-checkbox-label {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: black !important;
+  border: 2px solid rgba(225, 229, 233, 0.3) !important;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.vc-checkbox-label:hover {
+  background: rgba(241, 243, 244, 0.9) !important;
+  border-color: #4f46e5 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.1);
+}
+
+.vc-checkbox {
+  margin-right: 12px;
+  margin-left: 0;
+  accent-color: #4f46e5 !important;
+  transform: scale(1.2);
+  background-color: white !important;
+}
+
+.vc-name {
+  font-size: 15px;
+  color: #374151 !important;
+  font-weight: 600;
+}
+
+.no-vcs-message {
+  color: #6b7280 !important;
+  font-style: italic;
+  text-align: center;
+  padding: 32px;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.7) !important;
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.selected-vcs-preview {
+  border-top: 2px solid rgba(225, 229, 233, 0.3) !important;
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.selected-vcs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.selected-vc-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Loading and error states */
+.loading-container,
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: black !important;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  margin: 20px;
+}
+
+.loading-message {
+  font-size: 18px;
+  color: #6b7280 !important;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.retry-button {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  color: white !important;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+}
+
+.retry-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6);
+}
+
+/* General icon fix for all buttons */
+button svg,
+button path,
+button *[data-testid*="icon"],
+.search-button svg,
+.search-button path,
+.edit-button-org svg,
+.edit-button-org path,
+.delete-button svg,
+.delete-button path {
+  background: transparent !important;
+}
+
+/* Specific fixes for white icon backgrounds */
+svg {
+  background: transparent !important;
+}
+
+path {
+  background: transparent !important;
+}
+
+.org-grid:has(.org-card:only-child) {
+  justify-content: center;
+  display: flex;
+}
+
+.role-info-message p {
+  padding: 0;
+  margin: 0;
+}
+
+.org-stats {
+  margin-bottom: 1rem;
+  color: black !important;
+}
+
+/* Dark Mode Override - Force light mode for everything */
+@media (prefers-color-scheme: dark) {
+  .organizations-page,
+  .organizations-page * {
+    background-color: inherit !important;
+    color: inherit !important;
+    color-scheme: light !important;
+  }
+  
+  .organizations-page {
+    background-color: white !important;
+    color: black !important;
+  }
+  
+  .search-input,
+  .form-input,
+  .form-textarea {
+    background-color: white !important;
+    color: black !important;
+    border: 2px solid rgba(209, 213, 219, 0.3) !important;
+  }
+  
+  .search-input::placeholder,
+  .form-input::placeholder,
+  .form-textarea::placeholder {
+    color: #666 !important;
+  }
+  
+  .modal-content {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: black !important;
+  }
+  
+  .org-card {
+    background: rgba(224, 227, 231, 0.95) !important;
+    color: black !important;
+  }
+  
+  .vc-checkbox-label {
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: black !important;
+  }
+  
+  .vc-checkbox {
+    background-color: white !important;
+  }
+  
+  /* Force transparent backgrounds for icons in dark mode */
+  svg,
+  path,
+  .search-icon,
+  .location-icon,
+  button svg,
+  button path {
+    background: transparent !important;
+  }
 }
 
 /* Responsive Design */
@@ -576,6 +866,7 @@
   max-width: calc(100% - 48px);
   margin: 0 auto;
   padding: 40px 24px;
+  color: black !important;
 }
 
 /* Small screens (576px to 767px) */
@@ -588,6 +879,8 @@
 
   .search-input {
     max-width: none;
+    background-color: white !important;
+    color: black !important;
   }
 
   .org-grid {
@@ -601,16 +894,22 @@
 
   .page-header {
     padding: 24px 16px;
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: black !important;
   }
 
   .modal-content {
     margin: 16px;
     max-width: calc(100% - 32px);
     padding: 24px;
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: black !important;
   }
 
   .org-card {
     min-height: 180px;
+    background: rgba(224, 227, 231, 0.95) !important;
+    color: black !important;
   }
 
   .org-name {
@@ -619,6 +918,26 @@
 
   .org-description {
     font-size: 14px;
+  }
+
+  .vc-checkboxes {
+    max-height: 180px;
+  }
+
+  .vc-checkbox-label {
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: black !important;
+  }
+
+  .vc-name {
+    font-size: 14px;
+  }
+
+  .vc-selection-container {
+    padding: 16px;
+    background: rgba(248, 249, 250, 0.8) !important;
+    color: black !important;
   }
 }
 
@@ -630,11 +949,15 @@
 
   .page-header {
     padding: 20px 12px;
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: black !important;
   }
 
   .org-card {
     padding: 16px;
     min-height: 160px;
+    background: rgba(224, 227, 231, 0.95) !important;
+    color: black !important;
   }
 
   .org-name {
@@ -655,6 +978,8 @@
     padding: 20px;
     margin: 12px;
     max-width: calc(100% - 24px);
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: black !important;
   }
 
   .search-inputs {
@@ -664,166 +989,7 @@
   .search-input {
     padding: 12px 16px;
     font-size: 16px;
+    background-color: white !important;
+    color: black !important;
   }
-}
-
-/* Loading and error states */
-.loading-container,
-.error-message {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  margin: 20px;
-}
-
-.loading-message {
-  font-size: 18px;
-  color: #6b7280;
-  margin-bottom: 20px;
-  font-weight: 500;
-}
-
-.retry-button {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
-}
-
-.retry-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6);
-}
-
-/* VC Selection Styles */
-.vc-selection-container {
-  border: 2px solid rgba(225, 229, 233, 0.3);
-  border-radius: 16px;
-  padding: 20px;
-  background: rgba(248, 249, 250, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.vc-checkboxes {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 220px;
-  overflow-y: auto;
-  margin-bottom: 16px;
-}
-
-.vc-checkbox-label {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(225, 229, 233, 0.3);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-}
-
-.vc-checkbox-label:hover {
-  background: rgba(241, 243, 244, 0.9);
-  border-color: #4f46e5;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.1);
-}
-
-.vc-checkbox {
-  margin-right: 12px;
-  margin-left: 0;
-  accent-color: #4f46e5;
-  transform: scale(1.2);
-}
-
-.vc-name {
-  font-size: 15px;
-  color: #374151;
-  font-weight: 600;
-}
-
-.no-vcs-message {
-  color: #6b7280;
-  font-style: italic;
-  text-align: center;
-  padding: 32px;
-  margin: 0;
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 12px;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-}
-
-.selected-vcs-preview {
-  border-top: 2px solid rgba(225, 229, 233, 0.3);
-  padding-top: 16px;
-  margin-top: 16px;
-}
-
-.selected-vcs-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.selected-vc-tag {
-  display: inline-block;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 15px;
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .vc-checkboxes {
-    max-height: 180px;
-  }
-
-  .vc-checkbox-label {
-    padding: 10px 14px;
-  }
-
-  .vc-name {
-    font-size: 14px;
-  }
-
-  .vc-selection-container {
-    padding: 16px;
-  }
-}
-
-.org-grid:has(.org-card:only-child) {
-  justify-content: center;
-  display: flex;
-}
-
-.role-info-message p {
-  padding: 0;
-  margin: 0;
-}
-
-.org-stats {
-  margin-bottom: 1rem;;
 }

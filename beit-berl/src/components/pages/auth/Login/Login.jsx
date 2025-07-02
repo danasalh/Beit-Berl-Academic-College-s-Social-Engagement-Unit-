@@ -166,16 +166,20 @@ const Login = () => {
       )}
 
       <div className="login-form-container">
-        <img src="/logo.svg" alt="Logo" className="app-logo" />
-        <div className="login-header">
-          <h1 className="login-title">התחברות לחשבון</h1>
-        </div>
-        {error && (
-          <div className="error-alert" role="alert">
-            <span>{error}</span>
+        <div className="login-header-box">
+          <div className="login-header">
+            <h1 className="login-title">התחברות לחשבון</h1>
           </div>
-        )}
-
+          <img src="/logo.svg" alt="Logo" className="app-logo" />
+          {error && (
+            <div className="error-alert" role="alert">
+              <span>{error}</span>
+            </div>
+          )}
+        </div>
+        <h1 className="login-description">
+          מערכת לניהול ומעקב אחר פעילות התנדבותית של סטודנטים במכללה האקדמית בית ברל
+        </h1>
         <form className="login-form" onSubmit={handleLogin}>
           <div className="form-group">
             <label htmlFor="email">כתובת דוא"ל</label>
@@ -202,6 +206,9 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
+
+
 
           <div className="forgot-password">
             <Link to="/forgot-password">שכחתי סיסמה?</Link>
