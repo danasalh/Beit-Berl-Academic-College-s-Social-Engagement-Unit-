@@ -171,9 +171,7 @@ export default function NotificationsPanel() {
 
       setHasInitialized(true);
 
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
+    } catch (error) {} finally {
       setLoading(false);
     }
   }, [currentUser?.id, getNotificationsByReceiver, formatTime, formatDate, hasInitialized, selectedNotification, getNotificationDisplayProps]);
@@ -252,9 +250,7 @@ export default function NotificationsPanel() {
 
         // Update selected notification
         setSelectedNotification(prev => ({ ...prev, read: true }));
-      } catch (error) {
-        console.error('Error marking notification as read:', error);
-      }
+      } catch (error) {}
     }
   }, [markNotificationAsRead]);
 
