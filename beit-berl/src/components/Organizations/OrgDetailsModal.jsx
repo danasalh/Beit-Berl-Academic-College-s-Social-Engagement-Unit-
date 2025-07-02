@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HiLocationMarker, HiPencilAlt, HiOutlineX, HiChevronDown } from 'react-icons/hi';
+import { HiLocationMarker, HiPencilAlt, HiOutlineX, HiChevronDown, HiExternalLink } from 'react-icons/hi';
 import { useUsers } from '../../Contexts/UsersContext';
 
 const OrgDetailsModal = ({
@@ -7,6 +7,7 @@ const OrgDetailsModal = ({
   onClose,
   onSave,
   onDelete,
+  onStatusChange,
   isNew = false,
   allUsers = [],
   isVolunteer = false
@@ -14,6 +15,7 @@ const OrgDetailsModal = ({
   const [isEditing, setIsEditing] = useState(isNew && !isVolunteer);
   const [editedOrg, setEditedOrg] = useState(org);
   const [isSaving, setIsSaving] = useState(false);
+  const [isChangingStatus, setIsChangingStatus] = useState(false);
   const [vcDropdownOpen, setVcDropdownOpen] = useState(false);
 
   // Get current user and check if admin
@@ -219,9 +221,38 @@ const OrgDetailsModal = ({
     });
   };
 
+  // Helper function to validate URL
+  const isValidUrl = (string) => {
+    if (!string || typeof string !== 'string') return false;
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  // Helper function to format URL for display and storage
+  const formatUrlForDisplay = (url) => {
+    if (!url || typeof url !== 'string') return '';
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return '';
+
+    if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+      return `https://${trimmedUrl}`;
+    }
+    return trimmedUrl;
+  };
+
   // Update editedOrg when org prop changes
   useEffect(() => {
-    setEditedOrg(org);
+    setEditedOrg({
+      ...org,
+      // Ensure status has a default value
+      status: org.status !== undefined ? org.status : true,
+      // Ensure link has a default value
+      link: org.link || ''
+    });
   }, [org]);
 
   // Close dropdown when clicking outside
@@ -270,23 +301,6 @@ const OrgDetailsModal = ({
     setEditedOrg(prev => ({ ...prev, vcId: newVcIds }));
   };
 
-
-  // Get selected VC names for display
-  const getSelectedVcNames = () => {
-    if (!editedOrg.vcId || !Array.isArray(editedOrg.vcId) || editedOrg.vcId.length === 0) {
-      return 'בחר רכזי מתנדבים';
-    }
-
-    const selectedNames = editedOrg.vcId.map(vcId => {
-      const vc = volunteerCoordinators.find(coordinator =>
-        String(coordinator.id) === String(vcId)
-      );
-      return vc ? vc.name : `מזהה: ${vcId}`;
-    }).filter(name => name && !name.includes('NaN')); // Filter out NaN names
-
-    return selectedNames.length > 0 ? selectedNames.join(', ') : 'בחר רכזי מתנדבים';
-  };
-
   const handleSave = async () => {
     // Prevent volunteers from saving
     if (isVolunteer) {
@@ -299,9 +313,27 @@ const OrgDetailsModal = ({
       return;
     }
 
+    // Validate URL if provided
+    if (editedOrg.link && editedOrg.link.trim()) {
+      const formattedUrl = formatUrlForDisplay(editedOrg.link.trim());
+      if (!isValidUrl(formattedUrl)) {
+        alert('כתובת האתר שהוזנה אינה תקינה');
+        return;
+      }
+      // Update the editedOrg with the formatted URL
+      setEditedOrg(prev => ({ ...prev, link: formattedUrl }));
+    }
+
     setIsSaving(true);
     try {
-      await onSave(editedOrg);
+      // Ensure status is properly set (default to true if undefined)
+      const orgToSave = {
+        ...editedOrg,
+        status: editedOrg.status !== undefined ? editedOrg.status : true,
+        link: editedOrg.link || ''
+      };
+
+      await onSave(orgToSave);
       setIsEditing(false);
       if (!isNew) {
         // Only close modal if we're not creating a new org
@@ -309,6 +341,7 @@ const OrgDetailsModal = ({
       }
     } catch (err) {
       console.error('Error saving organization:', err);
+      alert('שגיאה בשמירת הארגון');
     } finally {
       setIsSaving(false);
     }
@@ -325,6 +358,32 @@ const OrgDetailsModal = ({
         await onDelete(org.id);
       } catch (err) {
         console.error('Error deleting organization:', err);
+        alert('שגיאה במחיקת הארגון');
+      }
+    }
+  };
+
+  // Handle status toggle (admin only)
+  const handleStatusToggle = async () => {
+    if (!isAdmin || !onStatusChange) {
+      return;
+    }
+
+    const currentStatus = editedOrg.status !== undefined ? editedOrg.status : true;
+    const newStatus = !currentStatus;
+    const statusText = newStatus ? 'פעיל' : 'לא פעיל';
+
+    if (window.confirm(`האם אתה בטוח שברצונך לשנות את סטטוס הארגון ל${statusText}?`)) {
+      setIsChangingStatus(true);
+      try {
+        await onStatusChange(org.id, newStatus);
+        // Update local state to reflect the change
+        setEditedOrg(prev => ({ ...prev, status: newStatus }));
+      } catch (err) {
+        console.error('Error changing organization status:', err);
+        alert('שגיאה בשינוי סטטוס הארגון');
+      } finally {
+        setIsChangingStatus(false);
       }
     }
   };
@@ -332,6 +391,10 @@ const OrgDetailsModal = ({
   const volunteerCount = calculateVolunteerCount(org);
   const volunteerUsers = getVolunteerUsers(org);
   const vcNames = getVcNames(org.vcId);
+
+  // Use editedOrg for display values to show real-time updates
+  const displayOrg = isEditing ? editedOrg : org;
+  const currentStatus = displayOrg.status !== undefined ? displayOrg.status : true;
 
   return (
     <div className="modal-overlay">
@@ -394,6 +457,43 @@ const OrgDetailsModal = ({
               />
             </div>
 
+            <div className="form-group">
+              <label className="form-label">קישור לאתר הארגון</label>
+              <input
+                type="url"
+                value={editedOrg.link || ''}
+                onChange={(e) => handleChange('link', e.target.value)}
+                className="form-input"
+                placeholder="https://example.com"
+              />
+              {editedOrg.link && (
+                <small className="form-hint">
+                  תצוגה מקדימה: {formatUrlForDisplay(editedOrg.link)}
+                </small>
+              )}
+            </div>
+
+            {/* Status field - only show for admins */}
+            {isAdmin && (
+              <div className="form-group">
+                <label className="form-label">סטטוס הארגון (לחץ על ה-V בכדי לשנות)</label>
+                <div className="status-toggle-container">
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={editedOrg.status !== undefined ? editedOrg.status : true}
+                      onChange={(e) => handleChange('status', e.target.checked)}
+                    />
+                    <span className="slider"></span>
+                  </label>
+                  <span className="status-label">
+                    {editedOrg.status !== undefined ?
+                      (editedOrg.status ? 'פעיל' : 'לא פעיל') : 'פעיל'}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="form-actions">
               <button
                 onClick={handleSave}
@@ -408,7 +508,11 @@ const OrgDetailsModal = ({
                     onClose();
                   } else {
                     setIsEditing(false);
-                    setEditedOrg(org);
+                    setEditedOrg({
+                      ...org,
+                      status: org.status !== undefined ? org.status : true,
+                      link: org.link || ''
+                    });
                   }
                 }}
                 className="cancel-button-org"
@@ -422,29 +526,49 @@ const OrgDetailsModal = ({
           <div className="view-details">
             <div className="org-info">
               <h3 className="org-name-modal">
-                {org.name || 'שם הארגון'}
+                {displayOrg.name || 'שם הארגון'}
+                {/* Status indicator */}
+                <span className={`status-indicator ${currentStatus ? 'active' : 'inactive'}`}>
+                  {currentStatus ? ' - פעיל' : ' - לא פעיל'}
+                </span>
               </h3>
               <div className="city-info-modal">
                 <HiLocationMarker className="location-icon" />
-                <span>עיר: {getCityValue(org) || 'לא צוין'}</span>
+                <span>עיר: {getCityValue(displayOrg) || 'לא צוין'}</span>
               </div>
             </div>
 
             <div className="org-description-modal">
               <h4>תיאור:</h4>
-              <p>{org.description || 'אין תיאור זמין'}</p>
+              <p>{displayOrg.description || 'אין תיאור זמין'}</p>
             </div>
 
             <div className="contact-info">
               <div className="contact-field">
-                <strong>פרטי יצירת קשר:</strong> {org.contactInfo || 'לא צוין'}
+                <strong>פרטי יצירת קשר:</strong> {displayOrg.contactInfo || 'לא צוין'}
+              </div>
+
+              <div className="contact-field">
+                <strong>אתר הארגון: </strong>
+                {displayOrg.link ? (
+                  <a
+                    href={formatUrlForDisplay(displayOrg.link)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="org-link"
+                  >
+                    {displayOrg.link} <HiExternalLink className="external-link-icon" />
+                  </a>
+                ) : (
+                  <span> לא צוין</span>
+                )}
               </div>
 
               {/* Hide these fields from volunteers */}
               {!isVolunteer && (
                 <>
                   <div className="contact-field">
-                    <strong>נציג הארגון:</strong> {getOrgRepName(org.id)}
+                    <strong>נציג הארגון:</strong> {getOrgRepName(displayOrg.id)}
                   </div>
 
                   <div className="contact-field">
@@ -498,14 +622,26 @@ const OrgDetailsModal = ({
                 >
                   <HiPencilAlt /> עריכה
                 </button>
-                {/* Only show delete button for admin users */}
+
+                {/* Admin-only buttons */}
                 {isAdmin && (
-                  <button
-                    className="delete-button"
-                    onClick={handleDelete}
-                  >
-                    🗑 מחיקת הארגון
-                  </button>
+                  <>
+                    <button
+                      onClick={handleStatusToggle}
+                      className={`status-toggle-button ${currentStatus ? 'deactivate' : 'activate'}`}
+                      disabled={isChangingStatus}
+                    >
+                      {isChangingStatus ? 'משנה...' :
+                        currentStatus ? '⏸ השבת ארגון' : '🔄 הפעל ארגון'}
+                    </button>
+
+                    <button
+                      className="delete-button"
+                      onClick={handleDelete}
+                    >
+                      🗑 מחיקת הארגון
+                    </button>
+                  </>
                 )}
               </div>
             )}

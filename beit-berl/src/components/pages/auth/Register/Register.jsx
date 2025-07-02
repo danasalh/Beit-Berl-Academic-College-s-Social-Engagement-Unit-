@@ -570,21 +570,6 @@ const Register = () => {
                 />
               )}
             </div>
-
-            {formData.role === 'orgRep' && (
-              <div>
-                <label htmlFor="orgId" className="sr-only">מספר מזהה של הארגון שלי</label>
-                <input
-                  id="orgId"
-                  name="orgId"
-                  type="text"
-                  value={formData.orgId}
-                  onChange={handleChange}
-                  className="input-field"
-                  placeholder="מספר מזהה של הארגון שלי (אופציונאלי)"
-                />
-              </div>
-            )}
           </div>
 
           <div>
