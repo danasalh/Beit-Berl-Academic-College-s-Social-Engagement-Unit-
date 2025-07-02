@@ -131,6 +131,34 @@ export const OrganizationsProvider = ({ children }) => {
     }
   };
 
+  // Get organizations by status
+  const getOrganizationsByStatus = async (status) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const q = query(organizationsCollection, where('status', '==', status));
+      const querySnapshot = await getDocs(q);
+      const orgData = querySnapshot.docs.map(doc => ({
+        firebaseId: doc.id,
+        ...doc.data()
+      }));
+      
+      return orgData;
+    } catch (err) {
+      console.error('❌ Error fetching organizations by status:', err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get active organizations only
+  const getActiveOrganizations = async () => {
+    return await getOrganizationsByStatus(true);
+  };
+
   // Create new organization
   const createOrganization = async (orgData) => {
     setLoading(true);
@@ -146,6 +174,8 @@ export const OrganizationsProvider = ({ children }) => {
         contactInfo: orgData.contactInfo || '',
         orgRepId: orgData.orgRepId || null,
         vcId: orgData.vcId || [],
+        link: orgData.link || '', // New field for organization link
+        status: orgData.status !== undefined ? orgData.status : true, // New field for status (default: active/true)
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -200,6 +230,91 @@ export const OrganizationsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Update organization status
+  const updateOrganizationStatus = async (orgId, status) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Find the organization by custom ID
+      const org = organizations.find(o => o.id === orgId);
+      if (!org) {
+        throw new Error('Organization not found');
+      }
+
+      const orgRef = doc(db, 'organizations', org.firebaseId);
+      const updateData = {
+        status: status,
+        updatedAt: new Date()
+      };
+      
+      await updateDoc(orgRef, updateData);
+      
+      // Update local state
+      setOrganizations(prev => prev.map(o => 
+        o.id === orgId 
+          ? { ...o, ...updateData }
+          : o
+      ));
+      
+      return true;
+    } catch (err) {
+      console.error('❌ Error updating organization status:', err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update organization link
+  const updateOrganizationLink = async (orgId, link) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Find the organization by custom ID
+      const org = organizations.find(o => o.id === orgId);
+      if (!org) {
+        throw new Error('Organization not found');
+      }
+
+      const orgRef = doc(db, 'organizations', org.firebaseId);
+      const updateData = {
+        link: link,
+        updatedAt: new Date()
+      };
+      
+      await updateDoc(orgRef, updateData);
+      
+      // Update local state
+      setOrganizations(prev => prev.map(o => 
+        o.id === orgId 
+          ? { ...o, ...updateData }
+          : o
+      ));
+      
+      return true;
+    } catch (err) {
+      console.error('❌ Error updating organization link:', err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggle organization status (active/inactive)
+  const toggleOrganizationStatus = async (orgId) => {
+    const org = organizations.find(o => o.id === orgId);
+    if (!org) {
+      throw new Error('Organization not found');
+    }
+    
+    const newStatus = !org.status;
+    return await updateOrganizationStatus(orgId, newStatus);
   };
 
   // Delete organization
@@ -318,8 +433,13 @@ export const OrganizationsProvider = ({ children }) => {
     getOrganizations,
     getOrganizationById,
     getOrganizationsByCity,
+    getOrganizationsByStatus,
+    getActiveOrganizations,
     createOrganization,
     updateOrganization,
+    updateOrganizationStatus,
+    updateOrganizationLink,
+    toggleOrganizationStatus,
     deleteOrganization,
     addVolunteerToOrganization,
     removeVolunteerFromOrganization
