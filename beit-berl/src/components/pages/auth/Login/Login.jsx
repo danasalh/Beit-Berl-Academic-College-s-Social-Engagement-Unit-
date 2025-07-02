@@ -170,12 +170,12 @@ const Login = () => {
           <div className="login-header">
             <h1 className="login-title">התחברות לחשבון</h1>
           </div>
+          <img src="/logo.svg" alt="Logo" className="app-logo" />
           {error && (
             <div className="error-alert" role="alert">
               <span>{error}</span>
             </div>
           )}
-          <img src="/logo.svg" alt="Logo" className="app-logo" />
         </div>
         <h1 className="login-description">
           מערכת לניהול ומעקב אחר פעילות התנדבותית של סטודנטים במכללה האקדמית בית ברל
@@ -253,7 +253,7 @@ const Login = () => {
       </div>
 
       <div className="login-footer">
-        <p>© 2025 Vtime. All rights reserved.</p>
+        <p>© 2025 Vtime. All rights reserved. <br/> Developed by: Saar Niran, Tehila Raviv, Noa Uzan and Dana Salah.</p>
       </div>
     </div>
   );

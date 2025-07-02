@@ -29,6 +29,7 @@ const OrganizationsList = () => {
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [cityFilter, setCityFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'inactive'
   const [isAdding, setIsAdding] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
 
@@ -36,10 +37,11 @@ const OrganizationsList = () => {
   const userRoles = useMemo(() => ({
     isVolunteer: currentUserHasRole('volunteer') || currentUserHasRole('Volunteer'),
     isOrgRep: currentUserHasRole('orgRep') || currentUserHasRole('OrgRep'),
-    isVc: currentUserHasRole('vc') || currentUserHasRole('Vc')
+    isVc: currentUserHasRole('vc') || currentUserHasRole('Vc'),
+    isAdmin: currentUserHasRole('admin') || currentUserHasRole('Admin')
   }), [currentUserHasRole]);
 
-  const { isVolunteer, isOrgRep, isVc } = userRoles;
+  const { isVolunteer, isOrgRep, isVc, isAdmin } = userRoles;
 
   // Memoize user's organization IDs
   const userOrgIds = useMemo(() => {
@@ -59,18 +61,10 @@ const OrganizationsList = () => {
     }
 
     if (userOrgIds.length === 0) {
-      console.log('⚠️ No organizations assigned to user');
       return [];
     }
 
     const filtered = organizations.filter(org => userOrgIds.includes(org.id));
-    
-    console.log('🔍 Role-filtered organizations:', {
-      role: isVc ? 'VC' : 'OrgRep',
-      userOrgIds,
-      totalOrgs: organizations.length,
-      filteredCount: filtered.length
-    });
 
     return filtered;
   }, [organizations, isOrgRep, isVc, userOrgIds]);
@@ -79,7 +73,7 @@ const OrganizationsList = () => {
   const filteredOrgs = useMemo(() => {
     let filtered = roleFilteredOrgs;
 
-    // Only apply search and city filters if user is not a VC or OrgRep
+    // Only apply search, city, and status filters if user is not a VC or OrgRep
     if (!isVc && !isOrgRep) {
       if (searchTerm.trim()) {
         const searchLower = searchTerm.toLowerCase();
@@ -96,28 +90,25 @@ const OrganizationsList = () => {
           return cityValue?.toLowerCase().includes(cityLower);
         });
       }
+
+      if (statusFilter !== 'all') {
+        filtered = filtered.filter(org => {
+          if (statusFilter === 'active') return org.status === true;
+          if (statusFilter === 'inactive') return org.status === false;
+          return true;
+        });
+      }
     }
 
-    console.log('🔍 Final filtered organizations:', {
-      original: organizations.length,
-      roleFiltered: roleFilteredOrgs.length,
-      final: filtered.length,
-      userRole: currentUser?.role,
-      isVc,
-      isOrgRep
-    });
-
     return filtered;
-  }, [roleFilteredOrgs, searchTerm, cityFilter, isVc, isOrgRep, getCityValue, organizations.length, currentUser?.role]);
+  }, [roleFilteredOrgs, searchTerm, cityFilter, statusFilter, isVc, isOrgRep, getCityValue, organizations.length, currentUser?.role]);
 
   // Load organizations and users when component mounts - optimized
   useEffect(() => {
     const loadData = async () => {
       if (dataLoaded) return; // Prevent multiple loads
 
-      try {
-        console.log('🔄 Loading organizations and users...');
-        
+      try {        
         const promises = [];
         
         // Load organizations if we don't have them yet
@@ -146,15 +137,15 @@ const OrganizationsList = () => {
   // Simplified debug effect - only log when loading states change
   useEffect(() => {
     if (loading || usersLoading) {
-      console.log('📊 Loading state - orgs:', loading, 'users:', usersLoading);
+      // Debug logging can be added here if needed
     }
   }, [loading, usersLoading]);
 
   // Memoize handlers to prevent unnecessary re-renders
   const handleDeleteOrg = useCallback(async (orgId) => {
-    // Prevent volunteers and orgReps from deleting organizations
-    if (isVolunteer || isOrgRep) {
-      console.log('❌ Volunteer and orgRep users cannot delete organizations');
+    // Only allow admins to delete organizations
+    if (!isAdmin) {
+      alert('אין לך הרשאה למחוק ארגונים');
       return;
     }
 
@@ -162,18 +153,17 @@ const OrganizationsList = () => {
       try {
         await deleteOrganization(orgId);
         setSelectedOrg(null);
-        console.log('Organization deleted successfully');
       } catch (err) {
         console.error('Failed to delete organization:', err);
         alert('שגיאה במחיקת הארגון');
       }
     }
-  }, [isVolunteer, isOrgRep, deleteOrganization]);
+  }, [isAdmin, deleteOrganization]);
 
   const handleSaveOrg = useCallback(async (orgData) => {
-    // Prevent volunteers and orgReps from saving organizations
-    if (isVolunteer || isOrgRep) {
-      console.log('❌ Volunteer and orgRep users cannot create/edit organizations');
+    // Prevent volunteers from saving organizations
+    if (isVolunteer) {
+      alert('אין לך הרשאה לשמור שינויים בארגונים');
       return;
     }
 
@@ -182,12 +172,16 @@ const OrganizationsList = () => {
         // Update existing organization
         const { id, ...updateData } = orgData;
         await updateOrganization(id, updateData);
-        console.log('Organization updated successfully');
       } else {
-        // Create new organization
+        // Create new organization - set default values for new fields
         const { id, ...createData } = orgData;
-        await createOrganization(createData);
-        console.log('Organization created successfully');
+        // Ensure new organizations have default status and link values
+        const newOrgData = {
+          ...createData,
+          status: createData.status !== undefined ? createData.status : true, // Default to active
+          link: createData.link || '' // Default to empty string
+        };
+        await createOrganization(newOrgData);
       }
       
       setSelectedOrg(null);
@@ -196,7 +190,27 @@ const OrganizationsList = () => {
       console.error('Failed to save organization:', err);
       alert('שגיאה בשמירת הארגון');
     }
-  }, [isVolunteer, isOrgRep, organizations, updateOrganization, createOrganization]);
+  }, [isVolunteer, organizations, updateOrganization, createOrganization]);
+
+  // Handle status change (admin only)
+  const handleStatusChange = useCallback(async (orgId, newStatus) => {
+    if (!isAdmin) {
+      alert('אין לך הרשאה לשנות סטטוס ארגונים');
+      return;
+    }
+
+    try {
+      await updateOrganization(orgId, { status: newStatus });
+      
+      // Update the selected org if it's currently displayed
+      if (selectedOrg && selectedOrg.id === orgId) {
+        setSelectedOrg(prev => ({ ...prev, status: newStatus }));
+      }
+    } catch (err) {
+      console.error('Failed to update organization status:', err);
+      throw err; // Re-throw to let the modal handle the error display
+    }
+  }, [isAdmin, updateOrganization, selectedOrg]);
 
   const handleSearch = useCallback(async () => {
     if (cityFilter && !searchTerm) {
@@ -208,15 +222,10 @@ const OrganizationsList = () => {
       }
     } else {
       // For general search, we rely on the memoized filtering
-      console.log('🔍 Performing client-side search with filters:', {
-        searchTerm,
-        cityFilter
-      });
     }
   }, [cityFilter, searchTerm, getOrganizationsByCity]);
 
   const handleRefresh = useCallback(() => {
-    console.log('🔄 Manual refresh triggered');
     setDataLoaded(false);
     getOrganizations();
     getUsers();
@@ -271,13 +280,23 @@ const OrganizationsList = () => {
                 onChange={(e) => setCityFilter(e.target.value)}
                 className="search-input"
               />
+              <select
+                className="search-input"
+                style={{ maxWidth: '10rem', minWidth: '7rem', fontWeight: 600 }}
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+              >
+                <option value="all">הכל</option>
+                <option value="active">פעיל</option>
+                <option value="inactive">לא פעיל</option>
+              </select>
               <button className="search-button" onClick={handleSearch}>
                 <HiOutlineSearch className="search-icon" />
               </button>
             </div>
 
             {/* Only show "Add Organization" button if user is admin */}
-            {!isVolunteer && (
+            {isAdmin && (
               <button
                 className="add-org-button"
                 onClick={() => setIsAdding(true)}
@@ -326,7 +345,9 @@ const OrganizationsList = () => {
               City: '',
               contactInfo: '',
               orgRepId: null,
-              vcId: []
+              vcId: [],
+              link: '', // Default empty link
+              status: true // Default to active status
             }
           }
           onClose={() => {
@@ -335,6 +356,7 @@ const OrganizationsList = () => {
           }}
           onSave={handleSaveOrg}
           onDelete={handleDeleteOrg}
+          onStatusChange={handleStatusChange} // Pass the status change handler
           isNew={isAdding}
           allUsers={users}
           isVolunteer={isVolunteer}

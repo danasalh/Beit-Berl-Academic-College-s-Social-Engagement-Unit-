@@ -46,7 +46,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Real-time listener for notifications by receiver
   const subscribeToNotificationsByReceiver = useCallback((receiverId, callback) => {
-    console.log('🔔 Setting up real-time listener for receiver:', receiverId);
     
     const q = query(
       notificationsCollection, 
@@ -57,7 +56,6 @@ export const NotificationsProvider = ({ children }) => {
     const unsubscribe = onSnapshot(q, 
       (querySnapshot) => {
         const notificationsData = querySnapshot.docs.map(convertDocToNotification);
-        console.log(`✅ Real-time update: ${notificationsData.length} notifications for receiver: ${receiverId}`);
         callback(notificationsData);
       },
       (error) => {
@@ -71,7 +69,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Get all notifications
   const getNotifications = useCallback(async () => {
-    console.log('🔔 Fetching all notifications...');
     setLoading(true);
     setError(null);
     
@@ -81,7 +78,6 @@ export const NotificationsProvider = ({ children }) => {
       const notificationsData = querySnapshot.docs.map(convertDocToNotification);
       
       setNotifications(notificationsData);
-      console.log('✅ Notifications fetched successfully:', notificationsData.length, 'notifications');
       return notificationsData;
     } catch (err) {
       console.error('❌ Error fetching notifications:', err);
@@ -94,7 +90,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Get notifications for a specific receiver
   const getNotificationsByReceiver = useCallback(async (receiverId) => {
-    console.log('👤 Fetching notifications for receiver:', receiverId);
     setLoading(true);
     setError(null);
 
@@ -107,7 +102,6 @@ export const NotificationsProvider = ({ children }) => {
       const querySnapshot = await getDocs(q);
       const notificationsData = querySnapshot.docs.map(convertDocToNotification);
       
-      console.log(`✅ Found ${notificationsData.length} notifications for receiver: ${receiverId}`);
       return notificationsData;
     } catch (err) {
       console.error('❌ Error fetching notifications by receiver:', err);
@@ -120,7 +114,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Get unread notifications for a receiver
   const getUnreadNotificationsByReceiver = useCallback(async (receiverId) => {
-    console.log('📩 Fetching unread notifications for receiver:', receiverId);
     setLoading(true);
     setError(null);
 
@@ -133,8 +126,6 @@ export const NotificationsProvider = ({ children }) => {
       );
       const querySnapshot = await getDocs(q);
       const notificationsData = querySnapshot.docs.map(convertDocToNotification);
-      
-      console.log(`✅ Found ${notificationsData.length} unread notifications for receiver: ${receiverId}`);
       return notificationsData;
     } catch (err) {
       console.error('❌ Error fetching unread notifications:', err);
@@ -147,7 +138,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Get notifications by type (reminder, approval-needed, hours-status, volunteer-completed, etc.)
   const getNotificationsByType = useCallback(async (type, receiverId = null) => {
-    console.log('🏷️ Fetching notifications by type:', type, 'for receiver:', receiverId);
     setLoading(true);
     setError(null);
 
@@ -171,7 +161,6 @@ export const NotificationsProvider = ({ children }) => {
       const querySnapshot = await getDocs(q);
       const notificationsData = querySnapshot.docs.map(convertDocToNotification);
       
-      console.log(`✅ Found ${notificationsData.length} ${type} notifications`);
       return notificationsData;
     } catch (err) {
       console.error('❌ Error fetching notifications by type:', err);
@@ -184,7 +173,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Get notification by ID
   const getNotificationById = useCallback(async (notificationId) => {
-    console.log('🔍 Fetching notification by ID:', notificationId);
     setLoading(true);
     setError(null);
 
@@ -193,10 +181,8 @@ export const NotificationsProvider = ({ children }) => {
       
       if (notificationDoc.exists()) {
         const notificationData = convertDocToNotification(notificationDoc);
-        console.log('✅ Notification found:', notificationData);
         return notificationData;
       } else {
-        console.log('⚠️ Notification not found with ID:', notificationId);
         return null;
       }
     } catch (err) {
@@ -210,7 +196,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Create new notification
   const createNotification = useCallback(async (notificationData) => {
-    console.log('➕ Creating new notification:', notificationData);
     setLoading(true);
     setError(null);
 
@@ -261,7 +246,6 @@ export const NotificationsProvider = ({ children }) => {
       };
       setNotifications(prev => [newNotification, ...prev]);
       
-      console.log('✅ Notification created successfully with ID:', docRef.id);
       return docRef.id;
     } catch (err) {
       console.error('❌ Error creating notification:', err);
@@ -274,7 +258,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Mark notification as read
   const markNotificationAsRead = useCallback(async (notificationId) => {
-    console.log('👀 Marking notification as read:', notificationId);
     setLoading(true);
     setError(null);
 
@@ -292,7 +275,6 @@ export const NotificationsProvider = ({ children }) => {
           : notification
       ));
       
-      console.log('✅ Notification marked as read successfully');
       return true;
     } catch (err) {
       console.error('❌ Error marking notification as read:', err);
@@ -305,7 +287,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Mark notification as unread
   const markNotificationAsUnread = useCallback(async (notificationId) => {
-    console.log('📧 Marking notification as unread:', notificationId);
     setLoading(true);
     setError(null);
 
@@ -323,7 +304,6 @@ export const NotificationsProvider = ({ children }) => {
           : notification
       ));
       
-      console.log('✅ Notification marked as unread successfully');
       return true;
     } catch (err) {
       console.error('❌ Error marking notification as unread:', err);
@@ -336,7 +316,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Mark all notifications as read for a receiver
   const markAllNotificationsAsRead = useCallback(async (receiverId) => {
-    console.log('👀📚 Marking all notifications as read for receiver:', receiverId);
     setLoading(true);
     setError(null);
 
@@ -359,7 +338,6 @@ export const NotificationsProvider = ({ children }) => {
           : notification
       ));
       
-      console.log(`✅ Marked ${unreadNotifications.length} notifications as read`);
       return true;
     } catch (err) {
       console.error('❌ Error marking all notifications as read:', err);
@@ -372,7 +350,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Update notification
   const updateNotification = useCallback(async (notificationId, notificationData) => {
-    console.log('📝 Updating notification:', notificationId, notificationData);
     setLoading(true);
     setError(null);
 
@@ -399,7 +376,6 @@ export const NotificationsProvider = ({ children }) => {
           : notification
       ));
       
-      console.log('✅ Notification updated successfully');
       return true;
     } catch (err) {
       console.error('❌ Error updating notification:', err);
@@ -412,7 +388,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Delete notification
   const deleteNotification = useCallback(async (notificationId) => {
-    console.log('🗑️ Deleting notification:', notificationId);
     setLoading(true);
     setError(null);
 
@@ -422,7 +397,6 @@ export const NotificationsProvider = ({ children }) => {
       // Update local state
       setNotifications(prev => prev.filter(notification => notification.id !== notificationId));
       
-      console.log('✅ Notification deleted successfully');
       return true;
     } catch (err) {
       console.error('❌ Error deleting notification:', err);
@@ -435,7 +409,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Delete all read notifications for a receiver
   const deleteAllReadNotifications = useCallback(async (receiverId) => {
-    console.log('🗑️📚 Deleting all read notifications for receiver:', receiverId);
     setLoading(true);
     setError(null);
 
@@ -454,7 +427,6 @@ export const NotificationsProvider = ({ children }) => {
         !(notification.receiverId === receiverId && notification.read)
       ));
       
-      console.log(`✅ Deleted ${readNotifications.length} read notifications`);
       return true;
     } catch (err) {
       console.error('❌ Error deleting read notifications:', err);
@@ -467,7 +439,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Get notification count by receiver
   const getNotificationCount = useCallback(async (receiverId, unreadOnly = false) => {
-    console.log('🔢 Getting notification count for receiver:', receiverId, 'unread only:', unreadOnly);
     
     try {
       let notifications;
@@ -478,7 +449,6 @@ export const NotificationsProvider = ({ children }) => {
       }
       
       const count = notifications.length;
-      console.log(`✅ Notification count: ${count}`);
       return count;
     } catch (err) {
       console.error('❌ Error getting notification count:', err);
@@ -488,7 +458,6 @@ export const NotificationsProvider = ({ children }) => {
 
   // Search notifications by title or content
   const searchNotifications = useCallback(async (searchTerm, receiverId = null) => {
-    console.log('🔍 Searching notifications with term:', searchTerm, 'for receiver:', receiverId);
     setLoading(true);
     setError(null);
 
@@ -506,7 +475,6 @@ export const NotificationsProvider = ({ children }) => {
         notification.content.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
-      console.log(`✅ Found ${filteredNotifications.length} notifications matching "${searchTerm}"`);
       return filteredNotifications;
     } catch (err) {
       console.error('❌ Error searching notifications:', err);
@@ -519,13 +487,11 @@ export const NotificationsProvider = ({ children }) => {
 
   // Get hours-status notifications for a receiver
   const getHoursStatusNotifications = useCallback(async (receiverId) => {
-    console.log('⏰ Fetching hours-status notifications for receiver:', receiverId);
     return await getNotificationsByType('hours-status', receiverId);
   }, [getNotificationsByType]);
 
   // Get unread hours-status notifications for a receiver
   const getUnreadHoursStatusNotifications = useCallback(async (receiverId) => {
-    console.log('📩⏰ Fetching unread hours-status notifications for receiver:', receiverId);
     setLoading(true);
     setError(null);
 
@@ -540,7 +506,6 @@ export const NotificationsProvider = ({ children }) => {
       const querySnapshot = await getDocs(q);
       const notificationsData = querySnapshot.docs.map(convertDocToNotification);
       
-      console.log(`✅ Found ${notificationsData.length} unread hours-status notifications for receiver: ${receiverId}`);
       return notificationsData;
     } catch (err) {
       console.error('❌ Error fetching unread hours-status notifications:', err);
@@ -553,13 +518,11 @@ export const NotificationsProvider = ({ children }) => {
 
   // NEW: Get volunteer-completed notifications for a receiver (typically admins)
   const getVolunteerCompletedNotifications = useCallback(async (receiverId) => {
-    console.log('🎓 Fetching volunteer-completed notifications for receiver:', receiverId);
     return await getNotificationsByType('volunteer-completed', receiverId);
   }, [getNotificationsByType]);
 
   // NEW: Get unread volunteer-completed notifications for a receiver
   const getUnreadVolunteerCompletedNotifications = useCallback(async (receiverId) => {
-    console.log('📩🎓 Fetching unread volunteer-completed notifications for receiver:', receiverId);
     setLoading(true);
     setError(null);
 
@@ -574,7 +537,6 @@ export const NotificationsProvider = ({ children }) => {
       const querySnapshot = await getDocs(q);
       const notificationsData = querySnapshot.docs.map(convertDocToNotification);
       
-      console.log(`✅ Found ${notificationsData.length} unread volunteer-completed notifications for receiver: ${receiverId}`);
       return notificationsData;
     } catch (err) {
       console.error('❌ Error fetching unread volunteer-completed notifications:', err);

@@ -54,7 +54,6 @@ export const VolunteerHoursProvider = ({ children }) => {
 
   // Get all volunteer hours (excluding rejected ones)
   const getVolunteerHours = useCallback(async (includeRejected = false) => {
-    console.log('⏰ Fetching all volunteer hours...', includeRejected ? 'including rejected' : 'excluding rejected');
     setLoading(true);
     setError(null);
     
@@ -70,7 +69,6 @@ export const VolunteerHoursProvider = ({ children }) => {
       }
       
       setVolunteerHours(hoursData);
-      console.log(`✅ Fetched ${hoursData.length} volunteer hour records`);
       return hoursData;
     } catch (err) {
       console.error('❌ Error fetching volunteer hours:', err);
@@ -88,7 +86,6 @@ export const VolunteerHoursProvider = ({ children }) => {
       return [];
     }
 
-    console.log('👤 Fetching volunteer hours for volunteer:', volunteerId);
     setLoading(true);
     setError(null);
 
@@ -110,7 +107,6 @@ export const VolunteerHoursProvider = ({ children }) => {
         hoursData = hoursData.filter(record => !record.rejected);
       }
       
-      console.log(`✅ Found ${hoursData.length} records for volunteer: ${volunteerId}`);
       return hoursData;
     } catch (err) {
       console.error('❌ Error fetching volunteer hours by volunteer ID:', err);
@@ -128,7 +124,6 @@ export const VolunteerHoursProvider = ({ children }) => {
       return [];
     }
 
-    console.log('🏢 Fetching volunteer hours for organization:', orgId);
     setLoading(true);
     setError(null);
 
@@ -149,7 +144,6 @@ export const VolunteerHoursProvider = ({ children }) => {
         hoursData = hoursData.filter(record => !record.rejected);
       }
       
-      console.log(`✅ Found ${hoursData.length} records for organization: ${orgId}`);
       return hoursData;
     } catch (err) {
       console.error('❌ Error fetching volunteer hours by organization ID:', err);
@@ -167,7 +161,6 @@ export const VolunteerHoursProvider = ({ children }) => {
       return null;
     }
 
-    console.log('🔍 Fetching volunteer hours by ID:', hoursId);
     setLoading(true);
     setError(null);
 
@@ -177,10 +170,8 @@ export const VolunteerHoursProvider = ({ children }) => {
       
       if (docSnap.exists()) {
         const hoursData = processHoursData(docSnap);
-        console.log('✅ Hours record found:', hoursData);
         return hoursData;
       } else {
-        console.log('⚠️ Hours record not found with ID:', hoursId);
         return null;
       }
     } catch (err) {
@@ -197,10 +188,7 @@ export const VolunteerHoursProvider = ({ children }) => {
     if (!volunteerId) {
       console.warn('⚠️ No volunteer ID provided for total hours calculation');
       return 0;
-    }
-
-    console.log('📊 Calculating total hours for volunteer:', volunteerId, 'approvedOnly:', approvedOnly);
-    
+    }    
     try {
       const hoursData = await getVolunteerHoursByVolunteerId(volunteerId, false); // Don't include rejected
       
@@ -212,7 +200,6 @@ export const VolunteerHoursProvider = ({ children }) => {
         return sum + Number(record.hours || 0);
       }, 0);
       
-      console.log(`✅ Total hours: ${totalHours} for volunteer: ${volunteerId}`);
       return totalHours;
     } catch (err) {
       console.error('❌ Error calculating total hours:', err);
@@ -222,7 +209,6 @@ export const VolunteerHoursProvider = ({ children }) => {
 
   // Log new volunteer hours
   const logVolunteerHours = useCallback(async (hoursData) => {
-    console.log('➕ Logging new volunteer hours:', hoursData);
     setLoading(true);
     setError(null);
 
@@ -260,7 +246,6 @@ export const VolunteerHoursProvider = ({ children }) => {
       // Update local state
       setVolunteerHours(prev => [newHours, ...prev]);
       
-      console.log('✅ Volunteer hours logged successfully with ID:', docRef.id);
       return docRef.id;
     } catch (err) {
       console.error('❌ Error logging volunteer hours:', err);
@@ -277,7 +262,6 @@ export const VolunteerHoursProvider = ({ children }) => {
       throw new Error('Hours ID is required');
     }
 
-    console.log('📝 Updating volunteer hours:', hoursId, updateData);
     setLoading(true);
     setError(null);
 
@@ -305,7 +289,6 @@ export const VolunteerHoursProvider = ({ children }) => {
         )
       );
 
-      console.log('✅ Volunteer hours updated successfully');
       return true;
     } catch (err) {
       console.error('❌ Error updating volunteer hours:', err);
@@ -322,7 +305,6 @@ export const VolunteerHoursProvider = ({ children }) => {
       throw new Error('Hours ID is required');
     }
 
-    console.log('🗑️ Deleting volunteer hours record:', hoursId);
     setLoading(true);
     setError(null);
 
@@ -333,7 +315,6 @@ export const VolunteerHoursProvider = ({ children }) => {
       // Update local state
       setVolunteerHours(prev => prev.filter(record => record.id !== hoursId));
 
-      console.log('✅ Volunteer hours record deleted successfully');
       return true;
     } catch (err) {
       console.error('❌ Error deleting volunteer hours:', err);
@@ -346,19 +327,16 @@ export const VolunteerHoursProvider = ({ children }) => {
 
   // Approve volunteer hours
   const updateHoursApprovalStatus = useCallback(async (hoursId, approved) => {
-    console.log('✅ Updating approval status:', hoursId, approved);
     return await updateVolunteerHours(hoursId, { approved, rejected: false });
   }, [updateVolunteerHours]);
 
   // Reject volunteer hours - NEW FUNCTION
   const updateHoursRejectionStatus = useCallback(async (hoursId, rejected) => {
-    console.log('❌ Updating rejection status:', hoursId, rejected);
     return await updateVolunteerHours(hoursId, { rejected, approved: false });
   }, [updateVolunteerHours]);
 
   // Bulk approve hours
   const bulkApproveHours = useCallback(async (hoursIds, approved = true) => {
-    console.log('🔄 Bulk updating approval status:', hoursIds.length, 'records');
     setLoading(true);
     setError(null);
 
@@ -368,7 +346,6 @@ export const VolunteerHoursProvider = ({ children }) => {
       );
 
       await Promise.all(updatePromises);
-      console.log('✅ Bulk approval update completed successfully');
       return true;
     } catch (err) {
       console.error('❌ Error in bulk approval update:', err);
@@ -381,7 +358,6 @@ export const VolunteerHoursProvider = ({ children }) => {
 
   // Bulk reject hours - NEW FUNCTION
   const bulkRejectHours = useCallback(async (hoursIds, rejected = true) => {
-    console.log('🔄 Bulk updating rejection status:', hoursIds.length, 'records');
     setLoading(true);
     setError(null);
 
@@ -391,7 +367,6 @@ export const VolunteerHoursProvider = ({ children }) => {
       );
 
       await Promise.all(updatePromises);
-      console.log('✅ Bulk rejection update completed successfully');
       return true;
     } catch (err) {
       console.error('❌ Error in bulk rejection update:', err);
@@ -404,7 +379,6 @@ export const VolunteerHoursProvider = ({ children }) => {
 
   // Get hours statistics
   const getHoursStatistics = useCallback(async (filters = {}) => {
-    console.log('📊 Getting hours statistics with filters:', filters);
     
     try {
       let hoursData = volunteerHours;
@@ -444,7 +418,6 @@ export const VolunteerHoursProvider = ({ children }) => {
         uniqueOrganizations: new Set(hoursData.map(record => record.orgId)).size
       };
 
-      console.log('📊 Statistics calculated:', stats);
       return stats;
     } catch (err) {
       console.error('❌ Error calculating statistics:', err);

@@ -6,7 +6,7 @@ import { getRoleLabel } from '../../utils/roleTranslations';
 import UserProfile from '../UserProfile/UserProfile';
 import FilterBar from '../FilterBar/FilterBar';
 import FeedbackPopup from '../PopUps/FeedbackPopup/FeedbackPopup';
-import HoursData from '../HoursData/HoursData'; 
+import HoursData from '../HoursData/HoursData';
 import { exportUsersToExcel } from '../../utils/excelExport';
 import UserEdit from './UserEdit';
 import './UsersData.css';
@@ -53,13 +53,10 @@ const UsersData = () => {
 
   // Handle feedback for volunteer users
   const handleFeedback = useCallback((user) => {
-    console.log('Opening feedback popup for user:', user.id);
-    console.log('User data:', user);
     setFeedbackTargetUser(user);
     setShowFeedbackPopup(true);
     // Close the profile modal when opening feedback
     setShowProfile(false);
-    console.log('State should be updated - showFeedbackPopup: true');
   }, []);
 
   // Close feedback popup
@@ -70,7 +67,6 @@ const UsersData = () => {
 
   // Handle hours management - UPDATED
   const handleHours = useCallback((user) => {
-    console.log('Opening hours management for user:', user.id);
     setSelectedUser(user);
     setShowHoursModal(true);
     // Close other modals when opening hours
@@ -103,15 +99,12 @@ const UsersData = () => {
     const fetchData = async () => {
       try {
         setComponentLoading(true);
-        console.log('🚀 Fetching users and organizations on component mount...');
 
         // Fetch both users and organizations
         await Promise.all([
           users.length === 0 ? getUsers() : Promise.resolve(),
           organizations.length === 0 ? getOrganizations() : Promise.resolve()
         ]);
-
-        console.log('✅ Data fetched successfully');
       } catch (error) {
         console.error('❌ Error fetching data:', error);
       } finally {
@@ -128,9 +121,7 @@ const UsersData = () => {
   // Helper function to refresh data after updates
   const refreshData = useCallback(async () => {
     try {
-      console.log('🔄 Refreshing users data after update...');
       await getUsers(); // This will fetch fresh data from Firebase
-      console.log('✅ Users data refreshed successfully');
     } catch (error) {
       console.error('❌ Error refreshing data:', error);
     }
@@ -188,7 +179,6 @@ const UsersData = () => {
     setStatusUpdating(user.docId);
 
     try {
-      console.log(`Updating user ${user.docId} status from ${user.status} to ${statusAction.newStatus}`);
 
       // Use docId for the update
       await updateUser(user.docId, { status: statusAction.newStatus });
@@ -200,7 +190,6 @@ const UsersData = () => {
       const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User';
       showSuccess(`${userName} status updated to ${statusAction.newStatus} successfully!`);
 
-      console.log(`Successfully updated user ${user.docId} status to ${statusAction.newStatus}`);
     } catch (err) {
       console.error('Error updating user status:', err);
       alert(`Failed to update user status: ${err.message}`);
@@ -217,7 +206,6 @@ const UsersData = () => {
     }
 
     try {
-      console.log(`Updating user ${selectedUser.docId} status from ${selectedUser.status} to ${newStatus}`);
 
       // Use docId for the update
       await updateUser(selectedUser.docId, { status: newStatus });
@@ -236,9 +224,8 @@ const UsersData = () => {
             name: `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.email,
             role: selectedUser.role
           };
-          
+
           await sendWelcomeNotification(userForNotification);
-          console.log('✅ Welcome notification sent successfully');
         } catch (notificationError) {
           console.error('Error sending welcome notification:', notificationError);
           // Continue execution even if notification fails
@@ -251,8 +238,6 @@ const UsersData = () => {
       // Show success message
       const userName = `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.email || 'User';
       showSuccess(`${userName} status updated to ${newStatus} successfully!`);
-
-      console.log(`Successfully updated user ${selectedUser.docId} status to ${newStatus}`);
     } catch (err) {
       console.error('Error updating user status:', err);
       alert(`Failed to update user status: ${err.message}`);
@@ -261,14 +246,12 @@ const UsersData = () => {
 
   // Handle watch user profile
   const handleWatch = useCallback((user) => {
-    console.log('Viewing user profile for user ID:', user.id);
     setSelectedUser(user);
     setShowProfile(true);
   }, []);
 
   // Handle edit user
   const handleEdit = useCallback((user) => {
-    console.log('Editing user with ID:', user.id, 'Document ID:', user.docId);
 
     // Get user's current organizations
     let userOrganizations = [];
@@ -346,20 +329,11 @@ const UsersData = () => {
     }
 
     try {
-      console.log('🔄 Starting user update:', {
-        docId: selectedUser.docId,
-        userId: selectedUser.id
-      });
 
       // Ensure orgIds is an array of numbers
       const orgIds = selectedOrganizations.length > 0
         ? selectedOrganizations.map(org => Number(org.id))
         : [];
-
-      console.log('📊 Organizations data:', {
-        selectedOrgs: selectedOrganizations,
-        convertedIds: orgIds
-      });
 
       const updateData = {
         ...editFormData,
@@ -372,8 +346,6 @@ const UsersData = () => {
         phoneNumber: String(editFormData.phoneNumber || ''),
         role: String(editFormData.role || '')
       };
-
-      console.log('📝 Update payload:', updateData);
 
       // Use the document ID instead of the user ID
       await updateUser(selectedUser.docId, updateData);
@@ -391,7 +363,6 @@ const UsersData = () => {
       setEditFormData({});
       setSelectedOrganizations([]);
 
-      console.log('✅ User updated successfully');
     } catch (err) {
       console.error('❌ Error updating user:', err);
       alert(`Failed to update user: ${err.message}`);
@@ -446,9 +417,7 @@ const UsersData = () => {
   const handleRetry = useCallback(async () => {
     try {
       setComponentLoading(true);
-      console.log('🔄 Retrying to fetch data...');
       await Promise.all([getUsers(), getOrganizations()]);
-      console.log('✅ Retry successful');
     } catch (error) {
       console.error('❌ Retry failed:', error);
     } finally {
@@ -554,7 +523,6 @@ const UsersData = () => {
   }
 
   const handleExportToExcel = useCallback(() => {
-    console.log('🔄 Initiating Excel export...');
 
     try {
       const exportOptions = {
@@ -572,14 +540,6 @@ const UsersData = () => {
       if (result.success) {
         showSuccess(result.message);
 
-        // Optional: Log export activity for analytics
-        console.log('📈 Export Analytics:', {
-          totalUsers: users.length,
-          exportedUsers: result.exportedCount,
-          hasFilters: exportOptions.isFiltered,
-          timestamp: new Date().toISOString(),
-          filename: result.filename
-        });
       } else {
         alert(result.message);
       }

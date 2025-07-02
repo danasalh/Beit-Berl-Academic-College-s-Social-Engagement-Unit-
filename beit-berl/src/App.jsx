@@ -52,7 +52,6 @@ const AppContent = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       if (authUser) {
-        console.log('🔐 User authenticated:', authUser.uid);
         setUser(authUser);
         
         // Get user role from Firestore
@@ -62,7 +61,6 @@ const AppContent = () => {
             const userData = userDoc.data();
             setUserRole(userData.role);
             setUserName(userData.name || authUser.displayName);
-            console.log('✅ User data loaded:', { role: userData.role, name: userData.name });
             
             // Set current user in UsersContext AFTER we have the user data
             setCurrentUserById(authUser.uid);
@@ -73,7 +71,6 @@ const AppContent = () => {
           console.error('❌ Error fetching user data:', error);
         }
       } else {
-        console.log('🚪 User logged out');
         setUser(null);
         setUserRole(null);
         setUserName('');

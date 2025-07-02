@@ -15,6 +15,7 @@ const Settings = () => {
   });
   const [originalData, setOriginalData] = useState({});
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
 
   // Load current user data when component mounts or currentUser changes
   useEffect(() => {
@@ -31,21 +32,56 @@ const Settings = () => {
     }
   }, [currentUser]);
 
+  const validatePhoneNumber = (phone) => {
+    // Remove any non-digit characters for validation
+    const digitsOnly = phone.replace(/\D/g, '');
+    
+    if (digitsOnly.length === 0) {
+      return { isValid: true, message: '' }; // Allow empty phone number
+    }
+    
+    if (digitsOnly.length !== 10) {
+      return { 
+        isValid: false, 
+        message: 'מספר הטלפון חייב להכיל בדיוק 10 ספרות' 
+      };
+    }
+    
+    return { isValid: true, message: '' };
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    if (name === 'phoneNumber') {
+      // Allow only digits and common formatting characters
+      const filteredValue = value.replace(/[^\d\-\s]/g, '');
+      
+      // Validate phone number
+      const validation = validatePhoneNumber(filteredValue);
+      setPhoneError(validation.message);
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: filteredValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleEditClick = () => {
     setIsEditable(true);
+    setPhoneError(''); // Clear any previous phone errors
   };
 
   const handleCancelClick = () => {
     setFormData(originalData);
     setIsEditable(false);
+    setPhoneError(''); // Clear phone error on cancel
   };
 
   const handleSaveClick = async () => {
@@ -54,10 +90,12 @@ const Settings = () => {
       return;
     }
 
-    // Debug current user data
-    console.log('Current user data:', currentUser);
-    console.log('Current user ID:', currentUser.id);
-    console.log('Current user docId:', currentUser.docId);
+    // Validate phone number before saving
+    const phoneValidation = validatePhoneNumber(formData.phoneNumber);
+    if (!phoneValidation.isValid) {
+      setPhoneError(phoneValidation.message);
+      return;
+    }
 
     // Use docId for Firestore operations (it's the actual document ID)
     const userId = currentUser.docId;
@@ -78,13 +116,13 @@ const Settings = () => {
         name: `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim()
       };
 
-      console.log('Updating user with ID:', userId, 'Data:', updateData);
       await updateUser(userId, updateData);
       
       // Update original data to reflect the saved changes
       const newOriginalData = { ...formData };
       setOriginalData(newOriginalData);
       setIsEditable(false);
+      setPhoneError(''); // Clear phone error on successful save
       
       alert('הפרטים נשמרו בהצלחה!');
     } catch (err) {
@@ -100,6 +138,10 @@ const Settings = () => {
     // Add disabled class for email and role
     if (fieldName === 'email' || fieldName === 'role') {
       return `${baseClass} disabled-field`;
+    }
+    // Add error class for phone number if there's an error
+    if (fieldName === 'phoneNumber' && phoneError) {
+      return `${baseClass} error-input`;
     }
     return baseClass;
   };
@@ -164,8 +206,14 @@ const Settings = () => {
           value={formData.phoneNumber}
           onChange={handleInputChange}
           readOnly={!isEditable} 
-          className={getInputClass('phoneNumber')} 
+          className={getInputClass('phoneNumber')}
+          placeholder={isEditable ? "0501234567" : ""}
         />
+        {phoneError && isEditable && (
+          <div className="field-error">
+            <small className="error-message">{phoneError}</small>
+          </div>
+        )}
       </div>
 
       <div className="setting-row">
@@ -210,7 +258,7 @@ const Settings = () => {
             <button 
               onClick={handleSaveClick} 
               className="save-button"
-              disabled={updateLoading}
+              disabled={updateLoading || phoneError}
             >
               {updateLoading ? '⏳ שומר...' : '✅ שמירה'}
             </button>

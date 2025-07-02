@@ -13,7 +13,6 @@ import * as XLSX from 'xlsx';
  */
 export const exportUsersToExcel = (users, getOrganizationNames, formatDate, options = {}) => {
   try {
-    console.log('🔄 Starting Excel export...');
     
     if (!users || users.length === 0) {
       throw new Error('No data to export');
@@ -32,9 +31,6 @@ export const exportUsersToExcel = (users, getOrganizationNames, formatDate, opti
       'סטטוס': user.status || '',
       'תאריך יצירה': formatDate(user.createdAt),
     }));
-
-    console.log('📊 Export data prepared:', exportData.length, 'rows');
-
     // Create workbook and worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -64,8 +60,6 @@ export const exportUsersToExcel = (users, getOrganizationNames, formatDate, opti
 
     // Export file
     XLSX.writeFile(workbook, filename);
-
-    console.log('✅ Excel export completed successfully');
     
     // Return export info for success message
     return {

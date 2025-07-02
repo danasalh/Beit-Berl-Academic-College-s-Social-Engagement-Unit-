@@ -20,9 +20,6 @@ export const useWelcomeNotifications = () => {
     if (!user || !user.id) {
       throw new Error('User object with ID is required');
     }
-
-    console.log('🎉 Sending welcome notification to user:', user.id);
-
     try {      // Customize welcome message based on user role
       const getWelcomeMessage = (role, userName) => {
         const messages = {
@@ -63,7 +60,6 @@ export const useWelcomeNotifications = () => {
       };
 
       const notificationId = await createNotification(notificationData);
-      console.log('✅ Welcome notification sent successfully:', notificationId);
       
       return notificationId;
     } catch (error) {
@@ -78,7 +74,6 @@ export const useWelcomeNotifications = () => {
    * @param {string} approvedBy - Name/ID of admin who approved
    */
   const sendBulkWelcomeNotifications = async (users, approvedBy = 'Admin') => {
-    console.log('🎉 Sending bulk welcome notifications to', users.length, 'users');
 
     try {
       const notificationPromises = users.map(user => 
@@ -89,8 +84,6 @@ export const useWelcomeNotifications = () => {
       
       const successful = results.filter(result => result.status === 'fulfilled');
       const failed = results.filter(result => result.status === 'rejected');
-
-      console.log(`✅ Bulk welcome notifications completed: ${successful.length} successful, ${failed.length} failed`);
       
       if (failed.length > 0) {
         console.error('❌ Failed notifications:', failed.map(f => f.reason));
@@ -178,26 +171,16 @@ export const approveUserWithWelcomeNotification = async (
   approverName = 'Admin'
 ) => {
   try {
-    console.log('👤 Approving user and sending welcome notification:', userId);
 
     // First, update the user status to approved
     await updateUserFunction(userId, { status: 'approved' });
-    console.log('✅ User status updated to approved');
-
-    // Get the updated user data (you might need to fetch this)
-    // This assumes you have a way to get user data after update
-    // You'll need to adapt this based on your specific implementation
     
-    // Create welcome notification data
-    // Note: You'll need to pass the actual user object here
-    // This is a placeholder - adapt based on your user data structure
     const user = { id: userId, name: 'User', role: 'volunteer' }; // Replace with actual user fetch
     
     const welcomeNotificationData = createWelcomeNotificationData(user, approverName);
     
     // Send the welcome notification
     const notificationId = await createNotificationFunction(welcomeNotificationData);
-    console.log('✅ Welcome notification sent:', notificationId);
 
     return {
       success: true,

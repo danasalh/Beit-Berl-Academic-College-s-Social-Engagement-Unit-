@@ -72,9 +72,6 @@ export const UsersProvider = ({ children }) => {
       setCurrentUser(null);
       return null;
     }
-
-    console.log('👤 Setting current user by ID:', userId);
-
     try {
       // Try to get user document directly using userId as document ID
       const docRef = doc(db, 'users', userId);
@@ -88,14 +85,12 @@ export const UsersProvider = ({ children }) => {
         };
 
         setCurrentUser(userData);
-        console.log('✅ Current user set (direct):', userData);
         return userData;
       } else {
         // Fallback: try to find by 'id' field
         const userData = await getUserById(userId);
         if (userData) {
           setCurrentUser(userData);
-          console.log('✅ Current user set (query):', userData);
           return userData;
         } else {
           console.warn('⚠️ User not found, clearing current user');
@@ -112,7 +107,6 @@ export const UsersProvider = ({ children }) => {
 
   // Clear current user (for logout)
   const clearCurrentUser = useCallback(() => {
-    console.log('🚪 Clearing current user');
     setCurrentUser(null);
   }, []);
 
@@ -133,17 +127,14 @@ export const UsersProvider = ({ children }) => {
   const getUsers = useCallback(async (forceRefresh = false) => {
     // Prevent multiple simultaneous requests
     if (loadingRef.current && !forceRefresh) {
-      console.log('⏳ Users already loading, skipping...');
       return users;
     }
 
     // If users already loaded and not forcing refresh, return cached data
     if (usersLoadedRef.current && users.length > 0 && !forceRefresh) {
-      console.log('✅ Users already loaded, returning cached data');
       return users;
     }
 
-    console.log('📋 Fetching all users...', { forceRefresh });
     loadingRef.current = true;
     setLoading(true);
     setError(null);
@@ -159,7 +150,6 @@ export const UsersProvider = ({ children }) => {
 
       setUsers(usersData);
       usersLoadedRef.current = true;
-      console.log('✅ Users fetched successfully:', usersData.length, 'users');
       return usersData;
     } catch (err) {
       console.error('❌ Error fetching users:', err);
@@ -178,9 +168,6 @@ export const UsersProvider = ({ children }) => {
       console.warn('⚠️ No user ID provided');
       return null;
     }
-
-    console.log('🔍 Fetching user by ID:', userId);
-
     try {
       const result = await findDocumentByUserId(userId);
 
@@ -190,10 +177,8 @@ export const UsersProvider = ({ children }) => {
           id: userId,
           ...result.data
         };
-        console.log('✅ User found:', userData);
         return userData;
       } else {
-        console.log('⚠️ User not found with ID:', userId);
         return null;
       }
     } catch (err) {
@@ -208,9 +193,6 @@ export const UsersProvider = ({ children }) => {
       console.warn('⚠️ No role provided');
       return [];
     }
-
-    console.log('🎭 Fetching users by role:', role);
-
     try {
       const q = query(
         usersCollection,
@@ -223,8 +205,6 @@ export const UsersProvider = ({ children }) => {
         id: doc.id,
         ...doc.data()
       }));
-
-      console.log(`✅ Found ${usersData.length} users with role: ${role}`);
       return usersData;
     } catch (err) {
       console.error('❌ Error fetching users by role:', err);
@@ -238,9 +218,6 @@ export const UsersProvider = ({ children }) => {
       console.warn('⚠️ No organization ID provided');
       return [];
     }
-
-    console.log('🏢 Fetching users by organization:', orgId);
-
     try {
       const q = query(
         usersCollection,
@@ -253,8 +230,6 @@ export const UsersProvider = ({ children }) => {
         id: doc.id,
         ...doc.data()
       }));
-
-      console.log(`✅ Found ${usersData.length} users in organization: ${orgId}`);
       return usersData;
     } catch (err) {
       console.error('❌ Error fetching users by organization:', err);
@@ -264,7 +239,6 @@ export const UsersProvider = ({ children }) => {
 
   // Create new user
   const createUser = useCallback(async (userData) => {
-    console.log('➕ Creating new user:', userData);
     setLoading(true);
     setError(null);
 
@@ -287,7 +261,6 @@ export const UsersProvider = ({ children }) => {
       
       setUsers(prev => [newUser, ...prev]);
 
-      console.log('✅ User created successfully with doc ID:', docRef.id);
       return docRef.id;
     } catch (err) {
       console.error('❌ Error creating user:', err);
@@ -303,8 +276,6 @@ export const UsersProvider = ({ children }) => {
     if (!userId) {
       throw new Error('User ID is required');
     }
-
-    console.log('📝 Updating user:', { userId, userData });
 
     try {
       // Prepare the update data
@@ -340,7 +311,6 @@ export const UsersProvider = ({ children }) => {
         setCurrentUser(prev => ({ ...prev, ...cleanedData, updatedAt: new Date() }));
       }
 
-      console.log('✅ User updated successfully');
       return true;
     } catch (err) {
       console.error('❌ Error updating user:', err);
@@ -364,7 +334,6 @@ export const UsersProvider = ({ children }) => {
       throw new Error('User ID is required');
     }
 
-    console.log('🗑️ Deleting user with ID:', userId);
     setLoading(true);
     setError(null);
 
@@ -394,7 +363,6 @@ export const UsersProvider = ({ children }) => {
         setCurrentUser(null);
       }
 
-      console.log('✅ User deleted successfully');
       return true;
     } catch (err) {
       console.error('❌ Error deleting user:', err);
@@ -411,7 +379,6 @@ export const UsersProvider = ({ children }) => {
       throw new Error('User ID and status are required');
     }
 
-    console.log('🔄 Updating user status:', userId, status);
     return await updateUser(userId, { status });
   }, [updateUser]);
 
@@ -421,7 +388,6 @@ export const UsersProvider = ({ children }) => {
       return users;
     }
 
-    console.log('🔍 Searching users:', searchTerm);
 
     const filteredUsers = users.filter(user => {
       const searchableFields = [
@@ -436,7 +402,6 @@ export const UsersProvider = ({ children }) => {
       );
     });
 
-    console.log(`✅ Found ${filteredUsers.length} users matching: ${searchTerm}`);
     return filteredUsers;
   }, [users]);
 
@@ -455,7 +420,6 @@ export const UsersProvider = ({ children }) => {
 
   // Force refresh function
   const refreshUsers = useCallback(() => {
-    console.log('🔄 Force refreshing users...');
     usersLoadedRef.current = false;
     return getUsers(true);
   }, [getUsers]);

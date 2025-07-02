@@ -125,7 +125,6 @@ export default function NotificationsPanel() {
   // Memoized fetch function to prevent recreating on every render
   const fetchNotifications = useCallback(async () => {
     if (!currentUser?.id) {
-      console.log('No current user found');
       setLoading(false);
       return;
     }
@@ -135,9 +134,6 @@ export default function NotificationsPanel() {
       if (!hasInitialized) {
         setLoading(true);
       }
-
-      console.log('Fetching notifications for user:', currentUser.id);
-
       const userNotifications = await getNotificationsByReceiver(currentUser.id);
 
       // Transform notifications to match the expected format
@@ -212,8 +208,6 @@ export default function NotificationsPanel() {
 
   // Handle read/unread status toggle
   const toggleReadStatus = useCallback(async (id, readStatus) => {
-    console.log('toggleReadStatus called:', { id, readStatus });
-
     try {
       if (readStatus) {
         await markNotificationAsRead(id);
@@ -226,7 +220,6 @@ export default function NotificationsPanel() {
         const updated = prev.map(notif =>
           notif.id === id ? { ...notif, read: readStatus } : notif
         );
-        console.log('Updated notifications state:', updated);
         return updated;
       });
 
@@ -237,10 +230,7 @@ export default function NotificationsPanel() {
 
       // Close the dropdown
       setOpenMenuId(null);
-
-      console.log('Successfully updated notification status');
     } catch (error) {
-      console.error('Error updating notification status:', error);
     }
   }, [markNotificationAsRead, markNotificationAsUnread, selectedNotification]);
 
@@ -604,7 +594,6 @@ export default function NotificationsPanel() {
                     className="menu-item"
                     onClick={async (e) => {
                       e.stopPropagation();
-                      console.log('Mark as read clicked for notification:', notif.id);
                       await toggleReadStatus(notif.id, true);
                     }}
                   >
@@ -614,7 +603,6 @@ export default function NotificationsPanel() {
                     className="menu-item"
                     onClick={async (e) => {
                       e.stopPropagation();
-                      console.log('Mark as unread clicked for notification:', notif.id);
                       await toggleReadStatus(notif.id, false);
                     }}
                   >

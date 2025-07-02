@@ -27,21 +27,21 @@
   transform: translateX(0);
 }
 
-/* Sidebar content container */
+/* Sidebar content container - KEY FIX: Remove justify-content center and ensure proper flexbox layout */
 .sidebar-content {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  padding: 1rem;
+  height: 100vh;
   overflow-y: auto;
-  justify-content: center;
+  padding: 1rem;
 }
 
 /* App title/header styling */
 .sidebar-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem; /* Reduced from 2rem for better spacing */
   padding: 0.5rem 0;
   position: relative;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .sidebar-header .app-icon {
@@ -127,26 +127,33 @@
 
 /* User greeting section */
 .user-greeting {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem; /* Reduced from 1.5rem */
   text-align: center;
   font-size: 1rem;
   opacity: 0.8;
   justify-content: center;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
-/* Navigation styling */
+/* Navigation styling - KEY FIX: Make this grow to fill available space */
 .sidebar-nav {
-  flex: 1;
+  flex: 1; /* This will make the nav section grow to fill available space */
+  min-height: 0; /* Allow shrinking if needed */
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-nav ul {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem; /* Add consistent spacing between nav items */
 }
 
 .sidebar-nav li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0; /* Remove margin as we're using gap now */
 }
 
 .nav-item {
@@ -158,7 +165,6 @@
   text-align: right;
   padding: 0.8rem 0.5rem;
   border-radius: 8px;
-  margin-bottom: 0.3rem;
   display: flex;
   justify-content: right;
   align-items: center;
@@ -170,6 +176,7 @@
     box-shadow 0.22s cubic-bezier(.4, 2, .6, 1),
     transform 0.22s cubic-bezier(.4, 2, .6, 1);
   position: relative;
+  flex-shrink: 0;
 }
 
 .nav-item .nav-icon,
@@ -198,13 +205,13 @@
   transform: scale(1.06);
 }
 
-/* Logout button styling */
+/* Logout button styling - KEY FIX: Ensure it stays at bottom */
 .logout-button {
   display: flex;
   align-items: center;
   width: 100%;
   padding: 0.75rem 1rem;
-  margin-top: auto;
+  margin-top: auto; /* This pushes the logout button to the bottom */
   border-radius: 0.5rem;
   border: none;
   background: transparent;
@@ -213,8 +220,9 @@
   text-align: right;
   transition: all 0.2s ease;
   gap: 0.75rem;
-  /* Remove focus outline */
   outline: none;
+  flex-shrink: 0; /* Prevent shrinking */
+  justify-content: flex-end; /* Align content to the right */
 }
 
 .logout-button:focus {
@@ -229,7 +237,6 @@
 
 .logout-button .nav-icon {
   color: #b91c1c;
-  /* Red color for logout icon */
 }
 
 /* Toggle button for opening sidebar */
@@ -237,7 +244,6 @@
   position: fixed;
   top: 1rem;
   right: 76px;
-  /* Positioned next to the wider collapsed sidebar */
   z-index: 20;
   padding: 0.5rem;
   background-color: white;
@@ -296,30 +302,30 @@
     transform: translateX(0);
   }
 
+  .sidebar:not(.open) .sidebar-content {
+    padding: 0.5rem; /* Reduce padding for collapsed state */
+  }
+
   .sidebar:not(.open) .nav-item {
     justify-content: center;
     padding: 0.75rem 0;
+    border-radius: 0.375rem;
+    margin: 0.375rem 0.25rem;
+    width: calc(100% - 0.5rem);
   }
 
   .sidebar:not(.open) .logout-button {
     justify-content: center;
     padding: 0.75rem 0;
     border-radius: 0.375rem;
-    margin: 0.375rem 0.5rem;
-    width: calc(100% - 1rem);
+    margin: 0.375rem 0.25rem;
+    width: calc(100% - 0.5rem);
+    margin-top: auto; /* Keep it at the bottom even in collapsed state */
   }
 
-  /* Style adjustments for closed sidebar */
   .sidebar:not(.open) .sidebar-nav {
     margin-top: 1rem;
-  }
-
-  .sidebar:not(.open) .nav-item {
-    justify-content: center;
-    padding: 0.75rem 0;
-    border-radius: 0.375rem;
-    margin: 0.375rem 0.5rem;
-    width: calc(100% - 1rem);
+    flex: 1; /* Ensure it still grows to fill space */
   }
 
   .sidebar:not(.open) .nav-item:hover {
@@ -335,7 +341,6 @@
 @media (max-width: 767px) {
   .sidebar-toggle-open {
     display: none;
-    /* Hide desktop toggle when in mobile view */
   }
 
   .sidebar {
@@ -352,13 +357,31 @@
     display: none;
   }
 
-  /* Only show mobile toggle when sidebar is closed */
   .sidebar-toggle-mobile {
     display: flex;
   }
 
   .sidebar.open~.sidebar-toggle-mobile {
     display: none;
+  }
+
+  /* Ensure proper spacing on mobile */
+  .sidebar-content {
+    padding: 1rem;
+    min-height: 100vh;
+  }
+
+  /* Adjust logout button for mobile */
+  .logout-button {
+    margin-top: auto;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Additional responsive adjustments for very small screens */
+@media (max-width: 480px) {
+  .sidebar.open {
+    width: 280px; /* Slightly wider on very small screens for better usability */
   }
 }
 

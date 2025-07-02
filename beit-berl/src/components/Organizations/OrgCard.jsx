@@ -22,7 +22,7 @@ const OrgCard = ({ org, onShowDetails, allUsers = [], isVolunteer = false }) => 
     const volunteers = allUsers.filter(user => {
       // Check if user is a volunteer
       const isVolunteer = user.role === "volunteer" || user.role === "Volunteer";
-      
+
       if (!isVolunteer) return false;
 
       // Check if user's orgId array contains this organization's id
@@ -35,11 +35,6 @@ const OrgCard = ({ org, onShowDetails, allUsers = [], isVolunteer = false }) => 
 
   const volunteerCount = calculateVolunteerCount(org);
 
-  // Debug: Log the organization object to see all fields
-  console.log('🏢 OrgCard - Organization object:', org);
-  console.log('🌆 OrgCard - City value:', getCityValue(org));
-  console.log('👥 OrgCard - Volunteer count:', volunteerCount);
-
   return (
     <div className="org-card">
       <div className="org-card-header">
@@ -49,21 +44,26 @@ const OrgCard = ({ org, onShowDetails, allUsers = [], isVolunteer = false }) => 
             {getCityValue(org) || 'עיר לא צוינה'}
           </span>
         </div>
+        {/* Status indicator */}
+        {typeof org.status !== 'undefined' && (
+          <span
+            className={`org-status-badge${org.status ? '' : ' inactive'}`}
+            title={org.status ? 'פעיל' : 'לא פעיל'}
+          >
+            {org.status ? 'פעיל' : 'לא פעיל'}
+          </span>
+        )}
       </div>
-      
+
       <h3 className="org-name">
         {org.name || 'שם הארגון'}
       </h3>
-      
-      <p className="org-description">
-        {truncateText(org.description) || 'אין תיאור זמין'}
-      </p>
-      
-      {org.description && org.description.length > 100 && (
-        <p className="org-description-continued">
-          ...
+
+      <div className="org-description">
+        <p>
+          {org.description || 'אין תיאור זמין'}
         </p>
-      )}
+      </div>
 
       {/* Only show volunteer count if user is NOT a volunteer */}
       {!isVolunteer && (
@@ -73,8 +73,8 @@ const OrgCard = ({ org, onShowDetails, allUsers = [], isVolunteer = false }) => 
           </span>
         </div>
       )}
-      
-      <button 
+
+      <button
         onClick={() => onShowDetails(org)}
         className="details-button"
       >

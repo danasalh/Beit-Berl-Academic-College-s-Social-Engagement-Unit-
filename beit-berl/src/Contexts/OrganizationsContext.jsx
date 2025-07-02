@@ -32,12 +32,6 @@ export const OrganizationsProvider = ({ children }) => {
   // Collection reference
   const organizationsCollection = collection(db, 'organizations');
 
-  // Debug: Check if Firebase is properly initialized
-  useEffect(() => {
-    console.log('🔥 Firebase db object:', db);
-    console.log('📁 Organizations collection reference:', organizationsCollection);
-  }, []);
-
   // Helper function to generate unique ID
   const generateUniqueId = (existingOrgs) => {
     const existingIds = existingOrgs.map(org => org.id || 0);
@@ -53,25 +47,18 @@ export const OrganizationsProvider = ({ children }) => {
 
   // Get all organizations
   const getOrganizations = async () => {
-    console.log('🏢 Fetching all organizations...');
     setLoading(true);
     setError(null);
     
     try {
-      console.log('📡 Making Firebase request...');
       const querySnapshot = await getDocs(organizationsCollection);
-      console.log('📦 Query snapshot received:', querySnapshot);
-      console.log('📊 Number of docs:', querySnapshot.size);
       
       const orgData = querySnapshot.docs.map(doc => {
         const data = { firebaseId: doc.id, ...doc.data() };
-        console.log('📄 Document data:', data);
         return data;
       });
       
-      console.log('✅ Final organizations data:', orgData);
       setOrganizations(orgData);
-      console.log('✅ Organizations fetched successfully:', orgData.length, 'organizations');
       return orgData;
     } catch (err) {
       console.error('❌ Error fetching organizations:', err);
@@ -83,14 +70,12 @@ export const OrganizationsProvider = ({ children }) => {
       setError(err.message);
       throw err;
     } finally {
-      console.log('🏁 Setting loading to false');
       setLoading(false);
     }
   };
 
   // Get organization by ID
   const getOrganizationById = async (orgId) => {
-    console.log('🔍 Fetching organization by ID:', orgId);
     setLoading(true);
     setError(null);
 
@@ -102,7 +87,6 @@ export const OrganizationsProvider = ({ children }) => {
       if (!querySnapshot.empty) {
         const orgDoc = querySnapshot.docs[0];
         const orgData = { firebaseId: orgDoc.id, ...orgDoc.data() };
-        console.log('✅ Organization found by custom ID:', orgData);
         return orgData;
       }
       
@@ -111,10 +95,8 @@ export const OrganizationsProvider = ({ children }) => {
       
       if (orgDoc.exists()) {
         const orgData = { firebaseId: orgDoc.id, ...orgDoc.data() };
-        console.log('✅ Organization found by Firebase ID:', orgData);
         return orgData;
       } else {
-        console.log('⚠️ Organization not found with ID:', orgId);
         return null;
       }
     } catch (err) {
@@ -128,7 +110,6 @@ export const OrganizationsProvider = ({ children }) => {
 
   // Get organizations by city
   const getOrganizationsByCity = async (city) => {
-    console.log('🌆 Fetching organizations by city:', city);
     setLoading(true);
     setError(null);
 
@@ -140,7 +121,6 @@ export const OrganizationsProvider = ({ children }) => {
         ...doc.data()
       }));
       
-      console.log(`✅ Found ${orgData.length} organizations in: ${city}`);
       return orgData;
     } catch (err) {
       console.error('❌ Error fetching organizations by city:', err);
@@ -151,9 +131,36 @@ export const OrganizationsProvider = ({ children }) => {
     }
   };
 
+  // Get organizations by status
+  const getOrganizationsByStatus = async (status) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const q = query(organizationsCollection, where('status', '==', status));
+      const querySnapshot = await getDocs(q);
+      const orgData = querySnapshot.docs.map(doc => ({
+        firebaseId: doc.id,
+        ...doc.data()
+      }));
+      
+      return orgData;
+    } catch (err) {
+      console.error('❌ Error fetching organizations by status:', err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get active organizations only
+  const getActiveOrganizations = async () => {
+    return await getOrganizationsByStatus(true);
+  };
+
   // Create new organization
   const createOrganization = async (orgData) => {
-    console.log('➕ Creating new organization:', orgData);
     setLoading(true);
     setError(null);
 
@@ -167,6 +174,8 @@ export const OrganizationsProvider = ({ children }) => {
         contactInfo: orgData.contactInfo || '',
         orgRepId: orgData.orgRepId || null,
         vcId: orgData.vcId || [],
+        link: orgData.link || '', // New field for organization link
+        status: orgData.status !== undefined ? orgData.status : true, // New field for status (default: active/true)
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -176,7 +185,6 @@ export const OrganizationsProvider = ({ children }) => {
       const newOrg = { firebaseId: docRef.id, ...newOrgData };
       setOrganizations(prev => [...prev, newOrg]);
       
-      console.log('✅ Organization created successfully with ID:', uniqueId, 'Firebase ID:', docRef.id);
       return docRef.id;
     } catch (err) {
       console.error('❌ Error creating organization:', err);
@@ -189,7 +197,6 @@ export const OrganizationsProvider = ({ children }) => {
 
   // Update organization
   const updateOrganization = async (orgId, orgData) => {
-    console.log('📝 Updating organization:', orgId, orgData);
     setLoading(true);
     setError(null);
 
@@ -215,7 +222,6 @@ export const OrganizationsProvider = ({ children }) => {
           : org
       ));
       
-      console.log('✅ Organization updated successfully');
       return true;
     } catch (err) {
       console.error('❌ Error updating organization:', err);
@@ -226,9 +232,93 @@ export const OrganizationsProvider = ({ children }) => {
     }
   };
 
+  // Update organization status
+  const updateOrganizationStatus = async (orgId, status) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Find the organization by custom ID
+      const org = organizations.find(o => o.id === orgId);
+      if (!org) {
+        throw new Error('Organization not found');
+      }
+
+      const orgRef = doc(db, 'organizations', org.firebaseId);
+      const updateData = {
+        status: status,
+        updatedAt: new Date()
+      };
+      
+      await updateDoc(orgRef, updateData);
+      
+      // Update local state
+      setOrganizations(prev => prev.map(o => 
+        o.id === orgId 
+          ? { ...o, ...updateData }
+          : o
+      ));
+      
+      return true;
+    } catch (err) {
+      console.error('❌ Error updating organization status:', err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update organization link
+  const updateOrganizationLink = async (orgId, link) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Find the organization by custom ID
+      const org = organizations.find(o => o.id === orgId);
+      if (!org) {
+        throw new Error('Organization not found');
+      }
+
+      const orgRef = doc(db, 'organizations', org.firebaseId);
+      const updateData = {
+        link: link,
+        updatedAt: new Date()
+      };
+      
+      await updateDoc(orgRef, updateData);
+      
+      // Update local state
+      setOrganizations(prev => prev.map(o => 
+        o.id === orgId 
+          ? { ...o, ...updateData }
+          : o
+      ));
+      
+      return true;
+    } catch (err) {
+      console.error('❌ Error updating organization link:', err);
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggle organization status (active/inactive)
+  const toggleOrganizationStatus = async (orgId) => {
+    const org = organizations.find(o => o.id === orgId);
+    if (!org) {
+      throw new Error('Organization not found');
+    }
+    
+    const newStatus = !org.status;
+    return await updateOrganizationStatus(orgId, newStatus);
+  };
+
   // Delete organization
   const deleteOrganization = async (orgId) => {
-    console.log('🗑️ Deleting organization:', orgId);
     setLoading(true);
     setError(null);
 
@@ -244,7 +334,6 @@ export const OrganizationsProvider = ({ children }) => {
       // Update local state
       setOrganizations(prev => prev.filter(org => org.id !== orgId));
       
-      console.log('✅ Organization deleted successfully');
       return true;
     } catch (err) {
       console.error('❌ Error deleting organization:', err);
@@ -257,7 +346,6 @@ export const OrganizationsProvider = ({ children }) => {
 
   // Add volunteer to organization
   const addVolunteerToOrganization = async (orgId, volunteerId) => {
-    console.log('👥 Adding volunteer to organization:', orgId, volunteerId);
     setLoading(true);
     setError(null);
 
@@ -286,10 +374,8 @@ export const OrganizationsProvider = ({ children }) => {
             : o
         ));
 
-        console.log('✅ Volunteer added to organization successfully');
         return true;
       } else {
-        console.log('⚠️ Volunteer already in organization');
         return false;
       }
     } catch (err) {
@@ -303,7 +389,6 @@ export const OrganizationsProvider = ({ children }) => {
 
   // Remove volunteer from organization
   const removeVolunteerFromOrganization = async (orgId, volunteerId) => {
-    console.log('👤 Removing volunteer from organization:', orgId, volunteerId);
     setLoading(true);
     setError(null);
 
@@ -331,7 +416,6 @@ export const OrganizationsProvider = ({ children }) => {
           : o
       ));
 
-      console.log('✅ Volunteer removed from organization successfully');
       return true;
     } catch (err) {
       console.error('❌ Error removing volunteer from organization:', err);
@@ -349,8 +433,13 @@ export const OrganizationsProvider = ({ children }) => {
     getOrganizations,
     getOrganizationById,
     getOrganizationsByCity,
+    getOrganizationsByStatus,
+    getActiveOrganizations,
     createOrganization,
     updateOrganization,
+    updateOrganizationStatus,
+    updateOrganizationLink,
+    toggleOrganizationStatus,
     deleteOrganization,
     addVolunteerToOrganization,
     removeVolunteerFromOrganization

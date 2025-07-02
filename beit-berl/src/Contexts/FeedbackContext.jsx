@@ -98,7 +98,7 @@ export const FeedbackProvider = ({ children }) => {
       const adminUsers = await getAdminUsers();
 
       if (adminUsers.length === 0) {
-        console.log('No admin users found to notify');
+        console.warn('No admin users found to notify');
         return;
       }
 
@@ -152,7 +152,6 @@ export const FeedbackProvider = ({ children }) => {
       });
 
       await Promise.all(notificationPromises);
-      console.log(`✅ Created notifications with proper names for ${adminUsers.length} admin users`);
     } catch (error) {
       console.error('❌ Error creating admin notifications:', error);
     }
@@ -160,7 +159,6 @@ export const FeedbackProvider = ({ children }) => {
 
   // Get all feedback
   const getFeedback = useCallback(async () => {
-    console.log('📋 Fetching all feedback...');
     setLoading(true);
     setError(null);
 
@@ -176,7 +174,6 @@ export const FeedbackProvider = ({ children }) => {
       }));
 
       setFeedback(feedbackData);
-      console.log('✅ Feedback fetched successfully:', feedbackData.length, 'items');
       return feedbackData;
     } catch (err) {
       console.error('❌ Error fetching feedback:', err);
@@ -189,7 +186,6 @@ export const FeedbackProvider = ({ children }) => {
 
   // Get feedback by volunteer ID
   const getFeedbackByVolunteerId = useCallback(async (volunteerId) => {
-    console.log('👤 Fetching feedback for volunteer:', volunteerId);
     setLoading(true);
     setError(null);
 
@@ -207,7 +203,6 @@ export const FeedbackProvider = ({ children }) => {
         createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : doc.data().createdAt
       }));
 
-      console.log(`✅ Found ${feedbackData.length} feedback items for volunteer: ${volunteerId}`);
       return feedbackData;
     } catch (err) {
       console.error('❌ Error fetching feedback by volunteer:', err);
@@ -220,7 +215,6 @@ export const FeedbackProvider = ({ children }) => {
 
   // Get feedback by the user who created it
   const getFeedbackByFromVC = useCallback(async (fromVCId) => {
-    console.log('👨‍💼 Fetching feedback from VC:', fromVCId);
     setLoading(true);
     setError(null);
 
@@ -238,7 +232,6 @@ export const FeedbackProvider = ({ children }) => {
         createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate() : doc.data().createdAt
       }));
 
-      console.log(`✅ Found ${feedbackData.length} feedback items from VC: ${fromVCId}`);
       return feedbackData;
     } catch (err) {
       console.error('❌ Error fetching feedback by fromVC:', err);
@@ -251,7 +244,6 @@ export const FeedbackProvider = ({ children }) => {
 
   // Create new feedback with admin notifications
   const createFeedback = useCallback(async (feedbackData) => {
-    console.log('➕ Creating new feedback:', feedbackData);
     setLoading(true);
     setError(null);
 
@@ -292,8 +284,6 @@ export const FeedbackProvider = ({ children }) => {
       // Update local state
       setFeedback(prev => [newFeedback, ...prev]);
 
-      console.log('✅ Feedback created successfully with ID:', docRef.id);
-
       // ENHANCED: Get user details for notifications (run in parallel with better error handling)
       const [volunteerDetails, fromUserDetails] = await Promise.all([
         getUserDetails(feedbackData.volunteerId).catch(err => {
@@ -305,9 +295,6 @@ export const FeedbackProvider = ({ children }) => {
           return null;
         })
       ]);
-
-      console.log('👤 Volunteer details:', volunteerDetails);
-      console.log('👨‍💼 FromUser details:', fromUserDetails);
 
       // ENHANCED: Get organization details with better logic
       let orgDetails = null;
@@ -322,7 +309,6 @@ export const FeedbackProvider = ({ children }) => {
             console.warn('⚠️ Could not fetch organization details:', err);
             return null;
           });
-          console.log('🏢 Organization details:', orgDetails);
         }
       }
 
@@ -344,7 +330,6 @@ export const FeedbackProvider = ({ children }) => {
 
   // Update feedback
   const updateFeedback = useCallback(async (feedbackId, feedbackData) => {
-    console.log('📝 Updating feedback:', feedbackId, feedbackData);
     setLoading(true);
     setError(null);
 
@@ -392,7 +377,6 @@ export const FeedbackProvider = ({ children }) => {
           : item
       ));
 
-      console.log('✅ Feedback updated successfully');
       return true;
     } catch (err) {
       console.error('❌ Error updating feedback:', err);
@@ -405,7 +389,6 @@ export const FeedbackProvider = ({ children }) => {
   
   // Delete feedback
   const deleteFeedback = useCallback(async (feedbackId) => {
-    console.log('🗑️ Deleting feedback:', feedbackId);
     setLoading(true);
     setError(null);
 
@@ -415,7 +398,6 @@ export const FeedbackProvider = ({ children }) => {
       // Update local state
       setFeedback(prev => prev.filter(item => item.id !== feedbackId));
 
-      console.log('✅ Feedback deleted successfully');
       return true;
     } catch (err) {
       console.error('❌ Error deleting feedback:', err);
@@ -428,7 +410,6 @@ export const FeedbackProvider = ({ children }) => {
 
   // Get feedback by ID
   const getFeedbackById = useCallback(async (feedbackId) => {
-    console.log('🔍 Fetching feedback by ID:', feedbackId);
     setLoading(true);
     setError(null);
 
@@ -442,13 +423,11 @@ export const FeedbackProvider = ({ children }) => {
           date: feedbackDoc.data().date?.toDate ? feedbackDoc.data().date.toDate() : feedbackDoc.data().date,
           createdAt: feedbackDoc.data().createdAt?.toDate ? feedbackDoc.data().createdAt.toDate() : feedbackDoc.data().createdAt
         };
-        console.log('✅ Feedback found:', feedbackData);
         return feedbackData;
       } else {
-        console.log('⚠️ Feedback not found with ID:', feedbackId);
         return null;
       }
-    } catch (err) {
+    } catch (err) { 
       console.error('❌ Error fetching feedback:', err);
       setError(err.message);
       throw err;

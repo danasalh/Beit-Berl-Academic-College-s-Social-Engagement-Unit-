@@ -32,10 +32,10 @@ const HoursData = ({ volunteer, onClose }) => {
   // Check if current user can approve hours for a specific organization
   const canApproveForOrg = useCallback((orgId) => {
     if (!currentUser) return false;
-    
+
     // Admin can approve all hours
     if (currentUser.role === 'admin') return true;
-    
+
     // OrgRep or VC can approve only for their organizations
     if (currentUser.role === 'orgRep' || currentUser.role === 'vc') {
       // Check if user has the same orgId
@@ -44,7 +44,7 @@ const HoursData = ({ volunteer, onClose }) => {
       }
       return Number(currentUser.orgId) === Number(orgId);
     }
-    
+
     return false;
   }, [currentUser]);
 
@@ -57,7 +57,7 @@ const HoursData = ({ volunteer, onClose }) => {
   // Format date and time
   const formatDateTime = useCallback((timestamp) => {
     if (!timestamp) return 'N/A';
-    
+
     try {
       const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
       return date.toLocaleString('he-IL', {
@@ -79,13 +79,13 @@ const HoursData = ({ volunteer, onClose }) => {
       const orgName = getOrganizationName(hoursRecord.orgId);
       const volunteerName = `${volunteer?.firstName || ''} ${volunteer?.lastName || ''}`.trim() || volunteer?.email || 'מתנדב';
       const approverName = `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || currentUser?.email || 'מנהל';
-      
+
       const notificationData = {
         receiverId: String(volunteer.id), // Make sure to convert to string
         relatedId: String(hoursRecord.id), // Reference to the hours record
         type: 'hours-status', // New notification type
         title: isApproved ? 'שעות התנדבות אושרו' : 'שעות התנדבות נדחו',
-        content: isApproved 
+        content: isApproved
           ? `שלום ${volunteerName}, ${hoursRecord.hours} שעות ההתנדבות שלך בארגון "${orgName}" אושרו על ידי ${approverName}.`
           : `שלום ${volunteerName}, ${hoursRecord.hours} שעות ההתנדבות שלך בארגון "${orgName}" נדחו על ידי ${approverName}.`,
         date: new Date(),
@@ -93,9 +93,7 @@ const HoursData = ({ volunteer, onClose }) => {
       };
 
       await createNotification(notificationData);
-      console.log(`✅ Notification sent to volunteer for ${isApproved ? 'approved' : 'rejected'} hours`);
     } catch (error) {
-      console.error('❌ Error creating volunteer notification:', error);
       // Don't throw error here - notification failure shouldn't block the main operation
     }
   }, [volunteer, currentUser, getOrganizationName, createNotification]);
@@ -108,24 +106,19 @@ const HoursData = ({ volunteer, onClose }) => {
       setLoading(true);
       setError(null);
 
-      console.log('🔍 Fetching hours for volunteer:', volunteer.id);
-
       // Fetch all hours for this volunteer (excluding rejected)
       const [allHours, totalHours] = await Promise.all([
         getVolunteerHoursByVolunteerId(volunteer.id, false), // Don't include rejected
         getTotalHoursForVolunteer(volunteer.id, true) // approved only
       ]);
 
-      console.log('📊 Hours data:', { allHours, totalHours });
-
       // Separate pending hours (not approved and not rejected)
       const pending = allHours.filter(record => !record.approved && !record.rejected);
-      
+
       setVolunteerHours(allHours);
       setTotalApprovedHours(totalHours);
       setPendingHours(pending);
 
-      console.log(`✅ Found ${pending.length} pending hours records`);
     } catch (err) {
       console.error('❌ Error fetching volunteer hours:', err);
       setError(err.message);
@@ -146,8 +139,6 @@ const HoursData = ({ volunteer, onClose }) => {
 
     try {
       setApproving(hoursRecord.id);
-      console.log('✅ Approving hours record:', hoursRecord.id);
-
       await updateHoursApprovalStatus(hoursRecord.id, true);
 
       // Create notification for volunteer
@@ -159,10 +150,7 @@ const HoursData = ({ volunteer, onClose }) => {
 
       // Refresh data
       await fetchVolunteerHours();
-
-      console.log('✅ Hours approved successfully');
     } catch (err) {
-      console.error('❌ Error approving hours:', err);
       alert(`שגיאה באישור השעות: ${err.message}`);
     } finally {
       setApproving(null);
@@ -186,7 +174,6 @@ const HoursData = ({ volunteer, onClose }) => {
 
     try {
       setRejecting(hoursRecord.id);
-      console.log('❌ Rejecting hours record:', hoursRecord.id);
 
       await updateHoursRejectionStatus(hoursRecord.id, true);
 
@@ -199,10 +186,7 @@ const HoursData = ({ volunteer, onClose }) => {
 
       // Refresh data
       await fetchVolunteerHours();
-
-      console.log('❌ Hours rejected successfully');
     } catch (err) {
-      console.error('❌ Error rejecting hours:', err);
       alert(`שגיאה בדחיית השעות: ${err.message}`);
     } finally {
       setRejecting(null);
